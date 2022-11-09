@@ -1,0 +1,16 @@
+---
+name: Remove Package From Hex Repo
+on:
+  release:
+    types:
+      - deleted
+
+jobs:
+  update_hex:
+    uses: catodigital/actions/.github/workflows/remove-package.yaml@master
+    with:
+      hex_repo_name: cato
+      hex_git_repo: catodigital/cato-hex
+      hex_domain: hex.cato.digital
+      hex_port: 9999
+    secrets: inherit

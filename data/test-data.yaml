@@ -1,0 +1,12 @@
+---
+type: Cato.Data
+version: 2.1
+
+---
+type: AdiSupervisor
+values:
+  id: 3bdf2cc8-d360-437c-b977-08fb5cbb32ac
+  name: core-supervisor
+  type: dynamic
+  status: offline
+  pubkey: "narfnarf="
