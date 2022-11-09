@@ -1,1 +1,1 @@
-../../../lib/factor/schema.ex
+../../../lib/auth/factor/schema.ex

@@ -1,1 +1,1 @@
-../../../lib/user_handle/schema.ex
+../../../lib/auth/user_handle/schema.ex

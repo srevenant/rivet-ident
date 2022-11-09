@@ -37,7 +37,7 @@ defmodule Cato.Data.Auth.UserCode.Db do
     now = Timex.now()
 
     from(c in Auth.UserCode, where: c.expires < ^now)
-    |> Repo.delete_all()
+    |> @repo.delete_all()
   end
 
   def clear_all_codes(for_user_id, type) do
@@ -46,6 +46,6 @@ defmodule Cato.Data.Auth.UserCode.Db do
         c.user_id == ^for_user_id and
           c.type == ^type
     )
-    |> Repo.delete_all()
+    |> @repo.delete_all()
   end
 end

@@ -14,7 +14,7 @@ sub scan_folder {
       next;
     }
     my $fpath = "$folder/$fn";
-    if (-f $fpath && $fn =~ /\.ex(s)?/) {
+    if (-f $fpath && ! -s $fpath && $fn =~ /\.ex(s)?/) {
       &revise_file($fpath);
     } elsif (-d $fpath) {
       &scan_folder($fpath);
@@ -44,12 +44,13 @@ sub revise_file {
     # if (/use .*\.CollectionIntId/) {
     #   print STDERR "WARNING: CollectionIntId found! ($file)";
     # }
-    s/use .*\.CollectionUuid,.*$/use Unify.Ecto.Collection.Context/
+    s/use .*\.CollectionUuid,.*$/use Unify.Ecto.Collection.Context/;
 
     print OUT;
   }
   close(FILE);
   close(OUT);
+  unlink("$file.x");
 }
 
 &scan_folder(".");

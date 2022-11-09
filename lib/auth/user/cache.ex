@@ -15,8 +15,8 @@ defmodule Cato.Data.Auth.User.Cache do
         {:ok, user}
 
       _no_cache ->
-        with {:ok, user} <- Auth.Users.one(id: id) do
-          Auth.Users.get_authz(user) |> persist
+        with {:ok, user} <- Auth.User.one(id: id) do
+          Auth.User.Db.get_authz(user) |> persist
         end
     end
   end

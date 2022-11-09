@@ -13,11 +13,11 @@ defmodule Cato.Data.Auth.Factor.Db do
         pass
 
       :miss ->
-        case Repo.one(
+        case @repo.one(
                from(f in Auth.Factor, where: f.id == ^factor_id, preload: [user: [:tenant]])
              ) do
           %Auth.Factor{user: %Auth.User{} = user} = factor ->
-            user = Auth.Users.get_authz(user)
+            user = Auth.User.Db.get_authz(user)
             user = %Auth.User{user | state: Map.put(user.state, :active_factor_id, factor.id)}
 
             %Auth.Factor{factor | user: user}
@@ -35,13 +35,13 @@ defmodule Cato.Data.Auth.Factor.Db do
   @doc """
   Preload factors for a related model, with criteria, and only unexpired factors
 
-      Auth.Factors.preloaded_with(model, type)
+      Auth.Factor.Db.preloaded_with(model, type)
 
   """
   def preloaded_with(model, type) when is_list(type) do
     now = Utils.Time.epoch_time(:second)
 
-    Repo.preload(model,
+    @repo.preload(model,
       factors:
         from(a in Auth.Factor,
           where: a.type in ^type and a.expires_at > ^now,
@@ -53,7 +53,7 @@ defmodule Cato.Data.Auth.Factor.Db do
   def preloaded_with(model, type) when is_atom(type) do
     now = Utils.Time.epoch_time(:second)
 
-    Repo.preload(model,
+    @repo.preload(model,
       factors:
         from(a in Auth.Factor,
           where: a.type == ^type and a.expires_at > ^now,
@@ -75,7 +75,7 @@ defmodule Cato.Data.Auth.Factor.Db do
   @password_history 5
   def set_password(user, password, overrides \\ %{}) do
     Logger.info("setting password", user_id: user.id)
-    {:ok, user} = Auth.Users.preload(user, [:tenant])
+    {:ok, user} = Auth.User.preload(user, [:tenant])
 
     params =
       %{
@@ -87,7 +87,7 @@ defmodule Cato.Data.Auth.Factor.Db do
       }
       |> Map.merge(overrides)
 
-    case Auth.Factors.create(params) do
+    case Auth.Factor.create(params) do
       {:error, _} = pass ->
         pass
 
@@ -102,7 +102,7 @@ defmodule Cato.Data.Auth.Factor.Db do
       where: f.user_id == ^user_id and f.type == :password,
       order_by: [asc: f.expires_at]
     )
-    |> Repo.all()
+    |> @repo.all()
     |> Enum.filter(fn f -> f.id != excluding_id end)
     |> clean_old_factors(@password_history)
   end
@@ -112,10 +112,10 @@ defmodule Cato.Data.Auth.Factor.Db do
 
     cond do
       length(rest) + 1 > @password_history ->
-        Auth.Factors.delete(x)
+        Auth.Factor.delete(x)
 
       x.expires_at > now ->
-        Auth.Factors.update(x, %{expires_at: now})
+        Auth.Factor.update(x, %{expires_at: now})
 
       true ->
         :ok
@@ -157,9 +157,9 @@ defmodule Cato.Data.Auth.Factor.Db do
   @spec set_factor(user :: Auth.User.t(), fedid :: Auth.AuthFedId.t()) ::
           {:ok, Auth.Factor.t()} | {:error, Changeset.t()}
   def set_factor(user, fedid) do
-    {:ok, user} = Auth.Users.preload(user, [:tenant])
+    {:ok, user} = Auth.User.preload(user, [:tenant])
 
-    Auth.Factors.create(%{
+    Auth.Factor.create(%{
       name: fedid.provider.kid,
       type: :federated,
       fedtype: fedid.provider.type,
@@ -174,7 +174,7 @@ defmodule Cato.Data.Auth.Factor.Db do
     # load the factor and user, matching current tenant
     tenant_code = tenant.code
 
-    case Auth.Factors.one_with_user_tenant(factor_id) do
+    case Auth.Factor.Db.one_with_user_tenant(factor_id) do
       nil ->
         {:error, "Invalid tenant"}
 
@@ -197,14 +197,14 @@ defmodule Cato.Data.Auth.Factor.Db do
     from(f in Auth.Factor,
       where: f.expires_at < ^now and f.type != :password
     )
-    |> Repo.delete_all()
+    |> @repo.delete_all()
   end
 
   def all_not_expired!(%Auth.User{id: user_id}) do
     now = Utils.Time.epoch_time(:second)
 
     from(f in Auth.Factor, where: f.user_id == ^user_id and f.expires_at > ^now)
-    |> Repo.all()
+    |> @repo.all()
   end
 
   def all_not_expired!(%Auth.User{} = user, type) when is_binary(type),
@@ -216,6 +216,6 @@ defmodule Cato.Data.Auth.Factor.Db do
     from(f in Auth.Factor,
       where: f.user_id == ^user_id and f.expires_at > ^now and f.type == ^type
     )
-    |> Repo.all()
+    |> @repo.all()
   end
 end

@@ -5,7 +5,7 @@ defmodule Cato.Data.Auth.UserSearch do
 
   ##############################################################################
   # various utility funcitons
-  defp repo_all(clauses), do: {:ok, Repo.all(clauses)}
+  defp repo_all(clauses), do: {:ok, @repo.all(clauses)}
 
   defp and_exprs([elem | elems]) do
     Enum.reduce(elems, elem, fn e, a ->
@@ -37,7 +37,7 @@ defmodule Cato.Data.Auth.UserSearch do
   #         err
   #
   #       list ->
-  #         with {:ok, tag} <- Auth.Tags.one(label: label, type: type) do
+  #         with {:ok, tag} <- Auth.Tag.one(label: label, type: type) do
   #           list ++ [tag.id]
   #         else
   #           _ ->
@@ -60,7 +60,7 @@ defmodule Cato.Data.Auth.UserSearch do
 
   ##############################################################################
   def search(%{id: id}, _) do
-    Auth.Users.one(id: id)
+    Auth.User.one(id: id)
   end
 
   def search(args, user) do

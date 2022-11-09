@@ -1,6 +1,6 @@
 defmodule Cato.Data.Auth.UserHandles do
   alias Cato.Data.Auth
-  use Cato.Data.Auth.CollectionUuid, model: Cato.Data.Auth.UserHandle
+  use Unify.Ecto.Collection.Context
 
   @doc """
   Check if handle is open, return double-error (internal/external msg)
@@ -9,7 +9,7 @@ defmodule Cato.Data.Auth.UserHandles do
     if String.length(handle) < 4 do
       {:error, "short handle", "Your handle should be at least 4 characters long"}
     else
-      case Auth.UserHandles.one(handle: handle) do
+      case Auth.UserHandle.one(handle: handle) do
         {:ok, %Auth.UserHandle{user_id: ^user_id}} ->
           {:ok, :current}
 
@@ -40,7 +40,7 @@ defmodule Cato.Data.Auth.UserHandles do
   def gen_good_handle(handle) do
     handle = clean_handle(handle)
 
-    case Auth.UserHandles.available(handle) do
+    case Auth.UserHandle.Db.available(handle) do
       {:error, _, _} ->
         gen_good_handle(handle <> randchar() <> randchar())
 

@@ -1,6 +1,6 @@
 defmodule Cato.Data.Auth.UserEmails do
   use Core.Context
-  use Cato.Data.Auth.CollectionUuid, model: Cato.Data.Auth.UserEmail
+  use Unify.Ecto.Collection.Context
 
   ##############################################################################
   @doc """
@@ -9,13 +9,13 @@ defmodule Cato.Data.Auth.UserEmails do
   as [] if none are desired.
   """
   def with_email(%Auth.UserEmail{} = email, preloads, func) do
-    with {:ok, email} <- Auth.UserEmails.preload(email, preloads) do
+    with {:ok, email} <- Auth.UserEmail.preload(email, preloads) do
       func.(email)
     end
   end
 
   def with_email(email, preloads, func) when is_binary(email) do
-    case Auth.UserEmails.one([address: email], preloads) do
+    case Auth.UserEmail.one([address: email], preloads) do
       {:error, _} = pass ->
         pass
 

@@ -7,7 +7,7 @@ defmodule Cato.Data.Auth.User.Db do
 
   def search(%{tenant_id: tenant_id, matching: matching, limit: limit}) do
     {:ok,
-     Repo.all(
+     @repo.all(
        from(u in Auth.User,
          join: e in Auth.UserEmail,
          where: e.user_id == u.id,
@@ -34,8 +34,8 @@ defmodule Cato.Data.Auth.User.Db do
   """
   @spec get_authz(user :: Auth.User.t()) :: Auth.User.t()
   def get_authz(%Auth.User{authz: authz} = user) when is_nil(authz) do
-    {:ok, user} = Auth.Users.preload(user, :accesses)
-    %Auth.User{user | authz: Cato.Data.Auth.Accesses.get_actions(user)}
+    {:ok, user} = Auth.User.preload(user, :accesses)
+    %Auth.User{user | authz: Cato.Data.Auth.Access.Db.get_actions(user)}
   end
 
   def get_authz(%Auth.User{} = user), do: user
@@ -44,7 +44,7 @@ defmodule Cato.Data.Auth.User.Db do
           {:ok | :error, Auth.User.t()}
   def check_authz(user, %Auth.AuthAssertion{} = assertion) do
     key = {assertion.action, assertion.domain, assertion.ref_id}
-    user = Auth.Users.get_authz(user)
+    user = Auth.User.Db.get_authz(user)
 
     if MapSet.member?(user.authz, key) do
       {:ok, user}
@@ -148,12 +148,12 @@ defmodule Cato.Data.Auth.User.Db do
           {:ok, Auth.User.t()} | {:error, Ecto.Changeset.t()}
   defp signup_abort_create(auth) do
     if not is_nil(auth.user) do
-      Auth.Users.delete(auth.user)
+      Auth.User.delete(auth.user)
     end
   end
 
   defp signup_check_handle(pass = {:ok, auth = %Auth.AuthDomain{input: %{handle: handle}}}) do
-    case Auth.UserHandles.available(handle) do
+    case Auth.UserHandle.Db.available(handle) do
       {:ok, _available_msg} ->
         pass
 
@@ -169,14 +169,14 @@ defmodule Cato.Data.Auth.User.Db do
     name = Map.get(input, :name, "")
     settings = Map.get(input, :settings, %{})
 
-    case Auth.Users.create(%{
+    case Auth.User.create(%{
            name: name,
            settings: settings,
            tenant: tenant,
            tenant_id: tenant.id,
            type: type
          }) do
-      #    case Map.merge(params, %{tenant: tenant, tenant_id: tenant.id}) |> Auth.Users.create() do
+      #    case Map.merge(params, %{tenant: tenant, tenant_id: tenant.id}) |> Auth.User.create() do
       {:ok, user} ->
         {:ok, %Auth.AuthDomain{auth | status: type, user: user, created: true}}
 
@@ -195,7 +195,7 @@ defmodule Cato.Data.Auth.User.Db do
             input: %{secret: secret}
           }}
        ) do
-    case Auth.Factors.set_password(user, secret) do
+    case Auth.Factor.Db.set_password(user, secret) do
       {:ok, %Auth.Factor{}} ->
         {:ok, auth}
 
@@ -212,7 +212,7 @@ defmodule Cato.Data.Auth.User.Db do
             input: %{fedid: %Auth.AuthFedId{} = fedid}
           }}
        ) do
-    case Auth.Factors.set_factor(user, fedid) do
+    case Auth.Factor.Db.set_factor(user, fedid) do
       {:ok, %Auth.Factor{} = factor} ->
         {:ok, %Auth.AuthDomain{auth | factor: factor}}
 
@@ -232,7 +232,7 @@ defmodule Cato.Data.Auth.User.Db do
             input: %{handle: handle}
           }}
        ) do
-    case Auth.UserHandles.create(%{handle: handle, user_id: user.id, tenant_id: tenant.id}) do
+    case Auth.UserHandle.create(%{handle: handle, user_id: user.id, tenant_id: tenant.id}) do
       {:ok, handle} ->
         {:ok, %Auth.AuthDomain{auth | handle: handle}}
 
@@ -267,7 +267,7 @@ defmodule Cato.Data.Auth.User.Db do
   # TODO: merge better with learning resolver--that code should probably be here
   defp signup_add_new_user({:ok, auth = %Auth.AuthDomain{user: %Auth.User{} = user}}) do
     with {:ok, user} <-
-           Auth.Users.update(user, %{settings: Map.put(user.settings, "newUser", true)}) do
+           Auth.User.update(user, %{settings: Map.put(user.settings, "newUser", true)}) do
       {:ok, %Auth.AuthDomain{auth | user: user}}
     end
   end
@@ -279,9 +279,9 @@ defmodule Cato.Data.Auth.User.Db do
     # except once use case this will be false
     if Application.get_env(:core, :first_user_admin) do
       Enum.each(Application.get_env(:core, :first_user_roles), fn role_name ->
-        case Auth.Roles.one(name: role_name) do
+        case Auth.Role.one(name: role_name) do
           {:ok, role} ->
-            case Auth.Accesses.create(%{role_id: role.id, user_id: user.id}) do
+            case Auth.Access.create(%{role_id: role.id, user_id: user.id}) do
               {:ok, _} ->
                 Logger.warn("Adding role #{role.name} to first user #{user.id}")
 
@@ -328,7 +328,7 @@ defmodule Cato.Data.Auth.User.Db do
     #   Map.put(
     #     acc,
     #     platform,
-    #     Repo.one(
+    #     @repo.one(
     #       from(u in Auth.User,
     #         where:
     #           u.last_seen > ^since and
@@ -346,7 +346,7 @@ defmodule Cato.Data.Auth.User.Db do
   end
 
   def search_name!(tenant, pattern) do
-    Repo.all(from(u in Auth.User, where: u.tenant_id == ^tenant and like(u.name, ^pattern)))
+    @repo.all(from(u in Auth.User, where: u.tenant_id == ^tenant and like(u.name, ^pattern)))
   end
 
   ##############################################################################
@@ -356,13 +356,13 @@ defmodule Cato.Data.Auth.User.Db do
   as [] if none are desired.
   """
   def with_user(%Auth.User{} = user, preloads, func) do
-    with {:ok, user} <- Auth.Users.preload(user, preloads) do
+    with {:ok, user} <- Auth.User.preload(user, preloads) do
       func.(user)
     end
   end
 
   def with_user(user_id, preloads, func) when is_binary(user_id) do
-    case Auth.Users.one(user_id, preloads) do
+    case Auth.User.one(user_id, preloads) do
       {:error, _} = pass ->
         pass
 
@@ -375,7 +375,7 @@ defmodule Cato.Data.Auth.User.Db do
   # ##############################################################################
   # def send_password_reset(%Auth.User{} = user, %Auth.UserEmail{} = email, %Auth.UserCode{} = code) do
   #   # let all emails on the account know
-  #   with {:ok, user} <- Auth.Users.preload(user, :emails) do
+  #   with {:ok, user} <- Auth.User.preload(user, :emails) do
   #     sendmail(user.emails, &SaasyTemplates.password_reset/2, [email, code])
   #   end
   # end
@@ -387,14 +387,14 @@ defmodule Cato.Data.Auth.User.Db do
   #
   # ##############################################################################
   # def send_password_changed(%Auth.User{} = user) do
-  #   with {:ok, user} <- Auth.Users.preload(user, :emails) do
+  #   with {:ok, user} <- Auth.User.preload(user, :emails) do
   #     sendmail(user.emails, &SaasyTemplates.password_changed/2)
   #   end
   # end
 
   ##############################################################################
   def all_since(time) do
-    Repo.all(from(u in Auth.User, where: u.last_seen > ^time))
+    @repo.all(from(u in Auth.User, where: u.last_seen > ^time))
   end
 
   # ##############################################################################
@@ -403,7 +403,7 @@ defmodule Cato.Data.Auth.User.Db do
   #   eaddr = String.trim(eaddr)
   #
   #   # basic
-  #   case Auth.UserEmails.one(tenant_id: user.tenant_id, address: eaddr) do
+  #   case Auth.UserEmail.one(tenant_id: user.tenant_id, address: eaddr) do
   #     {:ok, %Auth.UserEmail{} = email} ->
   #       Logger.warn("failed adding email", user_id: user.id, eaddr: eaddr)
   #       sendmail(email, &SaasyTemplates.failed_change/2, "add email to your account.")
@@ -412,7 +412,7 @@ defmodule Cato.Data.Auth.User.Db do
   #
   #     {:error, _} ->
   #       # add it
-  #       case Auth.UserEmails.create(%{
+  #       case Auth.UserEmail.create(%{
   #              user_id: user.id,
   #              tenant_id: user.tenant_id,
   #              verified: verified,
@@ -432,7 +432,7 @@ defmodule Cato.Data.Auth.User.Db do
   #
   # def send_verify_email(%Auth.UserEmail{address: eaddr, user: user} = email) do
   #   with {:ok, code} <-
-  #          Auth.UserCodes.generate_code(email.user_id, :email_verify, @code_expire_mins, %{
+  #          Auth.UserCode.Db.generate_code(email.user_id, :email_verify, @code_expire_mins, %{
   #            email_id: email.id
   #          }) do
   #     Logger.info("added email", user_id: user.id, eaddr: eaddr)
@@ -458,13 +458,13 @@ defmodule Cato.Data.Auth.User.Db do
     # TODO: do an internal ph# validation
     phone = String.trim(phone)
 
-    case Auth.UserPhones.one(user_id: user.id, number: phone) do
+    case Auth.UserPhone.one(user_id: user.id, number: phone) do
       {:ok, %Auth.UserPhone{} = phone} ->
         {:ok, phone}
 
       {:error, _} ->
         # add it
-        case Auth.UserPhones.create(%{
+        case Auth.UserPhone.create(%{
                user_id: user.id,
                tenant_id: user.tenant_id,
                number: phone
@@ -486,7 +486,7 @@ defmodule Cato.Data.Auth.User.Db do
   def tenant_has_other_admin?(%Auth.Role{name: :system_admin, id: r_id}, %Auth.User{id: user_id}) do
     query = from(a in Auth.Access, where: a.role_id == ^r_id and a.user_id != ^user_id)
 
-    if Repo.aggregate(query, :count) > 0 do
+    if @repo.aggregate(query, :count) > 0 do
       true
     else
       {:error, "Cannot remove last system_admin"}

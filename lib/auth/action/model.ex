@@ -1,6 +1,6 @@
 defmodule Cato.Data.Auth.Action do
   @moduledoc """
-  Schema for representing and working with a Auth.Access.
+  Schema for representing and working with a Auth.Acces.Db.
   """
   use TypedEctoSchema
   use Unify.Ecto.Model, id_type: :int

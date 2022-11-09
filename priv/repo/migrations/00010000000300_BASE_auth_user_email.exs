@@ -1,1 +1,1 @@
-../../../lib/user_email/schema.ex
+../../../lib/auth/user_email/schema.ex

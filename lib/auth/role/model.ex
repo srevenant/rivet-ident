@@ -4,7 +4,7 @@ defmodule Cato.Data.Auth.Role do
 
   typed_schema "saasy_roles" do
     field(:name, ADI.Utils.EctoAtom)
-    field(:domain, Cato.Data.Auth.Access.Domains, default: :global)
+    field(:domain, Cato.Data.Auth.Acces.Db.Domains, default: :global)
     field(:description, :string)
   end
 

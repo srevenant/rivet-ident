@@ -1,1 +1,1 @@
-../../../lib/role/schema.ex
+../../../lib/auth/role/schema.ex

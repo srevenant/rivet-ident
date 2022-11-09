@@ -6,7 +6,7 @@ defmodule Cato.Data.Auth.Access.Db do
   """
   @spec get_actions(Auth.User.t()) :: MapSet.t()
   def get_actions(%Auth.User{id: u_id}) do
-    Repo.all(
+    @repo.all(
       from(acc in Auth.Access,
         join: map in Auth.RoleMap,
         on: map.role_id == acc.role_id,
@@ -24,7 +24,7 @@ defmodule Cato.Data.Auth.Access.Db do
 
   @spec get_actions(Auth.User.t(), domain :: atom(), ref_id :: binary()) :: MapSet.t()
   def get_actions(%Auth.User{id: u_id}, domain, ref_id) do
-    Repo.all(
+    @repo.all(
       from(acc in Auth.Access,
         join: map in Auth.RoleMap,
         on: map.role_id == acc.role_id,
@@ -43,9 +43,9 @@ defmodule Cato.Data.Auth.Access.Db do
   #   ## TODO: switch this to a joined SELECT - ecto-fu
   #   MapSet.new(
   #     Enum.reduce(accesses, [], fn access, acc ->
-  #       case Auth.Accesses.preload(access, [:role]) do
+  #       case Auth.Access.preload(access, [:role]) do
   #         {:ok, %Auth.Access{role: %Auth.Role{subscription: true}}} ->
-  #           acc ++ Auth.RoleMaps.get_actions(access.role_id)
+  #           acc ++ Auth.RoleMap.Db.get_actions(access.role_id)
   #
   #         {:ok, _} ->
   #           acc
@@ -62,9 +62,9 @@ defmodule Cato.Data.Auth.Access.Db do
     do: add(user.id, role_atom, ref_id)
 
   def add(user_id, role_atom, ref_id) when is_atom(role_atom) and is_binary(user_id) do
-    case Auth.Roles.one(name: role_atom) do
+    case Auth.Role.one(name: role_atom) do
       {:ok, role} ->
-        Auth.Accesses.upsert(%{
+        Auth.Access.Db.upsert(%{
           role_id: role.id,
           user_id: user_id,
           domain: role.domain,
@@ -80,16 +80,16 @@ defmodule Cato.Data.Auth.Access.Db do
           {:ok, Auth.Access.t()} | {:error, String.t()}
 
   def drop(%Auth.User{} = user, role_atom, ref_id \\ nil) when is_atom(role_atom) do
-    case Auth.Roles.one(name: role_atom) do
+    case Auth.Role.one(name: role_atom) do
       {:ok, role} ->
-        case Auth.Accesses.one(
+        case Auth.Access.one(
                role_id: role.id,
                user_id: user.id,
                domain: role.domain,
                ref_id: ref_id
              ) do
           {:ok, access} ->
-            Auth.Accesses.delete(access)
+            Auth.Access.delete(access)
 
           _ ->
             {:error, "cannot find access link"}
@@ -101,11 +101,11 @@ defmodule Cato.Data.Auth.Access.Db do
   end
 
   def delete_by_user(user_id, domain, ref_id) do
-    Auth.Accesses.delete_all(user_id: user_id, domain: domain, ref_id: ref_id)
+    Auth.Access.delete_all(user_id: user_id, domain: domain, ref_id: ref_id)
     :ok
   end
 
   def delete_by_user(user_id) do
-    {:ok, Repo.delete_all(from(a in Auth.Access, where: a.user_id == ^user_id))}
+    {:ok, @repo.delete_all(from(a in Auth.Access, where: a.user_id == ^user_id))}
   end
 end

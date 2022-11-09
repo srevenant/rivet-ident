@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.Users.Update do
+defmodule Cato.Data.Auth.User.Db.Update do
   @moduledoc """
   Making changes to a user (administratively or as the user).
 
@@ -63,12 +63,12 @@ defmodule Cato.Data.Auth.Users.Update do
   def update(%{user: %{}, tenant_id: t_id, action: :upsert} = args, :admin, nil)
       when is_binary(t_id) do
     with {:ok, args} <- preflight_user_create(args, t_id),
-         {:ok, user} <- Auth.Users.create(args.user) do
+         {:ok, user} <- Auth.User.create(args.user) do
       generated = Auth.User.PasswordGenerator.generate()
       expires_at = Utils.Time.now() + get_user_conf(:initial_password_expiration_days) * 86_400
 
       with {:ok, factor} <-
-             Auth.Factors.set_password(user, generated, %{expires_at: expires_at}) do
+             Auth.Factor.Db.set_password(user, generated, %{expires_at: expires_at}) do
         finish_update(
           args,
           :user,
@@ -93,7 +93,7 @@ defmodule Cato.Data.Auth.Users.Update do
           updates
       end
 
-    with {:ok, user} <- Auth.Users.update(user, updates) do
+    with {:ok, user} <- Auth.User.update(user, updates) do
       finish_update(args, :user, admin, user)
     end
   end
@@ -103,15 +103,15 @@ defmodule Cato.Data.Auth.Users.Update do
   ##############################################################################
   # PHONE
   def update(%{phone: %{phone: phone}, action: :upsert} = args, admin, %Auth.User{} = user) do
-    with {:ok, _} <- Auth.Users.add_phone(user, phone),
+    with {:ok, _} <- Auth.User.Db.add_phone(user, phone),
          do: finish_update(args, :phone, admin, refresh(user, :phones))
   end
 
   def update(%{phone: %{id: phone_id}, action: :remove} = args, admin, %Auth.User{} = user) do
     user_id = user.id
 
-    with {:ok, %Auth.UserPhone{user_id: ^user_id} = phone} <- Auth.UserPhones.one(id: phone_id),
-         {:ok, _} <- Auth.UserPhones.delete(phone) do
+    with {:ok, %Auth.UserPhone{user_id: ^user_id} = phone} <- Auth.UserPhone.one(id: phone_id),
+         {:ok, _} <- Auth.UserPhone.delete(phone) do
       finish_update(args, :phone, admin, refresh(user, :phones))
     end
   end
@@ -123,16 +123,16 @@ defmodule Cato.Data.Auth.Users.Update do
   def update(%{handle: %{handle: handle}, action: :upsert} = args, admin, %Auth.User{} = user)
       when is_binary(handle) do
     # inner with so the error can have the preloaded user
-    with {:ok, user} <- Auth.Users.preload(user, [:handle]) do
-      with {:ok, :available} <- Auth.UserHandles.available(handle, user.id),
+    with {:ok, user} <- Auth.User.preload(user, [:handle]) do
+      with {:ok, :available} <- Auth.UserHandle.Db.available(handle, user.id),
            {:ok, new} <-
-             Auth.UserHandles.create(%{
+             Auth.UserHandle.create(%{
                handle: handle,
                user_id: user.id,
                tenant_id: user.tenant_id
              }) do
         # delete the old one
-        with %Auth.UserHandle{} <- user.handle, do: Auth.UserHandles.delete(user.handle)
+        with %Auth.UserHandle{} <- user.handle, do: Auth.UserHandle.delete(user.handle)
 
         finish_update(args, :handle, admin, %Auth.User{user | handle: new})
       else
@@ -159,14 +159,14 @@ defmodule Cato.Data.Auth.Users.Update do
         %Auth.User{id: user_id} = user
       ) do
     with {:ok, %Auth.UserEmail{user_id: ^user_id} = email} <-
-           Auth.UserEmails.one([id: email_id], [:user]) do
-      Auth.Users.send_verify_email(email)
+           Auth.UserEmail.one([id: email_id], [:user]) do
+      Auth.User.Db.send_verify_email(email)
       finish_update(args, :email, admin, user)
     end
   end
 
   def update(%{email: %{email: email}, action: :upsert} = args, admin, %Auth.User{} = user) do
-    with {:ok, _email} <- Auth.Users.add_email(user, email) do
+    with {:ok, _email} <- Auth.User.Db.add_email(user, email) do
       finish_update(args, :email, admin, refresh(user, :emails))
     end
   end
@@ -176,8 +176,8 @@ defmodule Cato.Data.Auth.Users.Update do
         admin,
         %Auth.User{id: user_id} = user
       ) do
-    with {:ok, %Auth.UserEmail{user_id: ^user_id} = email} <- Auth.UserEmails.one(id: email_id),
-         {:ok, _email} <- Auth.UserEmails.delete(email) do
+    with {:ok, %Auth.UserEmail{user_id: ^user_id} = email} <- Auth.UserEmail.one(id: email_id),
+         {:ok, _email} <- Auth.UserEmail.delete(email) do
       finish_update(args, :email, admin, refresh(user, :emails))
     end
   end
@@ -188,12 +188,12 @@ defmodule Cato.Data.Auth.Users.Update do
   def update(%{data: data, action: :upsert} = args, admin, %Auth.User{} = user) do
     case data do
       %{id: id} ->
-        with {:ok, current} <- Auth.UserDatas.one(id: id, user_id: user.id) do
-          Auth.UserDatas.update(current, %{value: data.value})
+        with {:ok, current} <- Auth.UserData.one(id: id, user_id: user.id) do
+          Auth.UserData.update(current, %{value: data.value})
         end
 
       _new ->
-        Auth.UserDatas.create(%{user_id: user.id, type: data.type, value: data.value})
+        Auth.UserData.create(%{user_id: user.id, type: data.type, value: data.value})
     end
     |> case do
       {:ok, %Auth.UserData{}} ->
@@ -209,18 +209,18 @@ defmodule Cato.Data.Auth.Users.Update do
 
   ################################################################################
   def update(%{role: role_arg, action: :upsert} = args, :admin, %Auth.User{} = user) do
-    with {:ok, role} <- Auth.Roles.one(Enum.to_list(role_arg)),
-         {:error, _} <- Auth.Accesses.one(user_id: user.id, role_id: role.id),
-         {:ok, _} <- Auth.Accesses.upsert(%{role_id: role.id, user_id: user.id}) do
+    with {:ok, role} <- Auth.Role.one(Enum.to_list(role_arg)),
+         {:error, _} <- Auth.Access.one(user_id: user.id, role_id: role.id),
+         {:ok, _} <- Auth.Access.Db.upsert(%{role_id: role.id, user_id: user.id}) do
       finish_update(args, :role, :admin, refresh(user, :accesses))
     end
   end
 
   def update(%{role: role_arg, action: :remove} = args, :admin, %Auth.User{} = user) do
-    with {:ok, role} <- Auth.Roles.one(Enum.to_list(role_arg)),
-         {:ok, access} <- Auth.Accesses.one(user_id: user.id, role_id: role.id),
-         true <- Auth.Users.tenant_has_other_admin?(role, user),
-         {:ok, _} <- Auth.Accesses.delete(access) do
+    with {:ok, role} <- Auth.Role.one(Enum.to_list(role_arg)),
+         {:ok, access} <- Auth.Access.one(user_id: user.id, role_id: role.id),
+         true <- Auth.User.Db.tenant_has_other_admin?(role, user),
+         {:ok, _} <- Auth.Access.delete(access) do
       finish_update(args, :role, :admin, refresh(user, :accesses))
     end
   end
@@ -229,19 +229,19 @@ defmodule Cato.Data.Auth.Users.Update do
   # def mutate_update_role(%{role: role, id: user_id}, info)
   #     when not is_nil(role) and not is_nil(user_id) do
   #   with {:ok, admin} <- authz_action(info, %AuthAssertion{action: :user_admin}, "updateRole"),
-  #        {:user, {:ok, user}} <- {:user, Auth.Users.one(id: user_id, tenant_id: admin.tenant_id)},
-  #        {:role, {:ok, role}} <- {:role, Auth.Roles.one(id: role)},
+  #        {:user, {:ok, user}} <- {:user, Auth.User.one(id: user_id, tenant_id: admin.tenant_id)},
+  #        {:role, {:ok, role}} <- {:role, Auth.Role.one(id: role)},
   #        {:has_admin, true} <-
-  #          {:has_admin, Auth.Users.tenant_has_other_admin?(user_id, admin.tenant_id)} do
-  #     case Auth.Accesses.one(user_id: user.id, role_id: role.id) do
+  #          {:has_admin, Auth.User.Db.tenant_has_other_admin?(user_id, admin.tenant_id)} do
+  #     case Auth.Access.one(user_id: user.id, role_id: role.id) do
   #       {:ok, _access} ->
   #         nil
   #
   #       {:error, _} ->
-  #         Auth.Accesses.upsert(%{role_id: role.id, user_id: user.id})
+  #         Auth.Access.Db.upsert(%{role_id: role.id, user_id: user.id})
   #     end
   #
-  #     {:ok, %{success: true, result: Auth.Users.preload!(user, [:accesses], force: true)}}
+  #     {:ok, %{success: true, result: Auth.User.preload!(user, [:accesses], force: true)}}
   #   else
   #     {:user, {:error, _}} ->
   #       {:error, reason} = graphql_error("updateRole", "Couldn't find user with given ID.")
@@ -295,7 +295,7 @@ defmodule Cato.Data.Auth.Users.Update do
       # if unspecified, auto-create a handle
       nil ->
         {:ok,
-         Map.put(args, :handle, %{handle: Auth.UserHandles.gen_good_handle(addr), tenant_id: t_id})}
+         Map.put(args, :handle, %{handle: Auth.UserHandle.Db.gen_good_handle(addr), tenant_id: t_id})}
 
       # or check the one they provide
       handle ->
@@ -326,5 +326,5 @@ defmodule Cato.Data.Auth.Users.Update do
     do: create_ok(args, :handle, :handle, Auth.UserHandles, %{handle: name}, t_id)
 
   ##############################################################################
-  defp refresh(user, key), do: Auth.Users.preload!(user, key, force: true)
+  defp refresh(user, key), do: Auth.User.preload!(user, key, force: true)
 end

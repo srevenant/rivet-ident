@@ -21,8 +21,8 @@ defmodule Cato.Data.Auth.RoleMaps do
   end
 
   def map_actions([role_id, domain, ref_id]) do
-    Auth.RoleMaps.all!(role_id: role_id)
-    |> Repo.preload(:action)
+    Auth.RoleMap.all!(role_id: role_id)
+    |> @repo.preload(:action)
     |> Enum.map(fn e -> [e.action.name, domain, ref_id] end)
   end
 end

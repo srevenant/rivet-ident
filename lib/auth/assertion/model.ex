@@ -14,7 +14,7 @@ defmodule Cato.Data.Auth.Assertion do
           action: atom(),
           # if CXS app auth allowed, match this app
           app: nil | atom(),
-          # Cato.Data.Auth.Access.Domains
+          # Cato.Data.Auth.Acces.Db.Domains
           domain: atom(),
           # item.id of item defined by domain
           ref_id: nil | String.t(),
