@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.Account do
+defmodule Rivet.Data.Auth.Account do
   @moduledoc """
   """
 

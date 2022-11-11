@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.User.Db.Update do
+defmodule Rivet.Data.Auth.User.Db.Update do
   @moduledoc """
   Making changes to a user (administratively or as the user).
 
@@ -14,7 +14,7 @@ defmodule Cato.Data.Auth.User.Db.Update do
   Example (create):
 
     ```elixir
-    ==> Cato.Data.Auth.UsersUpdate.update(%{
+    ==> Rivet.Data.Auth.UsersUpdate.update(%{
         action: :upsert,
         tenant_id: "e6e392fb-e4e1-4e81-ae52-a7692f8e9534",
         user: %{name: "The Doctor"},
@@ -22,12 +22,12 @@ defmodule Cato.Data.Auth.User.Db.Update do
       }, :admin)
     {:ok, %User{}, %{"password": "R^EkW)aBY9G9", "passwordExp": 1649947803}}
     ```
-    Cato.Data.Auth.UsersUpdate.update(%{ action: :upsert, tenant_id: "e6e392fb-e4e1-4e81-ae52-a7692f8e9534", user: %{name: "The Doctor"}, email: %{email: "who@tardis.com"} }, :admin)
+    Rivet.Data.Auth.UsersUpdate.update(%{ action: :upsert, tenant_id: "e6e392fb-e4e1-4e81-ae52-a7692f8e9534", user: %{name: "The Doctor"}, email: %{email: "who@tardis.com"} }, :admin)
 
     Example — update a user's name as the user
 
     ```elixir
-    ==> Cato.Data.Auth.UsersUpdate.update(%{
+    ==> Rivet.Data.Auth.UsersUpdate.update(%{
       action: :upsert,
       user: %{name: "Who"},
     }, :user, %User{...})
@@ -37,7 +37,7 @@ defmodule Cato.Data.Auth.User.Db.Update do
     Example — remove a phone
 
     ```elixir
-    ==> Cato.Data.Auth.UsersUpdate.update(%{
+    ==> Rivet.Data.Auth.UsersUpdate.update(%{
       action: :remove,
       phone: %{id: "2342343-...-33"},
     }, :user, %User{...})
@@ -46,7 +46,7 @@ defmodule Cato.Data.Auth.User.Db.Update do
 
   """
   use Unify.Ecto.Collection.Context
-  alias Cato.Data.Auth
+  alias Rivet.Data.Auth
   require Logger
 
   @spec update(

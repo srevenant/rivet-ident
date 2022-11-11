@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.Domain do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.Domain do
+  alias Rivet.Data.Auth
 
   defstruct type: :acc,
             status: :unknown,

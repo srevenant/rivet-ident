@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.UserPhone do
+defmodule Rivet.Data.Auth.UserPhone do
   @moduledoc """
   Schema for representing and working with a Auth.UserPhone.
   """

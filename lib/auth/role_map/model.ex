@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.RoleMap do
+defmodule Rivet.Data.Auth.RoleMap do
   @moduledoc """
   Schema for representing and working with a Auth.RoleMap.
   """

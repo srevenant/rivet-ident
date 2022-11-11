@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.User do
+defmodule Rivet.Data.Auth.User do
   @moduledoc """
   Schema for representing and working with a Auth.User.
   """
@@ -30,7 +30,7 @@ defmodule Cato.Data.Auth.User do
     has_many(:tags, Auth.TagUser, on_delete: :delete_all)
 
     field(:type, Types, default: :unknown)
-    field(:authz, ADI.Utils.EctoMapSet, default: nil, virtual: true)
+    field(:authz, Rivet.Utils.EctoMapSet, default: nil, virtual: true)
     field(:state, :map, default: %{}, virtual: true)
     timestamps()
   end

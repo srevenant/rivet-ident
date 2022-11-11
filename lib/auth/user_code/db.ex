@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.UserCode.Db do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.UserCode.Db do
+  alias Rivet.Data.Auth
   alias Auth.UserCode
   use Unify.Ecto.Collection.Context
 

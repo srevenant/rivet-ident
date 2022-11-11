@@ -1,6 +1,6 @@
-defmodule Cato.Data.Auth.Test.AuthFactory do
-  use ExMachina.Ecto, repo: Cato.Data.Repo
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.Test.AuthFactory do
+  use ExMachina.Ecto, repo: Rivet.Data.Repo
+  alias Rivet.Data.Auth
 
   defmacro __using__(_) do
     quote location: :keep do

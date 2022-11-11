@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Auth.User.FedIdProvider do
+defmodule Rivet.Data.Auth.Factor.FedId.Provider do
   defstruct type: :unknown,
             kid: nil,
             jti: nil,

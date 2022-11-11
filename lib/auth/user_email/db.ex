@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.UserEmails do
+defmodule Rivet.Data.Auth.UserEmails do
   use Core.Context
   use Unify.Ecto.Collection.Context
 

@@ -1,9 +1,9 @@
-defmodule Cato.Data.Auth.Factor.Db do
+defmodule Rivet.Data.Auth.Factor.Db do
   @type str :: String.t()
   @type log_msg :: str
   @type usr_msg :: str
   @type auth_result :: {:ok | :error, Auth.AuthDomain.t()}
-  alias Cato.Data.Auth
+  alias Rivet.Data.Auth
   use Unify.Ecto.Collection.Context
 
   # override the function brought in by the collection module

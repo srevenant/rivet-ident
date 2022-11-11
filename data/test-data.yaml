@@ -1,12 +1,9 @@
 ---
-type: Cato.Data
+type: Rivet.Data
 version: 2.1
 
 ---
-type: AdiSupervisor
+type: Rivet.Data.Auth.User
 values:
   id: 3bdf2cc8-d360-437c-b977-08fb5cbb32ac
-  name: core-supervisor
-  type: dynamic
-  status: offline
-  pubkey: "narfnarf="
+  name: test user

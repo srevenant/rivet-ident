@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.Access do
+defmodule Rivet.Data.Auth.Access do
   @moduledoc """
   Schema for representing and working with a Auth.Acces.Db.
   """
@@ -8,11 +8,9 @@ defmodule Cato.Data.Auth.Access do
 
   # Access domains are per table type so you can map accesses to individual
   # rows in a table (such as different accesses for different groups in the db),
-  # where :global is ... global and not tied to another data type.
-  defenum(Domains,
-    global: 0
-    # "Elixir.Cato.Data.Auth.AdiGroups": 1
-  )
+  # where :global is ... global and not tied to another data type, and for others
+  # they enum key should be the module atom: :"Elixir.Module.Name"
+  defenum(Domains, global: 0)
 
   typed_schema "saasy_accesses" do
     belongs_to(:user, Auth.User, type: :binary_id, foreign_key: :user_id)

@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.Action do
+defmodule Rivet.Data.Auth.Action do
   @moduledoc """
   Schema for representing and working with a Auth.Acces.Db.
   """
@@ -6,7 +6,7 @@ defmodule Cato.Data.Auth.Action do
   use Unify.Ecto.Model, id_type: :int
 
   typed_schema "saasy_actions" do
-    field(:name, ADI.Utils.EctoAtom)
+    field(:name, Rivet.Utils.EctoAtom)
     field(:description, :string)
   end
 

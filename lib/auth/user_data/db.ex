@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.UserDatas do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.UserDatas do
+  alias Rivet.Data.Auth
   use Unify.Ecto.Collection.Context
 
   def list_types(%Auth.User{id: id}, types) when is_list(types) do

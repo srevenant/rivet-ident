@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.User.Db do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.User.Db do
+  alias Rivet.Data.Auth
   use Unify.Ecto.Collection.Context
 
   # alias Core.Email.SaasyTemplates
@@ -35,7 +35,7 @@ defmodule Cato.Data.Auth.User.Db do
   @spec get_authz(user :: Auth.User.t()) :: Auth.User.t()
   def get_authz(%Auth.User{authz: authz} = user) when is_nil(authz) do
     {:ok, user} = Auth.User.preload(user, :accesses)
-    %Auth.User{user | authz: Cato.Data.Auth.Access.Db.get_actions(user)}
+    %Auth.User{user | authz: Rivet.Data.Auth.Access.Db.get_actions(user)}
   end
 
   def get_authz(%Auth.User{} = user), do: user

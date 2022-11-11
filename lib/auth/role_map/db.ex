@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.RoleMaps do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.RoleMaps do
+  alias Rivet.Data.Auth
   use Unify.Ecto.Collection.Context
 
   # should probably be on Auth.Accesses

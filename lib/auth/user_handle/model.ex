@@ -1,10 +1,10 @@
-defmodule Cato.Data.Auth.UserHandle do
+defmodule Rivet.Data.Auth.UserHandle do
   @moduledoc """
   Schema for representing and working with a Handle.
   """
   use TypedEctoSchema
   use Unify.Ecto.Model
-  import ADI.Utils.EctoChangeset, only: [validate_rex: 4]
+  import Rivet.Utils.EctoChangeset, only: [validate_rex: 4]
 
   typed_schema "user_handles" do
     belongs_to(:user, Auth.User, type: :binary_id, foreign_key: :user_id)

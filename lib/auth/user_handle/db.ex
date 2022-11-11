@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.UserHandles do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.UserHandles do
+  alias Rivet.Data.Auth
   use Unify.Ecto.Collection.Context
 
   @doc """

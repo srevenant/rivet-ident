@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.UserCode do
+defmodule Rivet.Data.Auth.UserCode do
   @moduledoc """
   Schema for representing and working with a Auth.UserCode.
   """

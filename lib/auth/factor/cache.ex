@@ -1,11 +1,11 @@
-defmodule Cato.Data.Auth.Factor.Cache do
-  use ADI.Utils.LazyCache,
+defmodule Rivet.Data.Auth.Factor.Cache do
+  use Rivet.Utils.LazyCache,
     bucket_key: :user_factor_cache_bucket,
     keyset_key: :user_factor_cache_keyset
 
   @persist_for 600_000
 
-  alias Cato.Data.Auth
+  alias Rivet.Data.Auth
 
   @doc """
   Read-through cache for loading user factors from Auth.

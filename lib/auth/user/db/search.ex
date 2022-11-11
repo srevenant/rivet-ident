@@ -1,5 +1,5 @@
-defmodule Cato.Data.Auth.UserSearch do
-  alias Cato.Data.Auth
+defmodule Rivet.Data.Auth.UserSearch do
+  alias Rivet.Data.Auth
   use Unify.Ecto.Collection.Context
   import Ecto.Query
 

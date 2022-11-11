@@ -1,9 +1,9 @@
-defmodule Cato.Data.Adi.MixProject do
+defmodule Rivet.Data.Adi.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :cato_data_auth,
+      app: :rivet_data_auth,
       version: "2.0.0",
       package: package(),
       elixir: "~> 1.13",
@@ -30,7 +30,6 @@ defmodule Cato.Data.Adi.MixProject do
   def application do
     [
       extra_applications: [:logger, :postgrex, :ecto, :timex, {:ex_unit, :optional}]
-      # mod: {Cato.Data.Adi.Application, []}
     ]
   end
 
@@ -57,11 +56,8 @@ defmodule Cato.Data.Adi.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:cato_data, "~> 1.0.0", git: "git@github.com:catodigital/cato-data", branch: "noisy"},
-      {:unify, "~> 1.0.0", git: "git@github.com:srevenant/unify", branch: "master"},
-      {:adi_schema, "~> 3.2.0", repo: "cato"},
-      {:adi_utils, "~> 1.4.0", repo: "cato"},
-      # {:adi_databus, "~> 1.1.0", repo: "cato"},
+      {:rivet, "~> 1.0.0", git: "git@github.com:srevenant/rivet", branch: "master"},
+      {:rivet_utils, "~> 1.0.0", git: "git@github.com:srevenant/rivet-utils", branch: "master"},
       {:ecto_sql, "~> 3.7"},
       {:ecto_enum, "~> 1.0"},
       {:excoveralls, "~> 0.14", only: :test},
@@ -73,10 +69,8 @@ defmodule Cato.Data.Adi.MixProject do
       {:jason, "~> 1.0"},
       {:mix_test_watch, "~> 0.8", only: [:test, :dev], runtime: false},
       {:timex, "~> 3.6"},
-      # {:csv, "~> 2.3"},
       {:lazy_cache, "~> 0.1.0"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
-      # {:deep_merge, "~> 1.0"},
       {:junit_formatter, "~> 3.1", only: [:test]}
       # {:random_password, "~> 1.1"}
     ]
@@ -84,10 +78,10 @@ defmodule Cato.Data.Adi.MixProject do
 
   defp package() do
     [
-      files: ~w(lib test/support .formatter.exs mix.exs README*),
-      organization: "cato",
-      links: %{homepage: "https://cato.digital"},
-      licenses: ["Copyright Cato Digital, Inc."]
+      files: ~w(lib .formatter.exs mix.exs README* LICENSE*),
+      licenses: ["AGPL-3.0-or-later"],
+      links: %{"GitHub" => "https://github.com/srevenant/atom-data-auth"},
+      source_url: "https://github.com/srevenant/atom-data-auth"
     ]
   end
 end

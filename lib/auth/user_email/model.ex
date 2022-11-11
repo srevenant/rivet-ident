@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.UserEmail do
+defmodule Rivet.Data.Auth.UserEmail do
   @moduledoc """
   Schema for representing and working with a Auth.UserEmail.
   """

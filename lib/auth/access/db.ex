@@ -1,4 +1,4 @@
-defmodule Cato.Data.Auth.Access.Db do
+defmodule Rivet.Data.Auth.Access.Db do
   use Unify.Ecto.Collection.Context
 
   @doc """

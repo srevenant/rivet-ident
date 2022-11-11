@@ -1,9 +1,9 @@
-defmodule Cato.Data.Auth.Factor do
+defmodule Rivet.Data.Auth.Factor do
   @moduledoc """
   Schema for representing and working with an AuthFactor.
   """
   use TypedEctoSchema
-  alias Cato.Data.Auth
+  alias Rivet.Data.Auth
   use Unify.Ecto.Model, export_json: [:name, :expires_at, :value, :details], id_type: :int
   import EctoEnum
 
