@@ -22,7 +22,6 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
 
   ##############################################################################
   ### TODO: check email first, have signup shift to give an error: that user already exists, if it is found
-  # @spec signup(Auth.Tenant.t(), params :: map()) :: auth_result
   # def signup(tenant, %{handle: handle, email: email} = args)
   #     when handle == "",
   #     do: signup(tenant, Map.put(args, :handle, email))
@@ -125,7 +124,7 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
-        {:error, auth, {"", Rivet.Utils.Errors.convert_error_changeset(changeset)}}
+        {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
     end
   end
 
@@ -142,7 +141,7 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
-        {:error, auth, {"", Rivet.Utils.Errors.convert_error_changeset(changeset)}}
+        {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
     end
   end
 
@@ -162,7 +161,7 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
       {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
 
-        {:error, auth, {"", Rivet.Utils.Errors.convert_error_changeset(changeset)}}
+        {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
     end
   end
 
@@ -184,6 +183,7 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
         signup_abort_create(auth)
         {:error, auth, {"", msg}}
     end
+
     {:error, :need_to_move_this_outside_auth_to_something_else}
   end
 
@@ -270,7 +270,7 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
             {:ok, email}
 
           {:error, chgset} ->
-            {:error, Rivet.Utils.Errors.convert_error_changeset(chgset)}
+            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
         end
     end
   end
@@ -297,7 +297,7 @@ defmodule Rivet.Data.Auth.User.Db.Signin do
             {:ok, phone}
 
           {:error, chgset} ->
-            {:error, Rivet.Utils.Errors.convert_error_changeset(chgset)}
+            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
         end
     end
   end

@@ -45,7 +45,7 @@ defmodule Rivet.Data.Auth.User.Db.Update do
     ```
 
   """
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
   alias Rivet.Data.Auth
   require Logger
 
@@ -65,7 +65,9 @@ defmodule Rivet.Data.Auth.User.Db.Update do
     with {:ok, args} <- preflight_user_create(args, t_id),
          {:ok, user} <- Auth.User.create(args.user) do
       generated = Auth.User.PasswordGenerator.generate()
-      expires_at = Utils.Time.now() + get_user_conf(:initial_password_expiration_days) * 86_400
+
+      expires_at =
+        Rivet.Utils.Time.now() + get_user_conf(:initial_password_expiration_days) * 86_400
 
       with {:ok, factor} <-
              Auth.Factor.Db.set_password(user, generated, %{expires_at: expires_at}) do
@@ -160,7 +162,7 @@ defmodule Rivet.Data.Auth.User.Db.Update do
       ) do
     with {:ok, %Auth.UserEmail{user_id: ^user_id} = email} <-
            Auth.UserEmail.one([id: email_id], [:user]) do
-      Auth.User.Db.send_verify_email(email)
+      Auth.User.Notify.Verification.send(email)
       finish_update(args, :email, admin, user)
     end
   end
@@ -211,7 +213,7 @@ defmodule Rivet.Data.Auth.User.Db.Update do
   def update(%{role: role_arg, action: :upsert} = args, :admin, %Auth.User{} = user) do
     with {:ok, role} <- Auth.Role.one(Enum.to_list(role_arg)),
          {:error, _} <- Auth.Access.one(user_id: user.id, role_id: role.id),
-         {:ok, _} <- Auth.Access.Db.upsert(%{role_id: role.id, user_id: user.id}) do
+         {:ok, _} <- Auth.Access.upsert(%{role_id: role.id, user_id: user.id}) do
       finish_update(args, :role, :admin, refresh(user, :accesses))
     end
   end
@@ -219,7 +221,7 @@ defmodule Rivet.Data.Auth.User.Db.Update do
   def update(%{role: role_arg, action: :remove} = args, :admin, %Auth.User{} = user) do
     with {:ok, role} <- Auth.Role.one(Enum.to_list(role_arg)),
          {:ok, access} <- Auth.Access.one(user_id: user.id, role_id: role.id),
-         true <- Auth.User.Db.tenant_has_other_admin?(role, user),
+         true <- Auth.User.Db.has_other_admin?(role, user),
          {:ok, _} <- Auth.Access.delete(access) do
       finish_update(args, :role, :admin, refresh(user, :accesses))
     end
@@ -238,7 +240,7 @@ defmodule Rivet.Data.Auth.User.Db.Update do
   #         nil
   #
   #       {:error, _} ->
-  #         Auth.Access.Db.upsert(%{role_id: role.id, user_id: user.id})
+  #         Auth.Access.upsert(%{role_id: role.id, user_id: user.id})
   #     end
   #
   #     {:ok, %{success: true, result: Auth.User.preload!(user, [:accesses], force: true)}}
@@ -295,7 +297,10 @@ defmodule Rivet.Data.Auth.User.Db.Update do
       # if unspecified, auto-create a handle
       nil ->
         {:ok,
-         Map.put(args, :handle, %{handle: Auth.UserHandle.Db.gen_good_handle(addr), tenant_id: t_id})}
+         Map.put(args, :handle, %{
+           handle: Auth.UserHandle.Db.gen_good_handle(addr),
+           tenant_id: t_id
+         })}
 
       # or check the one they provide
       handle ->

@@ -1,5 +1,5 @@
 ExUnit.start(capture_log: true)
-{:ok, _} = Application.ensure_all_started(:ex_machina)
+{:ok, _} = Application.ensure_all_started([:ex_machina, :rivet_email])
 
 Supervisor.start_link([{Rivet.Data.Repo, []}],
   strategy: :one_for_one,

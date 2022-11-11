@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Auth.RoleMaps do
   alias Rivet.Data.Auth
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
 
   # should probably be on Auth.Accesses
   def get_actions(%Auth.Access{role: %{id: role_id}, domain: domain, ref_id: ref_id}),

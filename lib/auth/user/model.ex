@@ -4,7 +4,7 @@ defmodule Rivet.Data.Auth.User do
   """
   use TypedEctoSchema
   import EctoEnum
-  use Unify.Ecto.Model
+  use Rivet.Ecto.Model
 
   defenum(Types,
     unknown: 0,
@@ -16,7 +16,6 @@ defmodule Rivet.Data.Auth.User do
   )
 
   typed_schema "users" do
-    belongs_to(:tenant, Auth.Tenant, type: :binary_id, foreign_key: :tenant_id)
     has_one(:handle, Auth.UserHandle, on_delete: :delete_all)
     has_many(:emails, Auth.UserEmail, on_delete: :delete_all)
     has_many(:phones, Auth.UserPhone, on_delete: :delete_all)
@@ -30,10 +29,10 @@ defmodule Rivet.Data.Auth.User do
     has_many(:tags, Auth.TagUser, on_delete: :delete_all)
 
     field(:type, Types, default: :unknown)
-    field(:authz, Rivet.Utils.EctoMapSet, default: nil, virtual: true)
+    field(:authz, Rivet.Utils.Ecto.MapSet, default: nil, virtual: true)
     field(:state, :map, default: %{}, virtual: true)
     timestamps()
   end
 
-  use Unify.Ecto.Collection, update: [:settings, :name, :last_seen, :type]
+  use Rivet.Ecto.Collection, update: [:settings, :name, :last_seen, :type]
 end

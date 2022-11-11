@@ -3,7 +3,6 @@ defmodule Rivet.Data.Auth.Domain do
 
   defstruct type: :acc,
             status: :unknown,
-            tenant: nil,
             user: nil,
             app: nil,
             email: nil,
@@ -19,7 +18,6 @@ defmodule Rivet.Data.Auth.Domain do
   @type t :: %Auth.Domain{
           type: atom,
           status: atom,
-          tenant: nil | Auth.Tenant.t(),
           user: nil | Auth.User.t(),
           app: nil | String.t(),
           handle: nil | Auth.UserHandle.t(),

@@ -1,11 +1,9 @@
 defmodule Rivet.Data.Auth.User.Db do
   alias Rivet.Data.Auth
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
+  require Logger
 
-  # alias Core.Email.SaasyTemplates
-  # import Core.Email.Sendmail
-
-  def search(%{tenant_id: tenant_id, matching: matching, limit: limit}) do
+  def search(%{matching: matching, limit: limit}) do
     {:ok,
      @repo.all(
        from(u in Auth.User,
@@ -14,7 +12,6 @@ defmodule Rivet.Data.Auth.User.Db do
          join: h in Auth.UserHandle,
          where: h.user_id == u.id,
          where:
-           u.tenant_id == ^tenant_id and
              (like(u.name, ^matching) or
                 like(h.handle, ^matching) or
                 like(e.address, ^matching)),
@@ -40,9 +37,9 @@ defmodule Rivet.Data.Auth.User.Db do
 
   def get_authz(%Auth.User{} = user), do: user
 
-  @spec check_authz(user :: Auth.User.t(), Auth.AuthAssertion.t()) ::
+  @spec check_authz(user :: Auth.User.t(), Auth.Assertion.t()) ::
           {:ok | :error, Auth.User.t()}
-  def check_authz(user, %Auth.AuthAssertion{} = assertion) do
+  def check_authz(user, %Auth.Assertion{} = assertion) do
     key = {assertion.action, assertion.domain, assertion.ref_id}
     user = Auth.User.Db.get_authz(user)
 
@@ -64,7 +61,7 @@ defmodule Rivet.Data.Auth.User.Db do
     now = Timex.now()
 
     if is_nil(user.last_seen) or Timex.diff(now, user.last_seen, :seconds) > @update_min_seconds do
-      with {:ok, user} <- update(user, %{last_seen: now}) do
+      with {:ok, user} <- Auth.User.update(user, %{last_seen: now}) do
         Auth.Factor.Cache.update_user(user)
         user
       else
@@ -87,7 +84,7 @@ defmodule Rivet.Data.Auth.User.Db do
   # end
 
   # redefined here instead of doing a circular import to AuthX
-  @type auth_result :: {:ok | :error, Auth.AuthDomain.t()}
+  @type auth_result :: {:ok | :error, Auth.Domain.t()}
 
   ################################################################################
   @doc """
@@ -96,12 +93,6 @@ defmodule Rivet.Data.Auth.User.Db do
 
   ##############################################################################
   ### TODO: check email first, have signup shift to give an error: that user already exists, if it is found
-  @spec signup(Auth.Tenant.t(), params :: map()) :: auth_result
-  # def signup(tenant, %{handle: handle, email: email} = args)
-  #     when handle == "",
-  #     do: signup(tenant, Map.put(args, :handle, email))
-  # def signup(tenant, %{handle: handle, email: email, password: password}) do
-  #   {:ok, %Auth.AuthDomain{input: %{handle: handle, email: email, secret: password}, tenant: tenant}}
 
   def update_user(x, y), do: Auth.UsersUpdate.update(x, y)
   #
@@ -109,7 +100,8 @@ defmodule Rivet.Data.Auth.User.Db do
   # TODO: Need to DRY this out with UsersUpdate module
   #
   #
-  def signup(%Auth.AuthDomain{} = auth) do
+  @spec signup(Auth.Domain.t()) :: auth_result
+  def signup(%Auth.Domain{} = auth) do
     {:ok, auth}
     |> signup_check_handle
     |> signup_create_user(:authed)
@@ -125,16 +117,16 @@ defmodule Rivet.Data.Auth.User.Db do
     # TODO: this should actually shift to a welcome new user dialog, which can ask for other account attributes
   end
 
-  def signup(tenant, input) do
+  def signup(input) do
     {:error,
-     %Auth.AuthDomain{
-       log: "No match for signup with args:\n(#{inspect(tenant)}, #{inspect(input)}",
+     %Auth.Domain{
+       log: "No match for signup with args:\n(#{inspect(input)}",
        error: "Sign up Failed"
      }}
   end
 
   # variant with less restrictions
-  def signup_only_identity(%Auth.AuthDomain{} = auth) do
+  def signup_only_identity(%Auth.Domain{} = auth) do
     {:ok, auth}
     |> signup_create_user(:identity)
     |> signup_associate_email
@@ -144,7 +136,7 @@ defmodule Rivet.Data.Auth.User.Db do
   end
 
   # result is any as we ignore it
-  @spec signup_abort_create(Auth.AuthDomain.t()) ::
+  @spec signup_abort_create(Auth.Domain.t()) ::
           {:ok, Auth.User.t()} | {:error, Ecto.Changeset.t()}
   defp signup_abort_create(auth) do
     if not is_nil(auth.user) do
@@ -152,7 +144,7 @@ defmodule Rivet.Data.Auth.User.Db do
     end
   end
 
-  defp signup_check_handle(pass = {:ok, auth = %Auth.AuthDomain{input: %{handle: handle}}}) do
+  defp signup_check_handle(pass = {:ok, auth = %Auth.Domain{input: %{handle: handle}}}) do
     case Auth.UserHandle.Db.available(handle) do
       {:ok, _available_msg} ->
         pass
@@ -163,7 +155,7 @@ defmodule Rivet.Data.Auth.User.Db do
   end
 
   defp signup_create_user(
-         {:ok, auth = %Auth.AuthDomain{tenant: tenant = %Auth.Tenant{}, input: input}},
+         {:ok, auth = %Auth.Domain{input: input}},
          type
        ) do
     name = Map.get(input, :name, "")
@@ -172,13 +164,10 @@ defmodule Rivet.Data.Auth.User.Db do
     case Auth.User.create(%{
            name: name,
            settings: settings,
-           tenant: tenant,
-           tenant_id: tenant.id,
            type: type
          }) do
-      #    case Map.merge(params, %{tenant: tenant, tenant_id: tenant.id}) |> Auth.User.create() do
       {:ok, user} ->
-        {:ok, %Auth.AuthDomain{auth | status: type, user: user, created: true}}
+        {:ok, %Auth.Domain{auth | status: type, user: user, created: true}}
 
       {:error, err} ->
         signup_abort_create(auth)
@@ -190,7 +179,7 @@ defmodule Rivet.Data.Auth.User.Db do
 
   defp signup_add_factor(
          {:ok,
-          auth = %Auth.AuthDomain{
+          auth = %Auth.Domain{
             user: %Auth.User{} = user,
             input: %{secret: secret}
           }}
@@ -199,26 +188,26 @@ defmodule Rivet.Data.Auth.User.Db do
       {:ok, %Auth.Factor{}} ->
         {:ok, auth}
 
-      {:error, %Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
-        {:error, auth, {"", Utils.Errors.convert_error_changeset(changeset)}}
+        {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
     end
   end
 
   defp signup_add_factor(
          {:ok,
-          auth = %Auth.AuthDomain{
+          auth = %Auth.Domain{
             user: %Auth.User{} = user,
-            input: %{fedid: %Auth.AuthFedId{} = fedid}
+            input: %{fedid: %Auth.Factor.FedId{} = fedid}
           }}
        ) do
     case Auth.Factor.Db.set_factor(user, fedid) do
       {:ok, %Auth.Factor{} = factor} ->
-        {:ok, %Auth.AuthDomain{auth | factor: factor}}
+        {:ok, %Auth.Domain{auth | factor: factor}}
 
-      {:error, %Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
-        {:error, auth, {"", Utils.Errors.convert_error_changeset(changeset)}}
+        {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
     end
   end
 
@@ -226,20 +215,19 @@ defmodule Rivet.Data.Auth.User.Db do
 
   defp signup_associate_handle(
          {:ok,
-          auth = %Auth.AuthDomain{
-            tenant: %Auth.Tenant{} = tenant,
+          auth = %Auth.Domain{
             user: %Auth.User{} = user,
             input: %{handle: handle}
           }}
        ) do
-    case Auth.UserHandle.create(%{handle: handle, user_id: user.id, tenant_id: tenant.id}) do
+    case Auth.UserHandle.create(%{handle: handle, user_id: user.id}) do
       {:ok, handle} ->
-        {:ok, %Auth.AuthDomain{auth | handle: handle}}
+        {:ok, %Auth.Domain{auth | handle: handle}}
 
-      {:error, %Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
 
-        {:error, auth, {"", Utils.Errors.convert_error_changeset(changeset)}}
+        {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
     end
   end
 
@@ -247,8 +235,7 @@ defmodule Rivet.Data.Auth.User.Db do
 
   defp signup_associate_email(
          {:ok,
-          auth = %Auth.AuthDomain{
-            tenant: %Auth.Tenant{},
+          auth = %Auth.Domain{
             user: %Auth.User{} = user,
             input: %{email: %{address: eaddr, verified: status}}
           }}
@@ -256,7 +243,7 @@ defmodule Rivet.Data.Auth.User.Db do
        when is_binary(eaddr) do
     case add_email(user, eaddr, status) do
       {:ok, email} ->
-        {:ok, %Auth.AuthDomain{auth | email: email}}
+        {:ok, %Auth.Domain{auth | email: email}}
 
       {:error, msg} ->
         signup_abort_create(auth)
@@ -265,17 +252,17 @@ defmodule Rivet.Data.Auth.User.Db do
   end
 
   # TODO: merge better with learning resolver--that code should probably be here
-  defp signup_add_new_user({:ok, auth = %Auth.AuthDomain{user: %Auth.User{} = user}}) do
+  defp signup_add_new_user({:ok, auth = %Auth.Domain{user: %Auth.User{} = user}}) do
     with {:ok, user} <-
            Auth.User.update(user, %{settings: Map.put(user.settings, "newUser", true)}) do
-      {:ok, %Auth.AuthDomain{auth | user: user}}
+      {:ok, %Auth.Domain{auth | user: user}}
     end
   end
 
   defp signup_add_new_user({:error, _, _} = pass), do: pass
 
   ##############################################################################
-  defp signup_promote_first_user({:ok, auth = %Auth.AuthDomain{user: %Auth.User{} = user}}) do
+  defp signup_promote_first_user({:ok, auth = %Auth.Domain{user: %Auth.User{} = user}}) do
     # except once use case this will be false
     if Application.get_env(:core, :first_user_admin) do
       Enum.each(Application.get_env(:core, :first_user_roles), fn role_name ->
@@ -305,11 +292,10 @@ defmodule Rivet.Data.Auth.User.Db do
 
   # after success, create a new struct so we don't carry around unecessary or
   # insecure baggage
-  defp mainline({:ok, auth = %Auth.AuthDomain{}}) do
+  defp mainline({:ok, auth = %Auth.Domain{}}) do
     {:ok,
-     %Auth.AuthDomain{
+     %Auth.Domain{
        user: auth.user,
-       tenant: auth.tenant,
        handle: auth.handle,
        created: auth.created,
        status: auth.status
@@ -317,7 +303,7 @@ defmodule Rivet.Data.Auth.User.Db do
   end
 
   defp mainline({:error, _auth, {inner, outer}}) do
-    {:error, %Auth.AuthDomain{log: inner, error: outer}}
+    {:error, %Auth.Domain{log: inner, error: outer}}
   end
 
   def active_users!(_since) do
@@ -345,8 +331,8 @@ defmodule Rivet.Data.Auth.User.Db do
     # end)
   end
 
-  def search_name!(tenant, pattern) do
-    @repo.all(from(u in Auth.User, where: u.tenant_id == ^tenant and like(u.name, ^pattern)))
+  def search_name!(pattern) do
+    @repo.all(from(u in Auth.User, where: like(u.name, ^pattern)))
   end
 
   ##############################################################################
@@ -397,54 +383,44 @@ defmodule Rivet.Data.Auth.User.Db do
     @repo.all(from(u in Auth.User, where: u.last_seen > ^time))
   end
 
-  # ##############################################################################
-  # @code_expire_mins 1440
-  # def add_email(user, eaddr, verified \\ false) do
-  #   eaddr = String.trim(eaddr)
-  #
-  #   # basic
-  #   case Auth.UserEmail.one(tenant_id: user.tenant_id, address: eaddr) do
-  #     {:ok, %Auth.UserEmail{} = email} ->
-  #       Logger.warn("failed adding email", user_id: user.id, eaddr: eaddr)
-  #       sendmail(email, &SaasyTemplates.failed_change/2, "add email to your account.")
-  #
-  #       {:error, "That email already is associated with a different account"}
-  #
-  #     {:error, _} ->
-  #       # add it
-  #       case Auth.UserEmail.create(%{
-  #              user_id: user.id,
-  #              tenant_id: user.tenant_id,
-  #              verified: verified,
-  #              address: eaddr
-  #            }) do
-  #         {:ok, %Auth.UserEmail{} = email} ->
-  #           email = %Auth.UserEmail{email | user: user}
-  #           send_verify_email(email)
-  #
-  #           {:ok, email}
-  #
-  #         {:error, chgset} ->
-  #           {:error, Utils.Errors.convert_error_changeset(chgset)}
-  #       end
-  #   end
-  # end
-  #
-  # def send_verify_email(%Auth.UserEmail{address: eaddr, user: user} = email) do
-  #   with {:ok, code} <-
-  #          Auth.UserCode.Db.generate_code(email.user_id, :email_verify, @code_expire_mins, %{
-  #            email_id: email.id
-  #          }) do
-  #     Logger.info("added email", user_id: user.id, eaddr: eaddr)
-  #     sendmail(email, &SaasyTemplates.verification/2, code)
-  #   end
-  # end
+  ##############################################################################
+  @expire_mins Application.compile_env!(:rivet_data_auth, :reset_code_expire_mins) || 1440
 
-  def check_user_status({:ok, %Auth.AuthDomain{user: %Auth.User{type: :disabled}}}),
-    do: {:error, %Auth.AuthDomain{error: "sorry, account is disabled"}}
+  def add_email(user, eaddr, verified \\ false) do
+    eaddr = String.trim(eaddr)
+
+    # basic
+    case Auth.UserEmail.one(address: eaddr) do
+      {:ok, %Auth.UserEmail{} = email} ->
+        Logger.warn("failed adding email", user_id: user.id, eaddr: eaddr)
+        Auth.User.Notify.FailedChange.send(email, "add email to your account.")
+
+        {:error, "That email already is associated with a different account"}
+
+      {:error, _} ->
+        # add it
+        case Auth.UserEmail.create(%{
+               user_id: user.id,
+               verified: verified,
+               address: eaddr
+             }) do
+          {:ok, %Auth.UserEmail{} = email} ->
+            email = %Auth.UserEmail{email | user: user}
+            Auth.User.Notify.Verification.send(email)
+
+            {:ok, email}
+
+          {:error, chgset} ->
+            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
+        end
+    end
+  end
+
+  def check_user_status({:ok, %Auth.Domain{user: %Auth.User{type: :disabled}}}),
+    do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
   def check_user_status(%Auth.User{type: :disabled}) do
-    {:error, %Auth.AuthDomain{error: "sorry, account is disabled"}}
+    {:error, %Auth.Domain{error: "sorry, account is disabled"}}
   end
 
   def check_user_status(%Auth.User{} = user), do: {:ok, user}
@@ -466,7 +442,6 @@ defmodule Rivet.Data.Auth.User.Db do
         # add it
         case Auth.UserPhone.create(%{
                user_id: user.id,
-               tenant_id: user.tenant_id,
                number: phone
              }) do
           {:ok, %Auth.UserPhone{} = phone} ->
@@ -476,14 +451,14 @@ defmodule Rivet.Data.Auth.User.Db do
             {:ok, phone}
 
           {:error, chgset} ->
-            {:error, Utils.Errors.convert_error_changeset(chgset)}
+            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
         end
     end
   end
 
   ##############################################################################
-  @spec tenant_has_other_admin?(Auth.Role.t(), Auth.User.t()) :: boolean() | {:error, String.t()}
-  def tenant_has_other_admin?(%Auth.Role{name: :system_admin, id: r_id}, %Auth.User{id: user_id}) do
+  @spec has_other_admin?(Auth.Role.t(), Auth.User.t()) :: boolean() | {:error, String.t()}
+  def has_other_admin?(%Auth.Role{name: :system_admin, id: r_id}, %Auth.User{id: user_id}) do
     query = from(a in Auth.Access, where: a.role_id == ^r_id and a.user_id != ^user_id)
 
     if @repo.aggregate(query, :count) > 0 do
@@ -493,5 +468,5 @@ defmodule Rivet.Data.Auth.User.Db do
     end
   end
 
-  def tenant_has_other_admin?(_, _), do: true
+  def has_other_admin?(_, _), do: true
 end

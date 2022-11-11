@@ -6,6 +6,7 @@ defmodule Rivet.Data.Auth.User.Notify.FailedChange do
   def send(%Auth.UserEmail{} = email, action),
     do: @sender.send(email, __MODULE__, action: action)
 
+  @behaviour Rivet.Ecto.Collection
   @impl Rivet.Email.Template
   def generate(%Auth.UserEmail{}, attr) do
     {:ok, "#{attr.org} Account Change Failed",

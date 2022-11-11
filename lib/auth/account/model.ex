@@ -3,7 +3,7 @@ defmodule Rivet.Data.Auth.Account do
   """
 
   use TypedEctoSchema
-  use Unify.Ecto.Model
+  use Rivet.Ecto.Model
 
   typed_schema "accounts" do
     field(:short_id, :string)
@@ -11,7 +11,7 @@ defmodule Rivet.Data.Auth.Account do
     timestamps()
   end
 
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: [:name],
     update: [:name, :short_id],
     unique: [:short_id]

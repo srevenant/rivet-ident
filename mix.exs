@@ -20,35 +20,33 @@ defmodule Rivet.Data.Adi.MixProject do
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
-      # lockfile: "../../mix.lock",
       aliases: aliases()
-      # xref: [exclude: [AuthX.ApiKey, AuthX.Settings, AuthX.Token.Requests]]
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :postgrex, :ecto, :timex, {:ex_unit, :optional}]
+      extra_applications: [
+        :rivet,
+        :rivet_email,
+        :logger,
+        :postgrex,
+        :ecto,
+        :timex,
+        {:ex_unit, :optional}
+      ]
     ]
   end
 
-  # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to create, migrate and run the seeds file at once:
-  #
-  #     $ mix ecto.setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "core.seeds"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
-      # "ecto.seeds": ["core.seeds"],
+      # keystrokes of life
       c: ["compile"]
     ]
   end
@@ -58,6 +56,7 @@ defmodule Rivet.Data.Adi.MixProject do
     [
       {:rivet, "~> 1.0.0", git: "git@github.com:srevenant/rivet", branch: "master"},
       {:rivet_utils, "~> 1.0.0", git: "git@github.com:srevenant/rivet-utils", branch: "master"},
+      {:rivet_email, "~> 1.0.0", git: "git@github.com:srevenant/rivet-email", branch: "master"},
       {:ecto_sql, "~> 3.7"},
       {:ecto_enum, "~> 1.0"},
       {:excoveralls, "~> 0.14", only: :test},
@@ -71,8 +70,8 @@ defmodule Rivet.Data.Adi.MixProject do
       {:timex, "~> 3.6"},
       {:lazy_cache, "~> 0.1.0"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
-      {:junit_formatter, "~> 3.1", only: [:test]}
-      # {:random_password, "~> 1.1"}
+      {:junit_formatter, "~> 3.1", only: [:test]},
+      {:random_password, "~> 1.1"}
     ]
   end
 

@@ -1,6 +1,6 @@
-defmodule Rivet.Data.Auth.UserDatas do
+defmodule Rivet.Data.Auth.UserData.Db do
   alias Rivet.Data.Auth
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
 
   def list_types(%Auth.User{id: id}, types) when is_list(types) do
     @repo.all(

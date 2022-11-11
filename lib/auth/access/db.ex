@@ -1,5 +1,6 @@
 defmodule Rivet.Data.Auth.Access.Db do
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
+  alias Rivet.Data.Auth
 
   @doc """
   Fold a list of accesses into a set of actions, using memory cache
@@ -64,7 +65,7 @@ defmodule Rivet.Data.Auth.Access.Db do
   def add(user_id, role_atom, ref_id) when is_atom(role_atom) and is_binary(user_id) do
     case Auth.Role.one(name: role_atom) do
       {:ok, role} ->
-        Auth.Access.Db.upsert(%{
+        Auth.Access.upsert(%{
           role_id: role.id,
           user_id: user_id,
           domain: role.domain,

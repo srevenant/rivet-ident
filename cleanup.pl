@@ -37,14 +37,14 @@ sub revise_file {
     # my $before = $_;
     s/(\s)Repo\./ \@repo./g;
     if (s/$prefix([A-Z0-9\.]+)s\./$prefix$1.Db./gi) {
-      s/$prefix([A-Z0-9\.]+)\.Db\.(one!?|all!?|build|change_post|change_prep|changeset|count!?|create|create_post|create_prep|delete|delete_all|delete_all_ids|drop_replace|exists?|full_table_scan|replace|replace_fill|stream|stream_all!?|touch|unload|update!?|update_all|update_fill|preload!?)\(/$prefix$1.$2(/gi;
+      s/$prefix([A-Z0-9\.]+)\.Db\.(one!?|all!?|build|upsert|change_post|change_prep|changeset|count!?|create|create_post|create_prep|delete|delete_all|delete_all_ids|drop_replace|exists?|full_table_scan|replace|replace_fill|stream|stream_all!?|touch|unload|update!?|update_all|update_fill|preload!?)\(/$prefix$1.$2(/gi;
       # print "- $before";
       # print "+ $_";
     }
     # if (/use .*\.CollectionIntId/) {
     #   print STDERR "WARNING: CollectionIntId found! ($file)";
     # }
-    s/use .*\.CollectionUuid,.*$/use Unify.Ecto.Collection.Context/;
+    s/use .*\.CollectionUuid,.*$/use Rivet.Ecto.Collection.Context/;
 
     print OUT;
   }

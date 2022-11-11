@@ -3,11 +3,10 @@ defmodule Rivet.Data.Auth.UserEmail do
   Schema for representing and working with a Auth.UserEmail.
   """
   use TypedEctoSchema
-  use Unify.Ecto.Model
+  use Rivet.Ecto.Model
 
   typed_schema "user_emails" do
     belongs_to(:user, Auth.User, type: :binary_id, foreign_key: :user_id)
-    belongs_to(:tenant, Auth.Tenant, type: :binary_id, foreign_key: :tenant_id)
     field(:address, :string)
     field(:primary, :boolean, default: false)
     field(:verified, :boolean, default: false)
@@ -15,7 +14,7 @@ defmodule Rivet.Data.Auth.UserEmail do
   end
 
   @required_fields [:user_id, :tenant_id, :address]
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: @required_fields,
     update: [:address, :primary, :verified]
 

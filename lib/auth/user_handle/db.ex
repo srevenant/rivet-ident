@@ -1,6 +1,6 @@
-defmodule Rivet.Data.Auth.UserHandles do
+defmodule Rivet.Data.Auth.UserHandle.Db do
   alias Rivet.Data.Auth
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
 
   @doc """
   Check if handle is open, return double-error (internal/external msg)

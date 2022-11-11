@@ -10,6 +10,7 @@ defmodule Rivet.Data.Auth.User.Notify.PasswordReset do
     end
   end
 
+  @behaviour Rivet.Ecto.Collection
   @impl Rivet.Email.Template
   def generate(%Auth.UserEmail{address: eaddr}, attr) do
     encoded = Regex.replace(~r/\s+/, eaddr, "+")

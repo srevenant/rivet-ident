@@ -3,7 +3,7 @@ defmodule Rivet.Data.Auth.UserCode do
   Schema for representing and working with a Auth.UserCode.
   """
   use TypedEctoSchema
-  use Unify.Ecto.Model
+  use Rivet.Ecto.Model
   import EctoEnum
 
   defenum(Types, password_reset: 0, email_verify: 1, file_download: 2)
@@ -17,7 +17,7 @@ defmodule Rivet.Data.Auth.UserCode do
     timestamps()
   end
 
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: [:user_id, :code, :type, :expires],
     update: [:meta],
     foreign_keys: [:user_id]

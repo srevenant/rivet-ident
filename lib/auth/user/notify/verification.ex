@@ -15,6 +15,7 @@ defmodule Rivet.Data.Auth.User.Notify.Verification do
     end
   end
 
+  @behaviour Rivet.Ecto.Collection
   @impl Rivet.Email.Template
   def generate(%Auth.UserEmail{}, attr) do
     {:ok, "#{attr.org} email verification",

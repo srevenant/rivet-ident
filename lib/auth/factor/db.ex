@@ -2,9 +2,11 @@ defmodule Rivet.Data.Auth.Factor.Db do
   @type str :: String.t()
   @type log_msg :: str
   @type usr_msg :: str
-  @type auth_result :: {:ok | :error, Auth.AuthDomain.t()}
+  @type auth_result :: {:ok | :error, Auth.Domain.t()}
   alias Rivet.Data.Auth
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
+  require Logger
+  import Rivet.Utils.Time, only: [epoch_time: 1]
 
   # override the function brought in by the collection module
   def one_with_user_tenant(factor_id) when is_binary(factor_id) do
@@ -39,7 +41,7 @@ defmodule Rivet.Data.Auth.Factor.Db do
 
   """
   def preloaded_with(model, type) when is_list(type) do
-    now = Utils.Time.epoch_time(:second)
+    now = epoch_time(:second)
 
     @repo.preload(model,
       factors:
@@ -51,7 +53,7 @@ defmodule Rivet.Data.Auth.Factor.Db do
   end
 
   def preloaded_with(model, type) when is_atom(type) do
-    now = Utils.Time.epoch_time(:second)
+    now = epoch_time(:second)
 
     @repo.preload(model,
       factors:
@@ -108,7 +110,7 @@ defmodule Rivet.Data.Auth.Factor.Db do
   end
 
   defp clean_old_factors([x | rest], max) do
-    now = Utils.Time.epoch_time(:second)
+    now = epoch_time(:second)
 
     cond do
       length(rest) + 1 > @password_history ->
@@ -141,7 +143,7 @@ defmodule Rivet.Data.Auth.Factor.Db do
           else: def_exp
       end
 
-    case {provider_exp, Utils.Time.epoch_time(:second) + expiration} do
+    case {provider_exp, epoch_time(:second) + expiration} do
       {nil, our_exp} ->
         our_exp
 
@@ -154,7 +156,7 @@ defmodule Rivet.Data.Auth.Factor.Db do
   end
 
   # TODO: rename to set_federated_factor
-  @spec set_factor(user :: Auth.User.t(), fedid :: Auth.AuthFedId.t()) ::
+  @spec set_factor(user :: Auth.User.t(), fedid :: Auth.Factor.FedId.t()) ::
           {:ok, Auth.Factor.t()} | {:error, Changeset.t()}
   def set_factor(user, fedid) do
     {:ok, user} = Auth.User.preload(user, [:tenant])
@@ -170,27 +172,8 @@ defmodule Rivet.Data.Auth.Factor.Db do
     })
   end
 
-  def get_user_with_tenant(factor_id, tenant = %Auth.Tenant{}) do
-    # load the factor and user, matching current tenant
-    tenant_code = tenant.code
-
-    case Auth.Factor.Db.one_with_user_tenant(factor_id) do
-      nil ->
-        {:error, "Invalid tenant"}
-
-      {:ok, %Auth.Factor{user: %Auth.User{tenant: %Auth.Tenant{code: ^tenant_code}}} = factor} ->
-        {:ok, factor}
-
-      {:ok, %Auth.Factor{}} ->
-        {:error, "Factor in wrong tenant?"}
-
-      {:error, _} ->
-        {:error, "Cannot find identity factor=#{factor_id}"}
-    end
-  end
-
   def drop_expired() do
-    now = Utils.Time.epoch_time(:second)
+    now = epoch_time(:second)
 
     # drop any non-password factors; password factors are cleaned when they
     # are changed (to keep a history)
@@ -201,17 +184,17 @@ defmodule Rivet.Data.Auth.Factor.Db do
   end
 
   def all_not_expired!(%Auth.User{id: user_id}) do
-    now = Utils.Time.epoch_time(:second)
+    now = epoch_time(:second)
 
     from(f in Auth.Factor, where: f.user_id == ^user_id and f.expires_at > ^now)
     |> @repo.all()
   end
 
   def all_not_expired!(%Auth.User{} = user, type) when is_binary(type),
-    do: all_not_expired!(user, Utils.Types.to_atom(type))
+    do: all_not_expired!(user, Utils.Types.as_atom(type))
 
   def all_not_expired!(%Auth.User{id: user_id}, type) when is_atom(type) do
-    now = Utils.Time.epoch_time(:second)
+    now = epoch_time(:second)
 
     from(f in Auth.Factor,
       where: f.user_id == ^user_id and f.expires_at > ^now and f.type == ^type

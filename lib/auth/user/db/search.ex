@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Auth.UserSearch do
   alias Rivet.Data.Auth
-  use Unify.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context
   import Ecto.Query
 
   ##############################################################################

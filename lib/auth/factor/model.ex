@@ -4,7 +4,7 @@ defmodule Rivet.Data.Auth.Factor do
   """
   use TypedEctoSchema
   alias Rivet.Data.Auth
-  use Unify.Ecto.Model, export_json: [:name, :expires_at, :value, :details], id_type: :int
+  use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details], id_type: :int
   import EctoEnum
 
   defenum(Types,
@@ -44,9 +44,10 @@ defmodule Rivet.Data.Auth.Factor do
   end
 
   @required_fields [:type, :expires_at, :user_id]
-  use Unify.Ecto.Collection, required: @required_fields
+  use Rivet.Ecto.Collection, required: @required_fields
 
-  @impl Unify.Ecto.Collection
+  @behaviour Rivet.Ecto.Collection
+  @impl Rivet.Ecto.Collection
   def build(params \\ %{}) do
     %__MODULE__{}
     |> cast(params, @required_fields)

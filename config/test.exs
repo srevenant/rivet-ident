@@ -1,6 +1,11 @@
 import Config
 
-config :unify, repo: Rivet.Data.Repo
+config :rivet, repo: Rivet.Data.Repo
+
+config :rivet_email,
+  enabled: false,
+  sender: Rivet.Email.Example
+
 config :rivet_data_auth, ecto_repos: [Rivet.Data.Repo]
 
 config :rivet_data_auth, Rivet.Data.Repo,

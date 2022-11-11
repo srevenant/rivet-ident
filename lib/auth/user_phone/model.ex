@@ -1,9 +1,7 @@
 defmodule Rivet.Data.Auth.UserPhone do
-  @moduledoc """
-  Schema for representing and working with a Auth.UserPhone.
-  """
+  alias Rivet.Data.Auth
   use TypedEctoSchema
-  use Unify.Ecto.Model
+  use Rivet.Ecto.Model
 
   typed_schema "user_phones" do
     belongs_to(:user, Auth.User, type: :binary_id, foreign_key: :user_id)
@@ -13,7 +11,7 @@ defmodule Rivet.Data.Auth.UserPhone do
     timestamps()
   end
 
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: [:user_id, :number],
     update: [:number, :primary, :verified]
 end

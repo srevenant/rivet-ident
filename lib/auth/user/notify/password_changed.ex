@@ -10,6 +10,7 @@ defmodule Rivet.Data.Auth.User.Notify.PasswordChanged do
     end
   end
 
+  @behaviour Rivet.Ecto.Collection
   @impl Rivet.Email.Template
   def generate(%Auth.UserEmail{}, attr) do
     {:ok, "#{attr.org} email notification - password changed",

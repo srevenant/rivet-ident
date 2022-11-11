@@ -3,7 +3,7 @@ defmodule Rivet.Data.Auth.Access do
   Schema for representing and working with a Auth.Acces.Db.
   """
   use TypedEctoSchema
-  use Unify.Ecto.Model, id_type: :int
+  use Rivet.Ecto.Model, id_type: :int
   import EctoEnum
 
   # Access domains are per table type so you can map accesses to individual
@@ -19,7 +19,7 @@ defmodule Rivet.Data.Auth.Access do
     field(:ref_id, :binary_id)
   end
 
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: [:user_id, :role_id],
     update: [:domain, :ref_id],
     unique: [:role_id]

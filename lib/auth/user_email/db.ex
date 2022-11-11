@@ -1,6 +1,6 @@
-defmodule Rivet.Data.Auth.UserEmails do
-  use Core.Context
-  use Unify.Ecto.Collection.Context
+defmodule Rivet.Data.Auth.UserEmail.Db do
+  alias Rivet.Data.Auth
+  use Rivet.Ecto.Collection.Context
 
   ##############################################################################
   @doc """

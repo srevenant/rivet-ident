@@ -3,7 +3,7 @@ defmodule Rivet.Data.Auth.UserData do
   Schema for representing and working with a Auth.UserData.
   """
   use TypedEctoSchema
-  use Unify.Ecto.Model
+  use Rivet.Ecto.Model
   import EctoEnum
 
   defenum(Types,
@@ -21,7 +21,7 @@ defmodule Rivet.Data.Auth.UserData do
     timestamps()
   end
 
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: [:user_id, :type, :value],
     update: [:value],
     unique: [:type]

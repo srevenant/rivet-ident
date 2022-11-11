@@ -3,22 +3,22 @@ defmodule Rivet.Data.Auth.UserHandle do
   Schema for representing and working with a Handle.
   """
   use TypedEctoSchema
-  use Unify.Ecto.Model
-  import Rivet.Utils.EctoChangeset, only: [validate_rex: 4]
+  use Rivet.Ecto.Model
+  import Rivet.Utils.Ecto.Changeset, only: [validate_rex: 4]
 
   typed_schema "user_handles" do
     belongs_to(:user, Auth.User, type: :binary_id, foreign_key: :user_id)
-    belongs_to(:tenant, Auth.Tenant, type: :binary_id, foreign_key: :tenant_id)
     field(:handle, :string)
     timestamps()
   end
 
   @required_fields [:user_id, :tenant_id, :handle]
-  use Unify.Ecto.Collection,
+  use Rivet.Ecto.Collection,
     required: @required_fields,
     update: [:handle]
 
-  @impl Unify.Ecto.Collection
+  @behaviour Rivet.Ecto.Collection
+  @impl Rivet.Ecto.Collection
   def validate(chgset) do
     handle = String.downcase(get_change(chgset, :handle))
 
