@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Auth.Schema do
+defmodule Rivet.Data.Ident.Schema do
   @moduledoc false
   use Ecto.Migration
 

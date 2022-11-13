@@ -1,12 +1,12 @@
-defmodule Rivet.Data.Auth.Test.AuthFactory do
+defmodule Rivet.Data.Ident.Test.AuthFactory do
   use ExMachina.Ecto, repo: Rivet.Data.Repo
-  alias Rivet.Data.Auth
+  alias Rivet.Data.Ident
 
   defmacro __using__(_) do
     quote location: :keep do
       ################################################################################
       def action_factory do
-        %Auth.Action{
+        %Ident.Action{
           name: Rivet.Utils.Types.as_atom(sequence("action") <> "_edit"),
           description: Faker.Cat.name()
         }
@@ -14,7 +14,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
 
       ################################################################################
       def role_factory do
-        %Auth.Role{
+        %Ident.Role{
           name: Rivet.Utils.Types.as_atom("#{sequence("role")}"),
           description: "#{sequence("role")} #{Faker.Cat.name()}"
         }
@@ -25,7 +25,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
         user = build(:user)
         role = build(:role)
 
-        %Auth.Access{
+        %Ident.Access{
           user: user,
           role: role,
           domain: :global
@@ -37,20 +37,15 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
         action = build(:action)
         role = build(:role)
 
-        %Auth.RoleMap{
+        %Ident.RoleMap{
           action: action,
           role: role
         }
       end
 
       ################################################################################
-      def account_factory(args) do
-        %Auth.Account{}
-      end
-
-      ################################################################################
       def user_factory do
-        %Auth.User{
+        %Ident.User{
           type: :authed,
           name: "#{Faker.Person.first_name()} #{Faker.Person.last_name()}",
           settings: %{cat: Faker.Cat.name()}
@@ -61,7 +56,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
         user = build(:user)
         seq_id = sequence(:handle, &"#{&1}")
 
-        %Auth.UserHandle{
+        %Ident.Handle{
           user: user,
           handle: "user-#{seq_id}"
         }
@@ -70,7 +65,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
       def phone_factory do
         user = build(:user)
 
-        %Auth.UserPhone{
+        %Ident.Phone{
           user: user,
           number: Faker.Phone.EnUs.phone(),
           primary: false,
@@ -81,7 +76,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
       def email_factory do
         user = build(:user)
 
-        %Auth.UserEmail{
+        %Ident.Email{
           user: user,
           address: Faker.Internet.email(),
           primary: false,
@@ -91,7 +86,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
 
       ################################################################################
       def factor_factory do
-        %Auth.Factor{
+        %Ident.Factor{
           user: build(:user),
           type: :unknown,
           expires_at: Rivet.Utils.Time.epoch_time(:second) + 900
@@ -105,13 +100,13 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
       # TODO: it shouldn't be necessary to hash it here, but the factory is bypassing
       # the Ecto module
       def hashpass_factor_factory do
-        pass = Rivet.Utils.RandChars.random()
+        pass = Ident.Factor.Password.generate()
 
-        %Auth.Factor{
+        %Ident.Factor{
           user: build(:user),
           type: :password,
           password: pass,
-          hash: Rivet.Utils.Hash.password(pass),
+          hash: Ident.Factor.Password.hash(pass),
           expires_at: Rivet.Utils.Time.epoch_time(:second) + 900
         }
       end
@@ -119,7 +114,7 @@ defmodule Rivet.Data.Auth.Test.AuthFactory do
       def user_data_factory do
         user = build(:user)
 
-        %Auth.UserData{
+        %Ident.UserData{
           user: user,
           type: :available,
           value: %{}

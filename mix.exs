@@ -3,7 +3,7 @@ defmodule Rivet.Data.Adi.MixProject do
 
   def project do
     [
-      app: :rivet_data_auth,
+      app: :rivet_data_ident,
       version: "2.0.0",
       package: package(),
       elixir: "~> 1.13",
@@ -55,12 +55,14 @@ defmodule Rivet.Data.Adi.MixProject do
   defp deps do
     [
       {:rivet, "~> 1.0.0", git: "git@github.com:srevenant/rivet", branch: "master"},
-      {:rivet_utils, "~> 1.0.0", git: "git@github.com:srevenant/rivet-utils", branch: "master"},
+      {:rivet_utils, "~> 1.0.0"},
       {:rivet_email, "~> 1.0.0", git: "git@github.com:srevenant/rivet-email", branch: "master"},
       {:ecto_sql, "~> 3.7"},
       {:ecto_enum, "~> 1.0"},
       {:excoveralls, "~> 0.14", only: :test},
       {:ex_machina, "~> 2.7.0", only: :test},
+      {:bcrypt_elixir, "~> 1.1.1"},
+      {:puid, "~> 2.0"},
       # {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:faker, "~> 0.10"},
       {:postgrex, "~> 0.13"},
