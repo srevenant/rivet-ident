@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Adi.MixProject do
+defmodule Rivet.Data.Ident.MixProject do
   use Mix.Project
 
   def project do
@@ -43,7 +43,8 @@ defmodule Rivet.Data.Adi.MixProject do
 
   defp aliases do
     [
-      "ecto.setup": ["ecto.create", "ecto.migrate", "core.seeds"],
+      # , "rivet.data.seeds"],
+      "ecto.setup": ["ecto.create", "ecto.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
       # keystrokes of life

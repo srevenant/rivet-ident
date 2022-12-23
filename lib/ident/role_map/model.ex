@@ -3,7 +3,7 @@ defmodule Rivet.Data.Ident.RoleMap do
   Schema for representing and working with a Ident.RoleMap.
   """
   use TypedEctoSchema
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model, id_type: :int
 
   typed_schema "#{@ident_table_role_maps}" do

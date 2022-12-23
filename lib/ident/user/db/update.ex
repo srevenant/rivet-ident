@@ -125,7 +125,7 @@ defmodule Rivet.Data.Ident.User.Db.Update do
     # inner with so the error can have the preloaded user
     with {:ok, user} <- Ident.User.preload(user, [:handle]) do
       with {:ok, :available} <- Ident.Handle.Db.available(handle, user.id),
-           {:ok, new_handle} <- Ident.Handle.create(%{ handle: handle, user_id: user.id }) do
+           {:ok, new_handle} <- Ident.Handle.create(%{handle: handle, user_id: user.id}) do
         # delete the old one
         with %Ident.Handle{} <- user.handle, do: Ident.Handle.delete(user.handle)
 
@@ -289,8 +289,8 @@ defmodule Rivet.Data.Ident.User.Db.Update do
     case get_in(args, [:handle, :handle]) do
       # if unspecified, auto-create a handle
       nil ->
-        {:ok,
-         Map.put(args, :handle, %{ handle: Ident.Handle.Db.gen_good_handle(addr)})}
+        {:ok, Map.put(args, :handle, %{handle: Ident.Handle.Db.gen_good_handle(addr)})}
+
       # or check the one they provide
       handle ->
         enrich_handle(args, handle)

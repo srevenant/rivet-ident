@@ -1,7 +1,7 @@
 defmodule Rivet.Data.Ident.UserCode.Schema do
   @moduledoc false
   use Ecto.Migration
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
 
   def change do
     ############################################################################

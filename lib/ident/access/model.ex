@@ -3,7 +3,7 @@ defmodule Rivet.Data.Ident.Access do
   Schema for representing and working with a Ident.Acces.Db.
   """
   use TypedEctoSchema
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model, id_type: :int
   import EctoEnum
 

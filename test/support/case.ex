@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Adi.Case do
+defmodule Rivet.Data.Ident.Case do
   use ExUnit.CaseTemplate
 
   using do
@@ -6,8 +6,8 @@ defmodule Rivet.Data.Adi.Case do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Rivet.Data.Adi.Case
-      import Rivet.Data.Adi.Test.Factory
+      import Rivet.Data.Ident.Case
+      import Rivet.Data.Ident.Test.Factory
       alias Rivet.Data.Repo
       alias Ecto.Changeset
     end

@@ -1,7 +1,7 @@
 defmodule Rivet.Data.Ident.Role do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :int
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
 
   typed_schema "#{@ident_table_roles}" do
     field(:name, Rivet.Utils.Ecto.Atom)

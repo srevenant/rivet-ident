@@ -1,1 +1,0 @@
-../../../lib/auth/user_phone/schema.ex

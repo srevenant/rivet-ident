@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.UserData do
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
   import EctoEnum
 
   defenum(Types,

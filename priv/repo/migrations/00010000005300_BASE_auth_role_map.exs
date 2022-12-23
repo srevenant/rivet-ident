@@ -1,1 +1,0 @@
-../../../lib/auth/role_map/schema.ex

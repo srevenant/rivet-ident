@@ -3,7 +3,7 @@ defmodule Rivet.Data.Ident.Email do
   Schema for representing and working with a Ident.Email.
   """
   use TypedEctoSchema
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model
 
   typed_schema "#{@ident_table_emails}" do

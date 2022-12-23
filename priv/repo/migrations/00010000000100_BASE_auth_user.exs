@@ -1,1 +1,0 @@
-../../../lib/auth/user/schema.ex

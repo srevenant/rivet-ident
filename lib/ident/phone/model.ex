@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Phone do
   alias Rivet.Data.Ident
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  use Rivet.Data.Ident
+  use Rivet.Data.Ident.Config
 
   typed_schema "#{@ident_table_phones}" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

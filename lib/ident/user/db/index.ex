@@ -1,6 +1,7 @@
 defmodule Rivet.Data.Ident.User.Db do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context
+  use Rivet.Data.Ident.Config
   alias Rivet.Auth
   require Logger
 
@@ -261,30 +262,32 @@ defmodule Rivet.Data.Ident.User.Db do
   defp signup_add_new_user({:error, _, _} = pass), do: pass
 
   ##############################################################################
-  defp signup_promote_first_user({:ok, auth = %Auth.Domain{user: %Ident.User{} = user}}) do
-    # except once use case this will be false
-    if Application.get_env(:core, :first_user_admin) do
-      Enum.each(Application.get_env(:core, :first_user_roles), fn role_name ->
-        case Ident.Role.one(name: role_name) do
-          {:ok, role} ->
-            case Ident.Access.create(%{role_id: role.id, user_id: user.id}) do
-              {:ok, _} ->
-                Logger.warn("Adding role #{role.name} to first user #{user.id}")
+  if @ident_first_user_admin do
+    defp signup_promote_first_user({:ok, auth = %Auth.Domain{user: %Ident.User{} = user}}) do
+      # except once use case this will be false
+      if Application.get_env(:rivet, :first_user_admin) != false do
+        Enum.each(@first_user_roles, fn role_name ->
+          case Ident.Role.one(name: role_name) do
+            {:ok, role} ->
+              case Ident.Access.create(%{role_id: role.id, user_id: user.id}) do
+                {:ok, _} ->
+                  Logger.warn("Adding role #{role.name} to first user #{user.id}")
 
-              {:error, what} ->
-                IO.inspect(what, label: "Cannot add role for first user!")
-                Logger.error("Cannot add role #{role.name} for first user!")
-            end
+                {:error, what} ->
+                  IO.inspect(what, label: "Cannot add role for first user!")
+                  Logger.error("Cannot add role #{role.name} for first user!")
+              end
 
-          {:error, _} ->
-            Logger.error("Cannot find role #{role_name} for first user!")
-        end
-      end)
+            {:error, _} ->
+              Logger.error("Cannot find role #{role_name} for first user!")
+          end
+        end)
 
-      Application.put_env(:core, :first_user_admin, false)
+        Application.put_env(:rivet, :first_user_admin, false)
+      end
+
+      {:ok, auth}
     end
-
-    {:ok, auth}
   end
 
   defp signup_promote_first_user({:error, _, _} = pass), do: pass

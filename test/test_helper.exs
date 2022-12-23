@@ -3,7 +3,7 @@ ExUnit.start(capture_log: true)
 
 Supervisor.start_link([{Rivet.Data.Repo, []}],
   strategy: :one_for_one,
-  name: Rivet.Data.Adi.Supervisor
+  name: Rivet.Data.Ident.Supervisor
 )
 
 ExUnit.configure(exclude: [pending: true], formatters: [JUnitFormatter, ExUnit.CLIFormatter])

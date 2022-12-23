@@ -1,0 +1,84 @@
+defmodule Rivet.Data.Ident.Config do
+  @moduledoc """
+  Rivets Models for Identity management things.
+  """
+  import Rivet.Utils.Types, only: [as_atom: 1]
+
+  defmacro __using__(opts) do
+    quote location: :keep, bind_quoted: [opts: opts] do
+      # bodgering test functionality into libs
+      @test_environ Application.compile_env!(:rivet, :test) || false
+
+      # other
+      @ident_first_user_admin Application.compile_env!(:rivet, Rivet.Data.Ident)[
+                                :first_user_admin
+                              ] || false
+      @ident_first_user_roles Application.compile_env!(:rivet, Rivet.Data.Ident)[
+                                :first_user_roles
+                              ] || []
+
+      @reset_code_expire_mins Application.compile_env!(:rivet, Rivet.Data.Ident)[
+                                :reset_code_expire_mins
+                              ] || 1440
+      # notify
+      @ident_notify Application.compile_env!(:rivet, Rivet.Data.Ident)[:notify_templates] ||
+                      [
+                        failed_change: Rivet.Data.Ident.User.Notify.FailedChange,
+                        verification: Rivet.Data.Ident.User.Notify.Verification,
+                        password_reset: Rivet.Data.Ident.User.Notify.PasswordReset,
+                        password_changed: Rivet.Data.Ident.User.Notify.PasswordChanged
+                      ]
+      @ident_notify_failed_change @ident_notify[:failed_change]
+      @ident_notify_verification @ident_notify[:verification]
+      @ident_notify_password_reset @ident_notify[:password_reset]
+      @ident_notify_password_changed @ident_notify[:password_changed]
+
+      # tables
+      @rivet_table_prefix Application.compile_env!(:rivet, :table_prefix) || ""
+      @ident_table_prefix Application.compile_env!(:rivet, Rivet.Data.Ident)[:table_prefix] ||
+                            "ident_"
+      ## if true, put the prefix on the schema, rather than the table
+      @ident_table_schema_prefix Application.compile_env!(:rivet, Rivet.Data.Ident)[
+                                   :schema_prefix
+                                 ] || false
+      if @ident_table_schema_prefix do
+        @ident_table_schema_args [prefix: "#{@rivet_table_prefix}#{@ident_table_prefix}"]
+      else
+        @ident_table_schema_args []
+      end
+
+      @ident_table_names (Application.compile_env!(:rivet, Rivet.Data.Ident)[:table_names] ||
+                            [
+                              accesses: "accesses",
+                              actions: "actions",
+                              emails: "emails",
+                              factors: "factors",
+                              handles: "handles",
+                              phones: "phones",
+                              roles: "roles",
+                              role_maps: "role_maps",
+                              users: "users",
+                              user_codes: "user_codes",
+                              user_datas: "user_datas"
+                            ])
+                         |> Map.new(fn {k, v} ->
+                           if @ident_table_schema_prefix do
+                             {k, as_atom(v)}
+                           else
+                             {k, as_atom("#{@rivet_table_prefix}#{@ident_table_prefix}#{v}")}
+                           end
+                         end)
+      @ident_table_accesses @ident_table_names.accesses
+      @ident_table_actions @ident_table_names.actions
+      @ident_table_emails @ident_table_names.emails
+      @ident_table_factors @ident_table_names.factors
+      @ident_table_handles @ident_table_names.handles
+      @ident_table_phones @ident_table_names.phones
+      @ident_table_roles @ident_table_names.roles
+      @ident_table_role_maps @ident_table_names.role_maps
+      @ident_table_users @ident_table_names.users
+      @ident_table_user_codes @ident_table_names.user_codes
+      @ident_table_user_datas @ident_table_names.user_datas
+    end
+  end
+end
