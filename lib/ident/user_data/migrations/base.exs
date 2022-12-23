@@ -1,13 +1,18 @@
-defmodule Rivet.Data.Ident.UserData.Migrations.Root do
+defmodule Rivet.Data.Ident.UserData.Migrations.Base do
   @moduledoc false
   use Ecto.Migration
 
   def change do
-    create table(:user_data) do
-    #  add(:user_id, references(:users, on_delete: :delete_all, type: :uuid))
+    ############################################################################
+    create table(:user_datas, primary_key: false) do
+      add(:id, :uuid, primary_key: true)
+      add(:user_id, references(:users, on_delete: :delete_all, type: :uuid), null: true)
+      add(:type, :integer, default: 0)
+      add(:value, :map, default: %{})
       timestamps()
     end
 
-    #create(index(:auth_accesses, [:domain, :ref_id]))
+    create(index(:user_datas, [:user_id]))
+    create(unique_index(:user_datas, [:user_id, :type]))
   end
 end

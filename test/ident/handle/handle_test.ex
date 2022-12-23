@@ -9,7 +9,7 @@ defmodule Rivet.Data.Ident.Test.HandleTest do
   doctest Rivet.Data.Ident.Handle.Resolver, import: true
   doctest Rivet.Data.Ident.Handle.Rest, import: true
   doctest Rivet.Data.Ident.Handle.Cache, import: true
-  
+
   describe "factory" do
     test "factory creates a valid instance" do
       assert %{} = dup_template = insert(:dup_template)

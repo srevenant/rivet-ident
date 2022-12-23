@@ -1,5 +1,5 @@
 defmodule Rivet.Data.Ident.User.Notify.Verification do
-  use Rivet.Data.Ident.Config
+  # use Rivet.Data.Ident.Config
   alias Rivet.Data.Ident
   use Rivet.Email.Template
   require Logger

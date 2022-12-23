@@ -5,7 +5,7 @@ defmodule Rivet.Data.Ident.User do
   use TypedEctoSchema
   import EctoEnum
   use Rivet.Ecto.Model
-  use Rivet.Data.Ident.Config
+  # use Rivet.Data.Ident.Config
 
   defenum(Types,
     unknown: 0,

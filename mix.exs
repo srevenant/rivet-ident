@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.MixProject do
+defmodule RivetDataIdent.MixProject do
   use Mix.Project
 
   def project do
@@ -20,12 +20,18 @@ defmodule Rivet.Data.Ident.MixProject do
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
+      rivet: [
+        mod_dir: "ident",
+        # there is a better way, but for now I want to just get it working
+        ensure_loaded: [:rivet_data_ident]
+      ],
       aliases: aliases()
     ]
   end
 
   def application do
     [
+      mod: {Rivet.Data.Ident.Application, []},
       extra_applications: [
         :rivet,
         :rivet_email,

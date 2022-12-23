@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.UserData do
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  use Rivet.Data.Ident.Config
+  # use Rivet.Data.Ident.Config
   import EctoEnum
 
   defenum(Types,
@@ -15,7 +15,7 @@ defmodule Rivet.Data.Ident.UserData do
     save: 6
   )
 
-  typed_schema "#{@ident_table_user_datas}" do
+  typed_schema "user_datas" do #{@ident_table_user_datas}" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     field(:type, Types)
     field(:value, :map)

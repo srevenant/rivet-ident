@@ -1,13 +1,15 @@
-defmodule Rivet.Data.Ident.Role.Migrations.Root do
+defmodule Rivet.Data.Ident.Role.Migrations.Base do
   @moduledoc false
   use Ecto.Migration
 
   def change do
-    create table(:role) do
-    #  add(:user_id, references(:users, on_delete: :delete_all, type: :uuid))
-      timestamps()
+    create table(:auth_roles) do
+      add(:name, :string)
+      add(:subscription, :boolean, default: false)
+      add(:description, :text)
+      add(:domain, :integer, default: 0)
     end
 
-    #create(index(:auth_accesses, [:domain, :ref_id]))
+    create(unique_index(:auth_roles, [:name]))
   end
 end

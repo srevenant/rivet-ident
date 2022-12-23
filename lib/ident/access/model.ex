@@ -3,7 +3,7 @@ defmodule Rivet.Data.Ident.Access do
   Schema for representing and working with a Ident.Acces.Db.
   """
   use TypedEctoSchema
-  use Rivet.Data.Ident.Config
+  # use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model, id_type: :int
   import EctoEnum
 
@@ -13,7 +13,7 @@ defmodule Rivet.Data.Ident.Access do
   # they enum key should be the module atom: :"Elixir.Module.Name"
   defenum(Domains, global: 0)
 
-  typed_schema "#{@ident_table_accesses}" do
+  typed_schema "accesses" do #{@ident_table_accesses}" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     belongs_to(:role, Ident.Role, foreign_key: :role_id)
     field(:domain, Domains, default: 0)
