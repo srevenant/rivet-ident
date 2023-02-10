@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Ident.UserData.Db do
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: Ident.UserData
 
   def list_types(%Ident.User{id: id}, types) when is_list(types) do
     @repo.all(

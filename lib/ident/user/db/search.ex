@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Ident.UserSearch do
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: Ident.User
   import Ecto.Query
 
   ##############################################################################

@@ -1,7 +1,7 @@
 defmodule Rivet.Data.Ident.UserCode.Db do
   alias Rivet.Data.Ident
   alias Ident.UserCode
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: UserCode
 
   def generate_code(for_user_id, type, expiration_minutes, meta \\ %{}) when is_atom(type) do
     code =

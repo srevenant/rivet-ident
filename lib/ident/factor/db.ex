@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.Factor.Db do
   @type usr_msg :: str
   @type auth_result :: {:ok | :error, Rivet.Auth.Domain.t()}
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: Ident.Factor
   require Logger
   import Rivet.Utils.Time, only: [epoch_time: 1]
 

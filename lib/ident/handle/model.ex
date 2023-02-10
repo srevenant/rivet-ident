@@ -5,6 +5,7 @@ defmodule Rivet.Data.Ident.Handle do
   use TypedEctoSchema
   use Rivet.Ecto.Model
   # use Rivet.Data.Ident.Config
+  alias Rivet.Data.Ident
   import Rivet.Utils.Ecto.Changeset, only: [validate_rex: 4]
 
   typed_schema "handles" do # "#{@ident_table_handles}" do

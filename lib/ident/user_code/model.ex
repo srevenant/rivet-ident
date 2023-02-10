@@ -5,6 +5,7 @@ defmodule Rivet.Data.Ident.UserCode do
   use TypedEctoSchema
   # use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model
+  alias Rivet.Data.Ident
   import EctoEnum
 
   defenum(Types, password_reset: 0, email_verify: 1, file_download: 2)

@@ -8,6 +8,7 @@ defmodule Rivet.Data.Ident.Case do
       import Ecto.Query
       import Rivet.Data.Ident.Case
       import Rivet.Data.Ident.Test.Factory
+      alias Rivet.Data.Ident
       alias Rivet.Data.Ident.Repo
       alias Ecto.Changeset
     end
