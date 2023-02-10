@@ -1,5 +1,5 @@
 defmodule Rivet.Data.Ident.Test.AuthFactory do
-  use ExMachina.Ecto, repo: Rivet.Data.Repo
+  use ExMachina.Ecto, repo: Rivet.Data.Ident.Repo
   alias Rivet.Data.Ident
 
   defmacro __using__(_) do

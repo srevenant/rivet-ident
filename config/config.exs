@@ -5,19 +5,19 @@ config :logger, level: :info
 config :ex_unit, capture_log: true
 
 config :rivet,
-  repo: Rivet.Repo,
+  repo: Rivet.Data.Ident.Repo,
   table_prefix: "",
   test: true
 
 config :rivet_data_ident,
-  ecto_repos: [Rivet.Repo]
+  ecto_repos: [Rivet.Data.Ident.Repo]
 
 # config :rivet, Rivet.Email,
 #   enabled: false,
 #   sender: Rivet.Email.Example
 
-config :rivet_data_ident, Rivet.Repo,
-  migration_repo: Rivet.Repo,
+config :rivet_data_ident, Rivet.Data.Ident.Repo,
+  migration_repo: Rivet.Data.Ident.Repo,
   pool_size: 20,
   username: "postgres",
   password: "",
