@@ -1,5 +1,4 @@
 ExUnit.start(capture_log: true)
-{:ok, _} = Application.ensure_all_started(:ex_machina)
 
 Supervisor.start_link([{Rivet.Data.Ident.Repo, []}],
   strategy: :one_for_one,
