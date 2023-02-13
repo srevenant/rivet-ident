@@ -17,7 +17,7 @@ defmodule Rivet.Data.Ident.User do
     disabled: 200
   )
 
-  typed_schema "#{@ident_table_users}" do
+  typed_schema "users" do
     has_one(:handle, Ident.Handle, on_delete: :delete_all)
     has_many(:emails, Ident.Email, on_delete: :delete_all)
     has_many(:phones, Ident.Phone, on_delete: :delete_all)

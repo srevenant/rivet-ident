@@ -27,7 +27,7 @@ defmodule Rivet.Data.Ident.Factor do
     twitch: 5
   )
 
-  typed_schema "factors" do #{@ident_table_factors}" do
+  typed_schema "ident_factors" do #{@ident_table_factors}" do
     # identity vs authentication
     field(:type, Types)
     field(:fedtype, FederatedTypes, default: :none)

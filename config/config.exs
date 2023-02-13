@@ -12,16 +12,18 @@ config :rivet,
 config :rivet_data_ident,
   ecto_repos: [Rivet.Data.Ident.Repo]
 
-# config :rivet, Rivet.Email,
-#   enabled: false,
-#   sender: Rivet.Email.Example
+if config_env() == :test do
+  config :rivet_data_ident, Rivet.Email,
+    enabled: false,
+    sender: Rivet.Email.Example
+end
 
 config :rivet_data_ident, Rivet.Data.Ident.Repo,
   migration_repo: Rivet.Data.Ident.Repo,
   pool_size: 20,
   username: "postgres",
   password: "",
-  database: "rivet_#{config_env()}",
+  database: "rivet_data_ident_#{config_env()}",
   hostname: "localhost",
   log: false,
   pool: Ecto.Adapters.SQL.Sandbox

@@ -1,3 +1,3 @@
 defmodule Rivet.Data.Ident.Action.Db do
-  import Ecto.Query
+  use Rivet.Ecto.Collection.Context, model: Rivet.Data.Ident.Action
 end

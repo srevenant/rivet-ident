@@ -1,3 +1,3 @@
 defmodule Rivet.Data.Ident.Role.Db do
-  import Ecto.Query
+  use Rivet.Ecto.Collection.Context, model: Ident.Role
 end

@@ -1,8 +1,8 @@
 defmodule Rivet.Data.Ident.Test.AuthFactory do
+  alias Rivet.Data.Ident
+
   defmacro __using__(_) do
     quote location: :keep do
-      alias Rivet.Data.Ident
-
       ################################################################################
       def action_factory do
         %Ident.Action{
