@@ -6,7 +6,6 @@ defmodule Rivet.Data.Ident.User do
   import EctoEnum
   alias Rivet.Data.Ident
   use Rivet.Ecto.Model
-  # use Rivet.Data.Ident.Config
 
   defenum(Types,
     unknown: 0,

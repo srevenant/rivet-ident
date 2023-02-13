@@ -4,8 +4,7 @@ defmodule Rivet.Data.Ident.Factor.Migrations.Base do
 
   def change do
     ############################################################################
-    create table(:ident_factors, primary_key: false) do
-      add(:id, :uuid, primary_key: true)
+    create table(:ident_factors) do
       add(:user_id, references(:users, on_delete: :delete_all, type: :uuid))
       add(:type, :integer, null: false)
       add(:fedtype, :integer, null: false)
