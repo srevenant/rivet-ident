@@ -12,14 +12,14 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
 
   describe "factory" do
     test "factory creates a valid instance" do
-      assert %{} = model = insert(:email)
+      assert %{} = model = insert(:ident_email)
       assert model.id != nil
     end
   end
 
   describe "build/1" do
     test "build when valid" do
-      params = params_with_assocs(:email)
+      params = params_with_assocs(:ident_email)
       changeset = Rivet.Data.Ident.Email.build(params)
       assert changeset.valid?
     end
@@ -27,7 +27,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
 
   describe "get/1" do
     test "loads saved transactions as expected" do
-      c = insert(:email)
+      c = insert(:ident_email)
       assert %Rivet.Data.Ident.Email{} = found = Rivet.Data.Ident.Email.one!(id: c.id)
       assert found.id == c.id
     end
@@ -35,7 +35,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
 
   describe "create/1" do
     test "inserts a valid record" do
-      attrs = params_with_assocs(:email)
+      attrs = params_with_assocs(:ident_email)
       assert {:ok, model} = Rivet.Data.Ident.Email.create(attrs)
       assert model.id != nil
     end
@@ -43,7 +43,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
 
   describe "delete/1" do
     test "deletes record" do
-      model = insert(:email)
+      model = insert(:ident_email)
       assert {:ok, deleted} = Rivet.Data.Ident.Email.delete(model)
       assert deleted.id == model.id
     end

@@ -12,14 +12,14 @@ defmodule Rivet.Data.Ident.Test.FactorTest do
 
   describe "factory" do
     test "factory creates a valid instance" do
-      assert %{} = model = insert(:factor)
+      assert %{} = model = insert(:ident_factor)
       assert model.id != nil
     end
   end
 
   describe "build/1" do
     test "build when valid" do
-      params = params_with_assocs(:factor)
+      params = params_with_assocs(:ident_factor)
       changeset = Rivet.Data.Ident.Factor.build(params)
       assert changeset.valid?
     end
@@ -27,7 +27,7 @@ defmodule Rivet.Data.Ident.Test.FactorTest do
 
   describe "get/1" do
     test "loads saved transactions as expected" do
-      c = insert(:factor)
+      c = insert(:ident_factor)
       assert %Rivet.Data.Ident.Factor{} = found = Rivet.Data.Ident.Factor.one!(id: c.id)
       assert found.id == c.id
     end
@@ -35,7 +35,7 @@ defmodule Rivet.Data.Ident.Test.FactorTest do
 
   describe "create/1" do
     test "inserts a valid record" do
-      attrs = params_with_assocs(:factor)
+      attrs = params_with_assocs(:ident_factor)
       assert {:ok, model} = Rivet.Data.Ident.Factor.create(attrs)
       assert model.id != nil
     end
@@ -43,7 +43,7 @@ defmodule Rivet.Data.Ident.Test.FactorTest do
 
   describe "delete/1" do
     test "deletes record" do
-      model = insert(:factor)
+      model = insert(:ident_factor)
       assert {:ok, deleted} = Rivet.Data.Ident.Factor.delete(model)
       assert deleted.id == model.id
     end

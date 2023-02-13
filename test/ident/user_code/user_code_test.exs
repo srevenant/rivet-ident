@@ -12,14 +12,14 @@ defmodule Rivet.Data.Ident.Test.UserCodeTest do
 
   describe "factory" do
     test "factory creates a valid instance" do
-      assert %{} = model = insert(:user_code)
+      assert %{} = model = insert(:ident_user_code)
       assert model.id != nil
     end
   end
 
   describe "build/1" do
     test "build when valid" do
-      params = params_with_assocs(:user_code)
+      params = params_with_assocs(:ident_user_code)
       changeset = Rivet.Data.Ident.UserCode.build(params)
       assert changeset.valid?
     end
@@ -27,7 +27,7 @@ defmodule Rivet.Data.Ident.Test.UserCodeTest do
 
   describe "get/1" do
     test "loads saved transactions as expected" do
-      c = insert(:user_code)
+      c = insert(:ident_user_code)
       assert %Rivet.Data.Ident.UserCode{} = found = Rivet.Data.Ident.UserCode.one!(id: c.id)
       assert found.id == c.id
     end
@@ -35,7 +35,7 @@ defmodule Rivet.Data.Ident.Test.UserCodeTest do
 
   describe "create/1" do
     test "inserts a valid record" do
-      attrs = params_with_assocs(:user_code)
+      attrs = params_with_assocs(:ident_user_code)
       assert {:ok, model} = Rivet.Data.Ident.UserCode.create(attrs)
       assert model.id != nil
     end
@@ -43,7 +43,7 @@ defmodule Rivet.Data.Ident.Test.UserCodeTest do
 
   describe "delete/1" do
     test "deletes record" do
-      model = insert(:user_code)
+      model = insert(:ident_user_code)
       assert {:ok, deleted} = Rivet.Data.Ident.UserCode.delete(model)
       assert deleted.id == model.id
     end

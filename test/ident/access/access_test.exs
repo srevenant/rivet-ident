@@ -12,14 +12,14 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
 
   describe "factory" do
     test "factory creates a valid instance" do
-      assert %{} = model = insert(:access)
+      assert %{} = model = insert(:ident_access)
       assert model.id != nil
     end
   end
 
   describe "build/1" do
     test "build when valid" do
-      params = params_with_assocs(:access)
+      params = params_with_assocs(:ident_access)
       changeset = Rivet.Data.Ident.Access.build(params)
       assert changeset.valid?
     end
@@ -27,7 +27,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
 
   describe "get/1" do
     test "loads saved transactions as expected" do
-      c = insert(:access)
+      c = insert(:ident_access)
       assert %Rivet.Data.Ident.Access{} = found = Rivet.Data.Ident.Access.one!(id: c.id)
       assert found.id == c.id
     end
@@ -35,7 +35,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
 
   describe "create/1" do
     test "inserts a valid record" do
-      attrs = params_with_assocs(:access)
+      attrs = params_with_assocs(:ident_access)
       assert {:ok, model} = Rivet.Data.Ident.Access.create(attrs)
       assert model.id != nil
     end
@@ -43,7 +43,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
 
   describe "delete/1" do
     test "deletes record" do
-      model = insert(:access)
+      model = insert(:ident_access)
       assert {:ok, deleted} = Rivet.Data.Ident.Access.delete(model)
       assert deleted.id == model.id
     end

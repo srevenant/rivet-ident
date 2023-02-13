@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
   defmacro __using__(_) do
     quote location: :keep do
       ################################################################################
-      def action_factory do
+      def ident_action_factory do
         %Ident.Action{
           name: Rivet.Utils.Types.as_atom(sequence("action") <> "_edit"),
           description: Faker.Cat.name()
@@ -12,7 +12,7 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       end
 
       ################################################################################
-      def role_factory do
+      def ident_role_factory do
         %Ident.Role{
           name: Rivet.Utils.Types.as_atom("#{sequence("role")}"),
           description: "#{sequence("role")} #{Faker.Cat.name()}"
@@ -20,9 +20,9 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       end
 
       ################################################################################
-      def access_factory do
-        user = build(:user)
-        role = build(:role)
+      def ident_access_factory do
+        user = build(:ident_user)
+        role = build(:ident_role)
 
         %Ident.Access{
           user: user,
@@ -32,9 +32,9 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       end
 
       ################################################################################
-      def role_map_factory do
-        action = build(:action)
-        role = build(:role)
+      def ident_role_map_factory do
+        action = build(:ident_action)
+        role = build(:ident_role)
 
         %Ident.RoleMap{
           action: action,
@@ -43,7 +43,7 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       end
 
       ################################################################################
-      def user_factory do
+      def ident_user_factory do
         %Ident.User{
           type: :authed,
           name: "#{Faker.Person.first_name()} #{Faker.Person.last_name()}",
@@ -51,9 +51,9 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
         }
       end
 
-      def handle_factory do
-        user = build(:user)
-        seq_id = sequence(:handle, &"#{&1}")
+      def ident_handle_factory do
+        user = build(:ident_user)
+        seq_id = sequence(:ident_handle, &"#{&1}")
 
         %Ident.Handle{
           user: user,
@@ -61,8 +61,8 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
         }
       end
 
-      def phone_factory do
-        user = build(:user)
+      def ident_phone_factory do
+        user = build(:ident_user)
 
         %Ident.Phone{
           user: user,
@@ -72,8 +72,8 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
         }
       end
 
-      def email_factory do
-        user = build(:user)
+      def ident_email_factory do
+        user = build(:ident_user)
 
         %Ident.Email{
           user: user,
@@ -84,9 +84,9 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       end
 
       ################################################################################
-      def factor_factory do
+      def ident_factor_factory do
         %Ident.Factor{
-          user: build(:user),
+          user: build(:ident_user),
           type: :unknown,
           expires_at: Rivet.Utils.Time.epoch_time(:second) + 900
         }
@@ -98,11 +98,11 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       #
       # TODO: it shouldn't be necessary to hash it here, but the factory is bypassing
       # the Ecto module
-      def hashpass_factor_factory do
+      def ident_hashpass_factor_factory do
         pass = Ident.Factor.Password.generate()
 
         %Ident.Factor{
-          user: build(:user),
+          user: build(:ident_user),
           type: :password,
           password: pass,
           hash: Ident.Factor.Password.hash(pass),
@@ -110,22 +110,22 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
         }
       end
 
-      def user_code_factory do
+      def ident_user_code_factory do
         code = Ecto.UUID.generate()
                |> String.replace(~r/[-IO0]+/i, "")
                |> String.slice(1..8)
                |> String.upcase()
 
         %Ident.UserCode{
-          user: build(:user),
+          user: build(:ident_user),
           type: :password_reset,
           code: code,
           expires: DateTime.from_unix!(Rivet.Utils.Time.epoch_time(:second) + 900)
         }
       end
 
-      def user_data_factory do
-        user = build(:user)
+      def ident_user_data_factory do
+        user = build(:ident_user)
 
         %Ident.UserData{
           user: user,
