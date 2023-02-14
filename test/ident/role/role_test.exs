@@ -12,40 +12,40 @@ defmodule Rivet.Data.Ident.Test.RoleTest do
 
   describe "factory" do
     test "factory creates a valid instance" do
-      assert %{} = dup_template = insert(:dup_template)
-      assert dup_template.id != nil
+      assert %{} = model = insert(:role)
+      assert model.id != nil
     end
   end
 
   describe "build/1" do
     test "build when valid" do
-      params = params_with_assocs(:dup_template)
-      changeset = Db.DupTemplate.build(params)
+      params = params_with_assocs(:role)
+      changeset = Rivet.Data.Ident.Role.build(params)
       assert changeset.valid?
     end
   end
 
   describe "get/1" do
     test "loads saved transactions as expected" do
-      c = insert(:dup_template)
-      assert %Db.DupTemplate{} = found = Db.DupTemplates.one!(id: c.id)
+      c = insert(:role)
+      assert %Rivet.Data.Ident.Role{} = found = Rivet.Data.Ident.Role.one!(id: c.id)
       assert found.id == c.id
     end
   end
 
   describe "create/1" do
     test "inserts a valid record" do
-      attrs = params_with_assocs(:dup_template)
-      assert {:ok, dup_template} = Db.DupTemplates.create(attrs)
-      assert dup_template.id != nil
+      attrs = params_with_assocs(:role)
+      assert {:ok, model} = Rivet.Data.Ident.Role.create(attrs)
+      assert model.id != nil
     end
   end
 
   describe "delete/1" do
     test "deletes record" do
-      dup_template = insert(:dup_template)
-      assert {:ok, deleted} = Db.DupTemplates.delete(dup_template)
-      assert deleted.id == dup_template.id
+      model = insert(:role)
+      assert {:ok, deleted} = Rivet.Data.Ident.Role.delete(model)
+      assert deleted.id == model.id
     end
   end
 end

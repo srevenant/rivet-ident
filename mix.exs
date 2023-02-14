@@ -22,8 +22,7 @@ defmodule RivetDataIdent.MixProject do
       ],
       rivet: [
         mod_dir: "ident",
-        # there is a better way, but for now I want to just get it working
-        ensure_loaded: [:rivet_data_ident]
+        app_base: Rivet.Data.Ident
       ],
       aliases: aliases()
     ]
@@ -33,12 +32,7 @@ defmodule RivetDataIdent.MixProject do
     [
       mod: {Rivet.Data.Ident.Application, []},
       extra_applications: [
-        :rivet,
-        :rivet_email,
         :logger,
-        :postgrex,
-        :ecto,
-        :timex,
         {:ex_unit, :optional}
       ]
     ]
@@ -88,8 +82,8 @@ defmodule RivetDataIdent.MixProject do
     [
       files: ~w(lib .formatter.exs mix.exs README* LICENSE*),
       licenses: ["AGPL-3.0-or-later"],
-      links: %{"GitHub" => "https://github.com/srevenant/atom-data-auth"},
-      source_url: "https://github.com/srevenant/atom-data-auth"
+      links: %{"GitHub" => "https://github.com/srevenant/rivet-data-ident"},
+      source_url: "https://github.com/srevenant/rivet-data-ident"
     ]
   end
 end

@@ -5,6 +5,7 @@ defmodule Rivet.Data.Ident.Email do
   use TypedEctoSchema
   # use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model
+  alias Rivet.Data.Ident
 
   typed_schema "emails" do #{@ident_table_emails}" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

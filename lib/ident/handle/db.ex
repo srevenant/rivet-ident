@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Ident.Handle.Db do
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: Ident.Handle
 
   @doc """
   Check if handle is open, return double-error (internal/external msg)

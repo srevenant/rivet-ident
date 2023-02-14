@@ -44,7 +44,6 @@ defmodule Rivet.Data.Ident.User.Db.Update do
     ```
 
   """
-  use Rivet.Ecto.Collection.Context
   alias Rivet.Data.Ident
   require Logger
 

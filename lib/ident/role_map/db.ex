@@ -1,6 +1,6 @@
-defmodule Rivet.Data.Ident.RoleMaps do
+defmodule Rivet.Data.Ident.RoleMap.Db do
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: Ident.RoleMap
 
   # should probably be on Ident.Accesses
   def get_actions(%Ident.Access{role: %{id: role_id}, domain: domain, ref_id: ref_id}),

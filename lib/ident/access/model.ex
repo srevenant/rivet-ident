@@ -5,6 +5,7 @@ defmodule Rivet.Data.Ident.Access do
   use TypedEctoSchema
   # use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model, id_type: :int
+  alias Rivet.Data.Ident
   import EctoEnum
 
   # Access domains are per table type so you can map accesses to individual

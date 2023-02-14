@@ -1,9 +1,8 @@
 defmodule Rivet.Data.Ident.Test.AuthFactory do
-  use ExMachina.Ecto, repo: Rivet.Data.Repo
-  alias Rivet.Data.Ident
-
   defmacro __using__(_) do
     quote location: :keep do
+      alias Rivet.Data.Ident
+
       ################################################################################
       def action_factory do
         %Ident.Action{
@@ -108,6 +107,20 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
           password: pass,
           hash: Ident.Factor.Password.hash(pass),
           expires_at: Rivet.Utils.Time.epoch_time(:second) + 900
+        }
+      end
+
+      def user_code_factory do
+        code = Ecto.UUID.generate()
+               |> String.replace(~r/[-IO0]+/i, "")
+               |> String.slice(1..8)
+               |> String.upcase()
+
+        %Ident.UserCode{
+          user: build(:user),
+          type: :password_reset,
+          code: code,
+          expires: DateTime.from_unix!(Rivet.Utils.Time.epoch_time(:second) + 900)
         }
       end
 

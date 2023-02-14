@@ -4,6 +4,7 @@ defmodule Rivet.Data.Ident.User do
   """
   use TypedEctoSchema
   import EctoEnum
+  alias Rivet.Data.Ident
   use Rivet.Ecto.Model
   # use Rivet.Data.Ident.Config
 
@@ -27,7 +28,7 @@ defmodule Rivet.Data.Ident.User do
     field(:last_seen, :utc_datetime)
     has_many(:factors, Ident.Factor, on_delete: :delete_all)
     has_many(:accesses, Ident.Access, on_delete: :delete_all)
-    has_many(:tags, Ident.TagUser, on_delete: :delete_all)
+    #has_many(:tags, Ident.TagUser, on_delete: :delete_all)
 
     field(:type, Types, default: :unknown)
     field(:authz, Rivet.Utils.Ecto.MapSet, default: nil, virtual: true)

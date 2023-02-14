@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Ident.Access.Db do
-  use Rivet.Ecto.Collection.Context
   alias Rivet.Data.Ident
+  use Rivet.Ecto.Collection.Context, model: Ident.Access
 
   @doc """
   Fold a list of accesses into a set of actions, using memory cache

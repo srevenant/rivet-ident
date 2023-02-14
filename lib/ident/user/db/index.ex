@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Ident.User.Db do
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Collection.Context
+  use Rivet.Ecto.Collection.Context, model: Ident.User
   # use Rivet.Data.Ident.Config
   alias Rivet.Auth
   require Logger
