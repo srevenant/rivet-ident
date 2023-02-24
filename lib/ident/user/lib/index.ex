@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.User.Db do
+defmodule Rivet.Data.Ident.User.Lib do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.User
   # use Rivet.Data.Ident.Config
@@ -43,7 +43,7 @@ defmodule Rivet.Data.Ident.User.Db do
           {:ok | :error, Ident.User.t()}
   def check_authz(user, %Auth.Assertion{} = assertion) do
     key = {assertion.action, assertion.domain, assertion.ref_id}
-    user = Ident.User.Db.get_authz(user)
+    user = Ident.User.Lib.get_authz(user)
 
     if MapSet.member?(user.authz, key) do
       {:ok, user}

@@ -36,4 +36,7 @@ defmodule Rivet.Data.Ident.User do
   end
 
   use Rivet.Ecto.Collection, update: [:settings, :name, :last_seen, :type]
+
+  def enabled?(%__MODULE__{type: type}), do: type != :disabled
+  def enabled?(_), do: false
 end

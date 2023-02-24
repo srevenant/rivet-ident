@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Factor.Db do
+defmodule Rivet.Data.Ident.Factor.Lib do
   @type str :: String.t()
   @type log_msg :: str
   @type usr_msg :: str

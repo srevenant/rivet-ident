@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Email.Db do
+defmodule Rivet.Data.Ident.Email.Lib do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Email
 
@@ -21,6 +21,21 @@ defmodule Rivet.Data.Ident.Email.Db do
 
       {:ok, %Ident.Email{} = email} ->
         func.(email)
+    end
+  end
+
+  @expire_minutes 60
+  def send_reset_code(%Ident.Email{user: %Ident.User{} = user} = email) do
+    Ident.UserCode.Lib.clear_all_codes(user.id, :password_reset)
+
+    case Ident.UserCode.Lib.generate_code(user.id, :password_reset, @expire_minutes) do
+      {:ok, code} ->
+        Ident.User.Notify.PasswordReset.send(user, email, code)
+        :ok
+
+      error ->
+        IO.inspect(error, label: "Cannot generate Db.UserCode?")
+        :error
     end
   end
 end
