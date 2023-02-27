@@ -1,9 +1,9 @@
-defmodule RivetDataIdent.MixProject do
+defmodule RivetAuth.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :rivet_data_ident,
+      app: :rivet_auth,
       version: "2.0.0",
       package: package(),
       elixir: "~> 1.13",
@@ -55,7 +55,7 @@ defmodule RivetDataIdent.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rivet, "~> 1.0.0", git: "git@github.com:srevenant/rivet", branch: "master"},
+      {:rivet, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet", branch: "db2lib"},
       {:rivet_utils, "~> 1.0.0"},
       {:rivet_email, "~> 1.0.0", git: "git@github.com:srevenant/rivet-email", branch: "master"},
       {:ecto_sql, "~> 3.7"},
