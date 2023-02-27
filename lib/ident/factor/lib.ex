@@ -18,7 +18,7 @@ defmodule Rivet.Data.Ident.Factor.Lib do
       :miss ->
         case @repo.one(from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])) do
           %Ident.Factor{user: %Ident.User{} = user} = factor ->
-            user = Ident.User.Db.get_authz(user)
+            user = Ident.User.Lib.get_authz(user)
             user = %Ident.User{user | state: Map.put(user.state, :active_factor_id, factor.id)}
 
             %Ident.Factor{factor | user: user}
@@ -36,7 +36,7 @@ defmodule Rivet.Data.Ident.Factor.Lib do
   @doc """
   Preload factors for a related model, with criteria, and only unexpired factors
 
-      Ident.Factor.Db.preloaded_with(model, type)
+      Ident.Factor.Lib.preloaded_with(model, type)
 
   """
   def preloaded_with(model, type) when is_list(type) do

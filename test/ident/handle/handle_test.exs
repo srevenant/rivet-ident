@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.HandleTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Handle, import: true
-  doctest Rivet.Data.Ident.Handle.Db, import: true
+  doctest Rivet.Data.Ident.Handle.Lib, import: true
   doctest Rivet.Data.Ident.Handle.Loader, import: true
   doctest Rivet.Data.Ident.Handle.Seeds, import: true
   doctest Rivet.Data.Ident.Handle.Graphql, import: true

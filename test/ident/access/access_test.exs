@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Access, import: true
-  doctest Rivet.Data.Ident.Access.Db, import: true
+  doctest Rivet.Data.Ident.Access.Lib, import: true
   doctest Rivet.Data.Ident.Access.Loader, import: true
   doctest Rivet.Data.Ident.Access.Seeds, import: true
   doctest Rivet.Data.Ident.Access.Graphql, import: true

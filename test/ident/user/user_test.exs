@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.UserTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.User, import: true
-  doctest Rivet.Data.Ident.User.Db, import: true
+  doctest Rivet.Data.Ident.User.Lib, import: true
   doctest Rivet.Data.Ident.User.Loader, import: true
   doctest Rivet.Data.Ident.User.Seeds, import: true
   doctest Rivet.Data.Ident.User.Graphql, import: true

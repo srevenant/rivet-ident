@@ -1,6 +1,6 @@
 defmodule Rivet.Data.Ident.Action do
   @moduledoc """
-  Schema for representing and working with a Ident.Acces.Db.
+  Schema for representing and working with a Ident.Action.
   """
   use TypedEctoSchema
   # use Rivet.Data.Ident.Config

@@ -6,7 +6,7 @@ defmodule Rivet.Data.Ident.User.Notify.Verification do
 
   def send(%Ident.Email{address: eaddr, user: user} = email) do
     with {:ok, code} <-
-           Ident.UserCode.Db.generate_code(
+           Ident.UserCode.Lib.generate_code(
              email.user_id,
              :email_verify,
              @reset_code_expire_mins,

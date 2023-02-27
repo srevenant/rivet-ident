@@ -67,7 +67,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
         Rivet.Utils.Time.now() + get_user_conf(:initial_password_expiration_days) * 86_400
 
       with {:ok, factor} <-
-             Ident.Factor.Db.set_password(user, generated, %{expires_at: expires_at}) do
+             Ident.Factor.Lib.set_password(user, generated, %{expires_at: expires_at}) do
         finish_update(
           args,
           :user,
@@ -102,7 +102,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
   ##############################################################################
   # PHONE
   def update(%{phone: %{phone: phone}, action: :upsert} = args, admin, %Ident.User{} = user) do
-    with {:ok, _} <- Ident.User.Db.add_phone(user, phone),
+    with {:ok, _} <- Ident.User.Lib.add_phone(user, phone),
          do: finish_update(args, :phone, admin, refresh(user, :phones))
   end
 
@@ -123,7 +123,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
       when is_binary(handle) do
     # inner with so the error can have the preloaded user
     with {:ok, user} <- Ident.User.preload(user, [:handle]) do
-      with {:ok, :available} <- Ident.Handle.Db.available(handle, user.id),
+      with {:ok, :available} <- Ident.Handle.Lib.available(handle, user.id),
            {:ok, new_handle} <- Ident.Handle.create(%{handle: handle, user_id: user.id}) do
         # delete the old one
         with %Ident.Handle{} <- user.handle, do: Ident.Handle.delete(user.handle)
@@ -160,7 +160,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
   end
 
   def update(%{email: %{email: email}, action: :upsert} = args, admin, %Ident.User{} = user) do
-    with {:ok, _email} <- Ident.User.Db.add_email(user, email) do
+    with {:ok, _email} <- Ident.User.Lib.add_email(user, email) do
       finish_update(args, :email, admin, refresh(user, :emails))
     end
   end
@@ -213,7 +213,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
   def update(%{role: role_arg, action: :remove} = args, :admin, %Ident.User{} = user) do
     with {:ok, role} <- Ident.Role.one(Enum.to_list(role_arg)),
          {:ok, access} <- Ident.Access.one(user_id: user.id, role_id: role.id),
-         true <- Ident.User.Db.has_other_admin?(role, user),
+         true <- Ident.User.Lib.has_other_admin?(role, user),
          {:ok, _} <- Ident.Access.delete(access) do
       finish_update(args, :role, :admin, refresh(user, :accesses))
     end
@@ -226,7 +226,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
   #        {:user, {:ok, user}} <- {:user, Ident.User.one(id: user_id)},
   #        {:role, {:ok, role}} <- {:role, Ident.Role.one(id: role)},
   #        {:has_admin, true} <-
-  #          {:has_admin, Ident.User.Db.tenant_has_other_admin?(user_id, admin.tenant_id)} do
+  #          {:has_admin, Ident.User.Lib.tenant_has_other_admin?(user_id, admin.tenant_id)} do
   #     case Ident.Access.one(user_id: user.id, role_id: role.id) do
   #       {:ok, _access} ->
   #         nil
@@ -288,7 +288,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
     case get_in(args, [:handle, :handle]) do
       # if unspecified, auto-create a handle
       nil ->
-        {:ok, Map.put(args, :handle, %{handle: Ident.Handle.Db.gen_good_handle(addr)})}
+        {:ok, Map.put(args, :handle, %{handle: Ident.Handle.Lib.gen_good_handle(addr)})}
 
       # or check the one they provide
       handle ->

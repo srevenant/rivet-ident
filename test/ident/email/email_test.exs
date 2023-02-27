@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Email, import: true
-  doctest Rivet.Data.Ident.Email.Db, import: true
+  doctest Rivet.Data.Ident.Email.Lib, import: true
   doctest Rivet.Data.Ident.Email.Loader, import: true
   doctest Rivet.Data.Ident.Email.Seeds, import: true
   doctest Rivet.Data.Ident.Email.Graphql, import: true

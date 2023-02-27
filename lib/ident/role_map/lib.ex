@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.RoleMap.Db do
+defmodule Rivet.Data.Ident.RoleMap.Lib do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.RoleMap
 

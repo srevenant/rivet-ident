@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.PhoneTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Phone, import: true
-  doctest Rivet.Data.Ident.Phone.Db, import: true
+  doctest Rivet.Data.Ident.Phone.Lib, import: true
   doctest Rivet.Data.Ident.Phone.Loader, import: true
   doctest Rivet.Data.Ident.Phone.Seeds, import: true
   doctest Rivet.Data.Ident.Phone.Graphql, import: true

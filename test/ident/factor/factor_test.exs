@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.FactorTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Factor, import: true
-  doctest Rivet.Data.Ident.Factor.Db, import: true
+  doctest Rivet.Data.Ident.Factor.Lib, import: true
   doctest Rivet.Data.Ident.Factor.Loader, import: true
   doctest Rivet.Data.Ident.Factor.Seeds, import: true
   doctest Rivet.Data.Ident.Factor.Graphql, import: true

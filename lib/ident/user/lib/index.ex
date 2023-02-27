@@ -34,7 +34,7 @@ defmodule Rivet.Data.Ident.User.Lib do
   @spec get_authz(user :: Ident.User.t()) :: Ident.User.t()
   def get_authz(%Ident.User{authz: authz} = user) when is_nil(authz) do
     {:ok, user} = Ident.User.preload(user, :accesses)
-    %Ident.User{user | authz: Rivet.Data.Ident.Access.Db.get_actions(user)}
+    %Ident.User{user | authz: Rivet.Data.Ident.Access.Lib.get_actions(user)}
   end
 
   def get_authz(%Ident.User{} = user), do: user
@@ -145,7 +145,7 @@ defmodule Rivet.Data.Ident.User.Lib do
   end
 
   defp signup_check_handle(pass = {:ok, auth = %Auth.Domain{input: %{handle: handle}}}) do
-    case Ident.Handle.Db.available(handle) do
+    case Ident.Handle.Lib.available(handle) do
       {:ok, _available_msg} ->
         pass
 
@@ -184,7 +184,7 @@ defmodule Rivet.Data.Ident.User.Lib do
             input: %{secret: secret}
           }}
        ) do
-    case Ident.Factor.Db.set_password(user, secret) do
+    case Ident.Factor.Lib.set_password(user, secret) do
       {:ok, %Ident.Factor{}} ->
         {:ok, auth}
 
@@ -201,7 +201,7 @@ defmodule Rivet.Data.Ident.User.Lib do
             input: %{fedid: %Ident.Factor.FedId{} = fedid}
           }}
        ) do
-    case Ident.Factor.Db.set_factor(user, fedid) do
+    case Ident.Factor.Lib.set_factor(user, fedid) do
       {:ok, %Ident.Factor{} = factor} ->
         {:ok, %Auth.Domain{auth | factor: factor}}
 

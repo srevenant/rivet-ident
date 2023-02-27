@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.ActionTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Action, import: true
-  doctest Rivet.Data.Ident.Action.Db, import: true
+  doctest Rivet.Data.Ident.Action.Lib, import: true
   doctest Rivet.Data.Ident.Action.Loader, import: true
   doctest Rivet.Data.Ident.Action.Seeds, import: true
   doctest Rivet.Data.Ident.Action.Graphql, import: true

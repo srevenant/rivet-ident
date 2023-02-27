@@ -2,7 +2,7 @@ defmodule Rivet.Data.Ident.Test.RoleTest do
   use Rivet.Data.Ident.Case, async: true
 
   doctest Rivet.Data.Ident.Role, import: true
-  doctest Rivet.Data.Ident.Role.Db, import: true
+  doctest Rivet.Data.Ident.Role.Lib, import: true
   doctest Rivet.Data.Ident.Role.Loader, import: true
   doctest Rivet.Data.Ident.Role.Seeds, import: true
   doctest Rivet.Data.Ident.Role.Graphql, import: true

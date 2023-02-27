@@ -34,7 +34,7 @@ defmodule Rivet.Data.Ident.Email.Lib do
         :ok
 
       error ->
-        IO.inspect(error, label: "Cannot generate Db.UserCode?")
+        IO.inspect(error, label: "Cannot generate UserCode?")
         :error
     end
   end
