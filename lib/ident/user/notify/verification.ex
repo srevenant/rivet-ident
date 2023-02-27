@@ -4,6 +4,7 @@ defmodule Rivet.Data.Ident.User.Notify.Verification do
   use Rivet.Email.Template
   require Logger
 
+  @reset_code_expire_mins 1_440
   def send(%Ident.Email{address: eaddr, user: user} = email) do
     with {:ok, code} <-
            Ident.UserCode.Lib.generate_code(

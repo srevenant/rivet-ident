@@ -1,5 +1,6 @@
 defmodule Rivet.Data.Ident.User.Lib.Signin do
   alias Rivet.Data.Ident
+  alias Rivet.Data.Ident.User.Notify
   # use Rivet.Data.Ident.Config
   alias Rivet.Auth
   require Logger
@@ -251,7 +252,7 @@ defmodule Rivet.Data.Ident.User.Lib.Signin do
     case Ident.Email.one(address: eaddr) do
       {:ok, %Ident.Email{} = email} ->
         Logger.warn("failed adding email", user_id: user.id, eaddr: eaddr)
-        @ident_notify_failed_change.send(email, "add email to your account.")
+        Notify.FailedChange.send(email, "add email to your account.")
 
         {:error, "That email already is associated with a different account"}
 
@@ -264,7 +265,7 @@ defmodule Rivet.Data.Ident.User.Lib.Signin do
              }) do
           {:ok, %Ident.Email{} = email} ->
             email = %Ident.Email{email | user: user}
-            @ident_notify_verification.send(email)
+            Notify.Verification.send(email)
 
             {:ok, email}
 

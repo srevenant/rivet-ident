@@ -9,7 +9,7 @@ defmodule Rivet.Data.Ident.UserCode do
 
   defenum(Types, password_reset: 0, email_verify: 1, file_download: 2)
 
-  typed_schema "user_codes" do #{@ident_table_user_codes}" do
+  typed_schema "user_codes" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     field(:type, Types)
     field(:code, :string)

@@ -6,7 +6,7 @@ defmodule Rivet.Data.Ident.RoleMap do
   use Rivet.Ecto.Model, id_type: :int
   alias Rivet.Data.Ident
 
-  typed_schema "ident_role_maps" do # #{@ident_table_role_maps}" do
+  typed_schema "ident_role_maps" do
     belongs_to(:action, Ident.Action, foreign_key: :action_id)
     belongs_to(:role, Ident.Role, foreign_key: :role_id)
   end

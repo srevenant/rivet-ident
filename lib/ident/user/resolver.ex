@@ -2,8 +2,10 @@ defmodule Rivet.Data.Ident.User.Resolver do
   @moduledoc """
   GraphQL resolver for interacting with Rivet.Data.Ident.User.
   """
-  import Web.Absinthe
+  import Rivet.Graphql
+  import Rivet.Auth.Graphql
   require Logger
+  alias Rivet.Auth
   alias Rivet.Data.Ident
   alias Ident.User
 
@@ -72,7 +74,11 @@ defmodule Rivet.Data.Ident.User.Resolver do
         {:ok, user, :self, target_id}
       else
         with {:ok, user} <-
-               authz_action(info, %Auth.Assertion{action: :user_admin}, "updatePerson(other)") do
+               Auth.authz_action(
+                 info,
+                 %Auth.Assertion{action: :user_admin},
+                 "updatePerson(other)"
+               ) do
           {:ok, user, :admin, target_id}
         end
       end
@@ -174,7 +180,7 @@ defmodule Rivet.Data.Ident.User.Resolver do
     do: {:ok, %{success: true, result: result, total: total}}
 
   defp ecto_query_to_result({:error, chgset}, _total),
-    do: {:ok, %{success: false, reason: ADI.Utils.Errors.convert_error_changeset(chgset)}}
+    do: {:ok, %{success: false, reason: error_string(chgset)}}
 
   def resolve_settings(_, %{source: %User{} = user}) do
     {:ok, user.settings}
@@ -183,7 +189,7 @@ defmodule Rivet.Data.Ident.User.Resolver do
   def resolve_settings(_, _), do: {:ok, %{}}
 
   def query_people(%{id: id}, info) when is_binary(id) do
-    with {:ok, _} <- authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople"),
+    with {:ok, _} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople"),
          {:ok, user} <- User.one(id: id) do
       {:ok, %{success: true, total: 1, result: [user]}}
     else
@@ -195,18 +201,18 @@ defmodule Rivet.Data.Ident.User.Resolver do
     if String.length(matching) == 0 do
       query_people(%{}, info)
     else
-      with {:ok, _admin} <-
-             authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
+      with {:ok, admin} <-
+             Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
         matching = "%" <> matching <> "%"
 
-        User.Lib.Search.search(%{matching: matching, limit: 25})
+        User.Lib.Search.search(%{matching: matching, limit: 25}, admin)
         |> ecto_query_to_result(User.count!())
       end
     end
   end
 
   def query_people(%{}, info) do
-    with {:ok, _admin} <- authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
+    with {:ok, _admin} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
       User.all([], limit: 25)
       |> ecto_query_to_result(User.count!())
     end
@@ -215,7 +221,7 @@ defmodule Rivet.Data.Ident.User.Resolver do
   ##############################################################################
   # private
   def query_public_people(%{filter: %{name: name} = filter}, info) when is_binary(name) do
-    if get_user_conf(:public_people) == true do
+    if Application.get_env(:rivet_auth, :public_people) do
       with_current_user(info, "listPublicPeople", fn user ->
         matches =
           case Ident.Handle.one([handle: name], [:user]) do
@@ -240,17 +246,15 @@ defmodule Rivet.Data.Ident.User.Resolver do
   end
 
   ##############################################################################
-  def query_public_person(%{target: handle}, info) do
-    if get_user_conf(:public_people) == true do
-      with_logging(info, "publicPerson-handle", fn _ ->
-        case Ident.Handle.one([handle: handle], [:user]) do
-          {:ok, handle} ->
-            {:ok, %{success: true, result: handle.user}}
+  def query_public_person(%{target: handle}, _info) do
+    if Application.get_env(:rivet_auth, :public_people) do
+      case Ident.Handle.one([handle: handle], [:user]) do
+        {:ok, handle} ->
+          {:ok, %{success: true, result: handle.user}}
 
-          {:error, _} ->
-            {:ok, %{success: false, reason: "cannot find user #{handle}"}}
-        end
-      end)
+        {:error, _} ->
+          {:ok, %{success: false, reason: "cannot find user #{handle}"}}
+      end
     else
       Logger.warn("Query for public person ignored <disabled by system config>")
       {:error, :authz}
@@ -258,10 +262,10 @@ defmodule Rivet.Data.Ident.User.Resolver do
   end
 
   ##############################################################################
-  def request_password_reset(%{email: eaddr}, info) when is_binary(eaddr) do
-    if get_user_conf(:password_user_reset) == true do
+  def request_password_reset(%{email: eaddr}, _info) when is_binary(eaddr) do
+    if Application.get_env(:rivet_auth, :password_user_reset) do
       eaddr = String.trim(eaddr)
-      Logger.info("password reset request", user_id: user_id, eaddr: eaddr)
+      Logger.info("password reset request", eaddr: eaddr)
 
       case Ident.Email.one([address: eaddr], [:user]) do
         {:ok, %Ident.Email{} = email} ->
@@ -286,23 +290,21 @@ defmodule Rivet.Data.Ident.User.Resolver do
   def mutate_change_password(%{current: c, new: n, email: ""}, info),
     do: mutate_change_password(%{current: c, new: n}, info)
 
-  def mutate_change_password(%{new: new, code: code}, info) do
-    with_logging(info, "changePassword(reset)", fn _ ->
-      with {:ok, %UserCode{} = code} <- UserCodes.one([code: code], [:user]),
-           true <- Web.Auth.change_password(code, new) do
-        UserCodes.delete(code)
-        {:ok, %{success: true}}
-      else
-        _ ->
-          {:ok, %{success: false, reason: "reset code does not match"}}
-      end
-    end)
+  def mutate_change_password(%{new: new, code: code}, _info) do
+    with {:ok, %Ident.UserCode{} = code} <- Ident.UserCode.one([code: code], [:user]),
+         true <- Auth.change_password(code, new) do
+      Ident.UserCode.delete(code)
+      {:ok, %{success: true}}
+    else
+      _ ->
+        {:ok, %{success: false, reason: "reset code does not match"}}
+    end
   end
 
   def mutate_change_password(%{current: current, new: new}, info) do
     with_current_user(info, "changePassword(change)", fn user ->
       # pass to authX module; accept reset code in lieu of password
-      if Web.Auth.change_password(user, current, new) do
+      if Auth.change_password(user, current, new) do
         {:ok, %{success: true}}
       else
         {:ok, %{success: false, reason: "current password or reset code do not match"}}
@@ -311,14 +313,14 @@ defmodule Rivet.Data.Ident.User.Resolver do
   end
 
   ##############################################################################
-  def resolve_auth_status(_, %Absinthe.Resolution{
+  def resolve_auth_status(_, %{
         source: %User{id: user_id1} = src,
         context: %{user: %User{id: user_id2} = user}
       }) do
     if user_id1 == user_id2 do
       {:ok, user.type}
     else
-      with {:ok, _authed} <- authz_action(user, %Ident.AuthAssertion{action: :user_admin}) do
+      with {:ok, _authed} <- Auth.authz_action(user, %Auth.Assertion{action: :user_admin}) do
         {:ok, src.type}
       else
         _ ->
@@ -346,7 +348,7 @@ defmodule Rivet.Data.Ident.User.Resolver do
   end
 
   def resolve_user_data(%User{} = user, %{types: types}, _) do
-    {:ok, UserDatas.list_types(user, types)}
+    {:ok, Ident.UserData.Lib.list_types(user, types)}
   end
 
   def resolve_user_data(%User{} = user, _, _) do

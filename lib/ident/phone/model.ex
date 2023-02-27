@@ -3,7 +3,7 @@ defmodule Rivet.Data.Ident.Phone do
   use TypedEctoSchema
   use Rivet.Ecto.Model
 
-  typed_schema "user_phones" do #{@ident_table_phones}" do
+  typed_schema "user_phones" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     field(:number, :string)
     field(:primary, :boolean, default: false)

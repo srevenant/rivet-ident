@@ -4,7 +4,6 @@ defmodule Rivet.Data.Ident.Factor do
   """
   use TypedEctoSchema
   alias Rivet.Data.Ident
-  # use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details], id_type: :int
   import EctoEnum
 
@@ -27,7 +26,7 @@ defmodule Rivet.Data.Ident.Factor do
     twitch: 5
   )
 
-  typed_schema "ident_factors" do #{@ident_table_factors}" do
+  typed_schema "ident_factors" do
     # identity vs authentication
     field(:type, Types)
     field(:fedtype, FederatedTypes, default: :none)

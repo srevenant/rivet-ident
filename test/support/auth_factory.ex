@@ -111,10 +111,11 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
       end
 
       def ident_user_code_factory do
-        code = Ecto.UUID.generate()
-               |> String.replace(~r/[-IO0]+/i, "")
-               |> String.slice(1..8)
-               |> String.upcase()
+        code =
+          Ecto.UUID.generate()
+          |> String.replace(~r/[-IO0]+/i, "")
+          |> String.slice(1..8)
+          |> String.upcase()
 
         %Ident.UserCode{
           user: build(:ident_user),
