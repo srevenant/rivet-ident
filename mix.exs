@@ -13,7 +13,8 @@ defmodule RivetAuth.MixProject do
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
-        "coveralls.html": :test
+        "coveralls.html": :test,
+        dialyzer: :test
       ],
       deps: deps(),
       dialyzer: [
@@ -59,6 +60,7 @@ defmodule RivetAuth.MixProject do
       {:rivet_utils, "~> 1.0.0"},
       {:rivet_email, "~> 1.0.0", git: "git@github.com:srevenant/rivet-email", branch: "master"},
       {:bcrypt_elixir, "~> 1.1.1"},
+      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ecto_enum, "~> 1.0"},
       {:ecto_sql, "~> 3.7"},
       {:faker, "~> 0.10"},
