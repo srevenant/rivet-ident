@@ -1,3 +1,3 @@
 defmodule Rivet.Email.Example.Mailer do
-  use Rivet.Email.Mailer, otp_app: :rivet_data_ident
+  use Rivet.Email.Mailer, otp_app: :rivet_auth
 end

@@ -1,25 +1,19 @@
 import Config
 
-# config :logger, level: :info
 config :logger, level: :info
 config :ex_unit, capture_log: true
 
 config :rivet,
-  repo: Rivet.Data.Ident.Repo,
+  repo: Rivet.Auth.Repo,
   table_prefix: "",
   test: true
 
-config :rivet_data_ident,
-  ecto_repos: [Rivet.Data.Ident.Repo]
 
-if config_env() == :test do
-  config :rivet_data_ident, Rivet.Email,
-    enabled: false,
-    sender: Rivet.Email.Example
-end
+config :rivet_auth,
+  ecto_repos: [Rivet.Auth.Repo]
 
-config :rivet_data_ident, Rivet.Data.Ident.Repo,
-  migration_repo: Rivet.Data.Ident.Repo,
+config :rivet_auth, Rivet.Auth.Repo,
+  migration_repo: Rivet.Auth.Repo,
   pool_size: 20,
   username: "postgres",
   password: "",
