@@ -1,5 +1,6 @@
 defmodule Rivet.Data.Ident.Factor.FedId.Provider do
   defstruct type: :unknown,
+            sub: nil,
             kid: nil,
             jti: nil,
             iss: nil,
@@ -11,6 +12,7 @@ defmodule Rivet.Data.Ident.Factor.FedId.Provider do
 
   @type t :: %__MODULE__{
           type: atom,
+          sub: nil | String.t(),
           kid: nil | String.t(),
           jti: nil | String.t(),
           iss: nil | String.t(),

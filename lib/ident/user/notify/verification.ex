@@ -1,5 +1,4 @@
 defmodule Rivet.Data.Ident.User.Notify.Verification do
-  # use Rivet.Data.Ident.Config
   alias Rivet.Data.Ident
   use Rivet.Email.Template
   require Logger
@@ -16,7 +15,7 @@ defmodule Rivet.Data.Ident.User.Notify.Verification do
              }
            ) do
       Logger.info("added email", user_id: user.id, eaddr: eaddr)
-      @sender.send(email, __MODULE__, code: code)
+      @sender.send(email, __MODULE__, code: code.code)
     end
   end
 

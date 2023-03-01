@@ -44,13 +44,14 @@ defmodule Rivet.Data.Ident.Factor do
   end
 
   @required_fields [:type, :expires_at, :user_id]
-  use Rivet.Ecto.Collection, required: @required_fields
+  @update_fields [:fedtype, :name, :value, :details, :password]
+  use Rivet.Ecto.Collection, required: @required_fields, update: @update_fields
 
   @behaviour Rivet.Ecto.Collection
   @impl Rivet.Ecto.Collection
   def build(params) do
     %__MODULE__{}
-    |> cast(params, @required_fields)
+    |> cast(params, @required_fields ++ @update_fields)
     |> validate()
     |> hash_password()
   end

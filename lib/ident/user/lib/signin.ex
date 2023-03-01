@@ -11,11 +11,8 @@ defmodule Rivet.Data.Ident.User.Lib.Signin do
   # """
   # def signin(%{handle: handle, password: password}, conn) do
   #   # going backwards here, but ohwell - BJG
-  #   AuthX.Signin.check(conn, %{"handle" => handle, "password" => password})
+  #   Auth.Signin.check(conn, %{"handle" => handle, "password" => password})
   # end
-
-  # redefined here instead of doing a circular import to AuthX
-  @type auth_result :: {:ok | :error, Auth.Domain.t()}
 
   ################################################################################
   @doc """

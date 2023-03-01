@@ -212,7 +212,8 @@ defmodule Rivet.Data.Ident.User.Resolver do
   end
 
   def query_people(%{}, info) do
-    with {:ok, _admin} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
+    with {:ok, _admin} <-
+           Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
       User.all([], limit: 25)
       |> ecto_query_to_result(User.count!())
     end

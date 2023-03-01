@@ -2,8 +2,6 @@ defmodule Rivet.Data.Ident.Factor.FedId do
   @moduledoc """
   Structure for in-process authentication result contexts, not directly to one user
   """
-  alias __MODULE__
-
   # see enums for Ident.FactorNums -- this is any federated type
   defstruct name: nil,
             handle: nil,

@@ -82,11 +82,8 @@ defmodule Rivet.Data.Ident.User.Lib do
   # """
   # def signin(%{handle: handle, password: password}, conn) do
   #   # going backwards here, but ohwell - BJG
-  #   AuthX.Signin.check(conn, %{"handle" => handle, "password" => password})
+  #   Auth.Signin.check(conn, %{"handle" => handle, "password" => password})
   # end
-
-  # redefined here instead of doing a circular import to AuthX
-  @type auth_result :: {:ok | :error, Auth.Domain.t()}
 
   ################################################################################
   @doc """
@@ -100,7 +97,7 @@ defmodule Rivet.Data.Ident.User.Lib do
   #
   #
   # TODO: Need to DRY this out with UsersUpdate module
-  @spec signup(Auth.Domain.t()) :: auth_result
+  @spec signup(Auth.Domain.t()) :: Auth.Domain.result()
   def signup(%Auth.Domain{} = auth) do
     {:ok, auth}
     |> signup_check_handle

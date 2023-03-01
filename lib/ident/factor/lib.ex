@@ -71,7 +71,7 @@ defmodule Rivet.Data.Ident.Factor.Lib do
   change Ident.Factors so there is an archive state, some types when being cleaned
   are archived instead of deleted (such as passwords).
 
-  Then AuthX.Signin.Local.load_password_factor should filter on !archived
+  Then Auth.Signin.Local.load_password_factor should filter on !archived
   """
   @password_history 5
   def set_password(user, password, overrides \\ %{}) do
@@ -164,6 +164,19 @@ defmodule Rivet.Data.Ident.Factor.Lib do
       user_id: user.id,
       details: Map.from_struct(fedid.provider)
     })
+  end
+
+  def get_user(factor_id) do
+    case get(factor_id) do
+      nil ->
+        {:error, "Invalid"}
+
+      {:ok, %Ident.Factor{user: %Ident.User{}} = factor} ->
+        {:ok, factor}
+
+      {:error, _} ->
+        {:error, "Cannot find identity factor=#{factor_id}"}
+    end
   end
 
   def drop_expired() do

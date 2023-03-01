@@ -16,8 +16,6 @@ defmodule Rivet.Data.Ident.Factor.Migrations.Base do
       timestamps()
     end
 
-    create(index(:ident_factors, [:user_id], using: :hash))
-    create(index(:ident_factors, [:user_id, :type]))
     create(index(:ident_factors, [:user_id, :type, :name]))
     create(index(:ident_factors, [:user_id, :type, :expires_at]))
   end
