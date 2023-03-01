@@ -83,6 +83,16 @@ defmodule Rivet.Data.Ident.Test.AuthFactory do
         }
       end
 
+      def ident_user_ident_factory do
+        user = build(:ident_user)
+
+        %Ident.UserIdent{
+          ident: sequence("ident"),
+          origin: Faker.Internet.domain_name(),
+          user: user
+        }
+      end
+
       ################################################################################
       def ident_factor_factory do
         %Ident.Factor{
