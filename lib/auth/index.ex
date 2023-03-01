@@ -4,6 +4,7 @@ defmodule Rivet.Auth do
   """
   import Rivet.Graphql
   alias Rivet.Auth.Assertion
+  alias Rivet.Auth.Signin
   alias Rivet.Data.Ident
   require Logger
 

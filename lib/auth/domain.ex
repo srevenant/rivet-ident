@@ -1,4 +1,3 @@
-# included here for typespec references
 defmodule Rivet.Auth.Domain do
   @moduledoc """
   Structure for in-process authentication result contexts, not directly to one user
@@ -7,7 +6,8 @@ defmodule Rivet.Auth.Domain do
 
   defstruct type: :acc,
             status: :unknown,
-            # tenant: nil,
+            authz: %{},
+            hostname: nil,
             user: nil,
             app: nil,
             email: nil,
@@ -23,8 +23,9 @@ defmodule Rivet.Auth.Domain do
   @type t :: %__MODULE__{
           type: atom,
           status: atom,
-          # tenant: nil | Ident.Tenant.t(),
-          # app: nil | String.t(),
+          authz: map,
+          hostname: nil | String.t(),
+          app: nil | String.t(),
           user: nil | Ident.User.t(),
           handle: nil | Ident.Handle.t(),
           email: nil | Ident.Email.t(),
@@ -38,4 +39,6 @@ defmodule Rivet.Auth.Domain do
           input: nil | map,
           expires: integer
         }
+
+  @type result :: {:ok | :error, t()}
 end
