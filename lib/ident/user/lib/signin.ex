@@ -182,8 +182,6 @@ defmodule Rivet.Data.Ident.User.Lib.Signin do
         signup_abort_create(auth)
         {:error, auth, {"", msg}}
     end
-
-    {:error, :need_to_move_this_outside_auth_to_something_else}
   end
 
   # TODO: merge better with learning resolver--that code should probably be here

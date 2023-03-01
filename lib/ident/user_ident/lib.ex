@@ -6,7 +6,7 @@ defmodule Rivet.Data.Ident.UserIdent.Lib do
   def get(origin, key) do
     UserIdent.one(origin: origin, ident: key)
     |> case do
-      nil ->
+      {:error, _} ->
         :error
 
       found ->
@@ -14,7 +14,7 @@ defmodule Rivet.Data.Ident.UserIdent.Lib do
         from(i in UserIdent, where: i.origin == ^origin and i.ident == ^key)
         |> @repo.update_all(set: [updated_at: DateTime.utc_now()])
 
-        {:ok, found}
+        found
     end
   end
 

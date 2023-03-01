@@ -154,7 +154,7 @@ defmodule Rivet.Data.Ident.Factor.Lib do
 
   # TODO: rename to set_federated_factor
   @spec set_factor(user :: Ident.User.t(), fedid :: Ident.Factor.FedId.t()) ::
-          {:ok, Ident.Factor.t()} | {:error, Changeset.t()}
+          {:ok, Ident.Factor.t()} | {:error, Ecto.Changeset.t()}
   def set_factor(user, fedid) do
     Ident.Factor.create(%{
       name: fedid.provider.kid,

@@ -57,8 +57,9 @@ defmodule RivetAuth.MixProject do
   defp deps do
     [
       {:rivet, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet", branch: "db2lib"},
-      {:rivet_utils, "~> 1.0.0"},
-      {:rivet_email, "~> 1.0.0", git: "git@github.com:srevenant/rivet-email", branch: "master"},
+       {:rivet_email, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet-email", branch: "cfg"},
+      {:rivet_utils, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet-utils", branch: "start-cache", override: true},
+      # {:rivet_utils, "~> 1.0.0"},
       {:bcrypt_elixir, "~> 1.1.1"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ecto_enum, "~> 1.0"},

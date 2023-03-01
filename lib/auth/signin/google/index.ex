@@ -63,15 +63,15 @@ defmodule Rivet.Auth.Signin.Google do
   defp find_or_create_user(pass, _), do: pass
 
   ###############################################################################
-  defp update_user_avatar(
-         {:ok, %Domain{status: :authed, user: %Ident.User{} = _}} = pass,
-         _picurl
-       ) do
-    IO.puts("Need to get avatar")
-    # 1. see if user has avatar
-    # 2. if not, in async process pull URL and submit as avatar
-    pass
-  end
+  # defp update_user_avatar(
+  # {:ok, %Domain{status: :authed, user: %Ident.User{} = _}} = pass,
+  # _picurl
+  # ) do
+  # IO.puts("Need to get avatar")
+  ## 1. see if user has avatar
+  ## 2. if not, in async process pull URL and submit as avatar
+  # pass
+  # end
 
   defp update_user_avatar(pass, _), do: pass
 
