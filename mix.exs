@@ -60,6 +60,7 @@ defmodule RivetAuth.MixProject do
        {:rivet_email, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet-email", branch: "cfg"},
       {:rivet_utils, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet-utils", branch: "start-cache", override: true},
       # {:rivet_utils, "~> 1.0.0"},
+      {:absinthe, "~> 1.7.1", optional: true},
       {:bcrypt_elixir, "~> 1.1.1"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ecto_enum, "~> 1.0"},
