@@ -314,6 +314,55 @@ defmodule Rivet.Data.Ident.User.Resolver do
   end
 
   ##############################################################################
+  def mutate_gen_apikey(%{}, %{context: %{hostname: hostname}} = info) do
+    with_current_user(info, "genApikey", fn user ->
+      validation =
+        case Ident.Factor.all(user_id: user.id, type: :valtok, name: "generated apikey") do
+          {:ok, [validation | _]} ->
+            validation
+
+          {:ok, []} ->
+            generate_new_validation(user, hostname)
+        end
+
+      token = Auth.Token.Access.jwt(%Ident.Factor{validation | user: user}, hostname)
+
+      {:ok, valtok, _, validation} =
+        Auth.Token.Validation.jwt(validation, hostname, %{"t" => "refresh"})
+
+      secret =
+        %{
+          sub: "cas2:#{valtok}",
+          aud: "caa1:val:#{hostname}",
+          sec: validation.value
+        }
+        |> Jason.encode!()
+        |> Base.encode32(padding: false, case: :lower)
+        |> random_upper()
+
+      {:ok, %{key: validation.id, secret: secret, access: token}}
+    end)
+  end
+
+  def generate_new_validation(user, hostname) do
+    {:ok, _token, _secret, validation} =
+      Auth.Token.Validation.jwt(user, hostname, %{"t" => "refresh"})
+
+    {:ok, validation} = Ident.Factor.update(validation, %{name: "generated apikey"})
+    validation
+  end
+
+  defp random_upper(str) do
+    for <<x <- str>>, into: "" do
+      if :rand.uniform(2) == 1 do
+        String.upcase(<<x>>)
+      else
+        <<x>>
+      end
+    end
+  end
+
+  ##############################################################################
   def resolve_auth_status(_, %{
         source: %User{id: user_id1} = src,
         context: %{user: %User{id: user_id2} = user}
