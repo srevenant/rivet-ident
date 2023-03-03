@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.UserIdent do
   alias Rivet.Data.Ident
 
   @primary_key false
-  typed_schema "ident_user_idents" do
+  typed_schema "user_idents" do
     field(:ident, :string)
     field(:origin, :string)
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

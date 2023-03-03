@@ -16,5 +16,6 @@ defmodule Rivet.Data.Ident.Email.Migrations.Base do
     end
 
     create(unique_index(:user_emails, [:address]))
+    create(index(:user_emails, [:user_id], using: :hash))
   end
 end

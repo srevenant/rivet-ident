@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.Factor do
   """
   use TypedEctoSchema
   alias Rivet.Data.Ident
-  use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details], id_type: :int
+  use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details]
   import EctoEnum
 
   defenum(Types,
