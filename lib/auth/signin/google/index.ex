@@ -19,9 +19,13 @@ defmodule Rivet.Auth.Signin.Google do
     |> Rivet.Auth.Signin.post_signin()
   end
 
-  def check(_, _) do
-    {:error, %Domain{}, {"auth signup failed, invalid arguments from client", "Signup Failed"}}
-  end
+  def check(_, _),
+    do:
+      {:error,
+       %Db.AuthDomain{
+         error: "Signup Failed",
+         log: "auth signup failed, invalid arguments from client"
+       }}
 
   ##############################################################################
   @spec verify_google_signature(String.t()) ::
