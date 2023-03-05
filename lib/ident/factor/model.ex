@@ -4,8 +4,7 @@ defmodule Rivet.Data.Ident.Factor do
   """
   use TypedEctoSchema
   alias Rivet.Data.Ident
-  # use Rivet.Data.Ident.Config
-  use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details], id_type: :int
+  use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details]
   import EctoEnum
 
   defenum(Types,
@@ -27,7 +26,7 @@ defmodule Rivet.Data.Ident.Factor do
     twitch: 5
   )
 
-  typed_schema "factors" do #{@ident_table_factors}" do
+  typed_schema "ident_factors" do
     # identity vs authentication
     field(:type, Types)
     field(:fedtype, FederatedTypes, default: :none)
@@ -45,13 +44,14 @@ defmodule Rivet.Data.Ident.Factor do
   end
 
   @required_fields [:type, :expires_at, :user_id]
-  use Rivet.Ecto.Collection, required: @required_fields
+  @update_fields [:fedtype, :name, :value, :details, :password]
+  use Rivet.Ecto.Collection, required: @required_fields, update: @update_fields
 
   @behaviour Rivet.Ecto.Collection
   @impl Rivet.Ecto.Collection
   def build(params) do
     %__MODULE__{}
-    |> cast(params, @required_fields)
+    |> cast(params, @required_fields ++ @update_fields)
     |> validate()
     |> hash_password()
   end

@@ -1,8 +1,80 @@
-defmodule Rivet.Data.Ident.User.Db.Signin do
+defmodule Rivet.Data.Ident.User.Lib do
   alias Rivet.Data.Ident
+  use Rivet.Ecto.Collection.Context, model: Ident.User
   # use Rivet.Data.Ident.Config
   alias Rivet.Auth
   require Logger
+
+  def search(%{matching: matching, limit: limit}) do
+    {:ok,
+     @repo.all(
+       from(u in Ident.User,
+         join: e in Ident.Email,
+         where: e.user_id == u.id,
+         join: h in Ident.Handle,
+         where: h.user_id == u.id,
+         where:
+           like(u.name, ^matching) or
+             like(h.handle, ^matching) or
+             like(e.address, ^matching),
+         limit: ^limit,
+         distinct: u.id
+       )
+     )}
+  rescue
+    error ->
+      {:error, error}
+  end
+
+  @doc """
+  Bring in the list of authorized actions onto the user object (into :authz)
+
+  Only load once, if authz is nil
+  """
+  @spec get_authz(user :: Ident.User.t()) :: Ident.User.t()
+  def get_authz(%Ident.User{authz: authz} = user) when is_nil(authz) do
+    {:ok, user} = Ident.User.preload(user, :accesses)
+    %Ident.User{user | authz: Rivet.Data.Ident.Access.Lib.get_actions(user)}
+  end
+
+  def get_authz(%Ident.User{} = user), do: user
+
+  @spec check_authz(user :: Ident.User.t(), Auth.Assertion.t()) ::
+          {:ok | :error, Ident.User.t()}
+  def check_authz(user, %Auth.Assertion{} = assertion) do
+    key = {assertion.action, assertion.domain, assertion.ref_id}
+    user = Ident.User.Lib.get_authz(user)
+
+    if MapSet.member?(user.authz, key) do
+      {:ok, user}
+    else
+      if assertion.fallback and MapSet.member?(user.authz, {assertion.action, :global, nil}) do
+        {:ok, user}
+      else
+        {:error, user}
+      end
+    end
+  end
+
+  ##############################################################################
+  # only periodically update last seen, to avoid severe performance hit
+  @update_min_seconds 60
+  def user_seen(%Ident.User{} = user) do
+    now = Timex.now()
+
+    if is_nil(user.last_seen) or Timex.diff(now, user.last_seen, :seconds) > @update_min_seconds do
+      with {:ok, user} <- Ident.User.update(user, %{last_seen: now}) do
+        Ident.Factor.Cache.update_user(user)
+        user
+      else
+        err ->
+          IO.inspect(err, label: "Error updating user.last_seen")
+          user
+      end
+    else
+      user
+    end
+  end
 
   ##############################################################################
   # @doc """
@@ -10,11 +82,8 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
   # """
   # def signin(%{handle: handle, password: password}, conn) do
   #   # going backwards here, but ohwell - BJG
-  #   AuthX.Signin.check(conn, %{"handle" => handle, "password" => password})
+  #   Auth.Signin.check(conn, %{"handle" => handle, "password" => password})
   # end
-
-  # redefined here instead of doing a circular import to AuthX
-  @type auth_result :: {:ok | :error, Auth.Domain.t()}
 
   ################################################################################
   @doc """
@@ -23,18 +92,12 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
 
   ##############################################################################
   ### TODO: check email first, have signup shift to give an error: that user already exists, if it is found
-  # def signup(tenant, %{handle: handle, email: email} = args)
-  #     when handle == "",
-  #     do: signup(tenant, Map.put(args, :handle, email))
-  # def signup(tenant, %{handle: handle, email: email, password: password}) do
-  #   {:ok, %Auth.Domain{input: %{handle: handle, email: email, secret: password}, tenant: tenant}}
-
-  # def update_user(x, y), do: Ident.User.update(x, y)
+  #
+  #
   #
   #
   # TODO: Need to DRY this out with UsersUpdate module
-  #
-  #
+  @spec signup(Auth.Domain.t()) :: Auth.Domain.result()
   def signup(%Auth.Domain{} = auth) do
     {:ok, auth}
     |> signup_check_handle
@@ -51,11 +114,10 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
     # TODO: this should actually shift to a welcome new user dialog, which can ask for other account attributes
   end
 
-  # WAS: signup(tenant, input)
   def signup(input) do
     {:error,
      %Auth.Domain{
-       log: "No match for signup with args:\n#{inspect(input)}",
+       log: "No match for signup with args:\n(#{inspect(input)}",
        error: "Sign up Failed"
      }}
   end
@@ -80,7 +142,7 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
   end
 
   defp signup_check_handle(pass = {:ok, auth = %Auth.Domain{input: %{handle: handle}}}) do
-    case Ident.Handle.Db.available(handle) do
+    case Ident.Handle.Lib.available(handle) do
       {:ok, _available_msg} ->
         pass
 
@@ -119,7 +181,7 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
             input: %{secret: secret}
           }}
        ) do
-    case Ident.Factor.Db.set_password(user, secret) do
+    case Ident.Factor.Lib.set_password(user, secret) do
       {:ok, %Ident.Factor{}} ->
         {:ok, auth}
 
@@ -136,7 +198,7 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
             input: %{fedid: %Ident.Factor.FedId{} = fedid}
           }}
        ) do
-    case Ident.Factor.Db.set_factor(user, fedid) do
+    case Ident.Factor.Lib.set_factor(user, fedid) do
       {:ok, %Ident.Factor{} = factor} ->
         {:ok, %Auth.Domain{auth | factor: factor}}
 
@@ -184,8 +246,6 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
         signup_abort_create(auth)
         {:error, auth, {"", msg}}
     end
-
-    {:error, :need_to_move_this_outside_auth_to_something_else}
   end
 
   # TODO: merge better with learning resolver--that code should probably be here
@@ -201,8 +261,9 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
   ##############################################################################
   defp signup_promote_first_user({:ok, auth = %Auth.Domain{user: %Ident.User{} = user}}) do
     # except once use case this will be false
-    if Application.get_env(:core, :first_user_admin) do
-      Enum.each(Application.get_env(:core, :first_user_roles), fn role_name ->
+    if Application.get_env(:rivet_auth, :first_user_admin) != false do
+      Application.get_env(:rivet_auth, :first_user_roles, [])
+      |> Enum.each(fn role_name ->
         case Ident.Role.one(name: role_name) do
           {:ok, role} ->
             case Ident.Access.create(%{role_id: role.id, user_id: user.id}) do
@@ -219,7 +280,7 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
         end
       end)
 
-      Application.put_env(:core, :first_user_admin, false)
+      Application.put_env(:rivet, :first_user_admin, false)
     end
 
     {:ok, auth}
@@ -243,6 +304,83 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
     {:error, %Auth.Domain{log: inner, error: outer}}
   end
 
+  def active_users!(_since) do
+    # GamePlatformTypeEnums.values()
+    # |> Enum.reduce(%{}, fn platform, acc ->
+    #   p = Atom.to_string(platform)
+    #
+    #   Map.put(
+    #     acc,
+    #     platform,
+    #     @repo.one(
+    #       from(u in Ident.User,
+    #         where:
+    #           u.last_seen > ^since and
+    #             fragment(
+    #               """
+    #               settings->'platform'->? IS NOT NULL
+    #               """,
+    #               ^p
+    #             ),
+    #         select: fragment("count(*)")
+    #       )
+    #     )
+    #   )
+    # end)
+  end
+
+  def search_name!(pattern) do
+    @repo.all(from(u in Ident.User, where: like(u.name, ^pattern)))
+  end
+
+  ##############################################################################
+  @doc """
+  Helper function which accepts either user_id or user, and calls the passed
+  function with the user model loaded including any preloads.  Send preloads
+  as [] if none are desired.
+  """
+  def with_user(%Ident.User{} = user, preloads, func) do
+    with {:ok, user} <- Ident.User.preload(user, preloads) do
+      func.(user)
+    end
+  end
+
+  def with_user(user_id, preloads, func) when is_binary(user_id) do
+    case Ident.User.one(user_id, preloads) do
+      {:error, _} = pass ->
+        pass
+
+      {:ok, %Ident.User{} = user} ->
+        func.(user)
+    end
+  end
+
+  #
+  # ##############################################################################
+  # def send_password_reset(%Ident.User{} = user, %Ident.Email{} = email, %Ident.UserCode{} = code) do
+  #   # let all emails on the account know
+  #   with {:ok, user} <- Ident.User.preload(user, :emails) do
+  #     sendmail(user.emails, &templates.password_reset/2, [email, code])
+  #   end
+  # end
+  #
+  # ##############################################################################
+  # def send_failed_change(%Ident.Email{} = email, message) do
+  #   sendmail(email, &templates.failed_change/2, message)
+  # end
+  #
+  # ##############################################################################
+  # def send_password_changed(%Ident.User{} = user) do
+  #   with {:ok, user} <- Ident.User.preload(user, :emails) do
+  #     sendmail(user.emails, &templates.password_changed/2)
+  #   end
+  # end
+
+  ##############################################################################
+  def all_since(time) do
+    @repo.all(from(u in Ident.User, where: u.last_seen > ^time))
+  end
+
   ##############################################################################
   def add_email(user, eaddr, verified \\ false) do
     eaddr = String.trim(eaddr)
@@ -251,7 +389,7 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
     case Ident.Email.one(address: eaddr) do
       {:ok, %Ident.Email{} = email} ->
         Logger.warn("failed adding email", user_id: user.id, eaddr: eaddr)
-        @ident_notify_failed_change.send(email, "add email to your account.")
+        Ident.User.Notify.FailedChange.send(email, "add email to your account.")
 
         {:error, "That email already is associated with a different account"}
 
@@ -264,7 +402,7 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
              }) do
           {:ok, %Ident.Email{} = email} ->
             email = %Ident.Email{email | user: user}
-            @ident_notify_verification.send(email)
+            Ident.User.Notify.Verification.send(email)
 
             {:ok, email}
 
@@ -272,6 +410,19 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
             {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
         end
     end
+  end
+
+  def check_user_status({:ok, %Auth.Domain{user: %Ident.User{type: :disabled}}}),
+    do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
+
+  def check_user_status(%Ident.User{type: :disabled}) do
+    {:error, %Auth.Domain{error: "sorry, account is disabled"}}
+  end
+
+  def check_user_status(%Ident.User{} = user), do: {:ok, user}
+
+  def check_user_status(pass) do
+    pass
   end
 
   ##############################################################################
@@ -300,4 +451,18 @@ defmodule Rivet.Data.Ident.User.Db.Signin do
         end
     end
   end
+
+  ##############################################################################
+  @spec has_other_admin?(Ident.Role.t(), Ident.User.t()) :: boolean() | {:error, String.t()}
+  def has_other_admin?(%Ident.Role{name: :system_admin, id: r_id}, %Ident.User{id: user_id}) do
+    query = from(a in Ident.Access, where: a.role_id == ^r_id and a.user_id != ^user_id)
+
+    if @repo.aggregate(query, :count) > 0 do
+      true
+    else
+      {:error, "Cannot remove last system_admin"}
+    end
+  end
+
+  def has_other_admin?(_, _), do: true
 end

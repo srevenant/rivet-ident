@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.Factor.Migrations.Base do
 
   def change do
     ############################################################################
-    create table(:auth_factors, primary_key: false) do
+    create table(:ident_factors, primary_key: false) do
       add(:id, :uuid, primary_key: true)
       add(:user_id, references(:users, on_delete: :delete_all, type: :uuid))
       add(:type, :integer, null: false)
@@ -17,9 +17,7 @@ defmodule Rivet.Data.Ident.Factor.Migrations.Base do
       timestamps()
     end
 
-    create(index(:auth_factors, [:user_id], using: :hash))
-    create(index(:auth_factors, [:user_id, :type]))
-    create(index(:auth_factors, [:user_id, :type, :name]))
-    create(index(:auth_factors, [:user_id, :type, :expires_at]))
+    create(index(:ident_factors, [:user_id, :type, :name]))
+    create(index(:ident_factors, [:user_id, :type, :expires_at]))
   end
 end

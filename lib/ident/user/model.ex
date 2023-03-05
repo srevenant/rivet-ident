@@ -6,7 +6,6 @@ defmodule Rivet.Data.Ident.User do
   import EctoEnum
   alias Rivet.Data.Ident
   use Rivet.Ecto.Model
-  # use Rivet.Data.Ident.Config
 
   defenum(Types,
     unknown: 0,
@@ -17,7 +16,7 @@ defmodule Rivet.Data.Ident.User do
     disabled: 200
   )
 
-  typed_schema "#{@ident_table_users}" do
+  typed_schema "users" do
     has_one(:handle, Ident.Handle, on_delete: :delete_all)
     has_many(:emails, Ident.Email, on_delete: :delete_all)
     has_many(:phones, Ident.Phone, on_delete: :delete_all)
@@ -28,7 +27,7 @@ defmodule Rivet.Data.Ident.User do
     field(:last_seen, :utc_datetime)
     has_many(:factors, Ident.Factor, on_delete: :delete_all)
     has_many(:accesses, Ident.Access, on_delete: :delete_all)
-    #has_many(:tags, Ident.TagUser, on_delete: :delete_all)
+    # has_many(:tags, Ident.TagUser, on_delete: :delete_all)
 
     field(:type, Types, default: :unknown)
     field(:authz, Rivet.Utils.Ecto.MapSet, default: nil, virtual: true)
@@ -37,4 +36,7 @@ defmodule Rivet.Data.Ident.User do
   end
 
   use Rivet.Ecto.Collection, update: [:settings, :name, :last_seen, :type]
+
+  def enabled?(%__MODULE__{type: type}), do: type != :disabled
+  def enabled?(_), do: false
 end

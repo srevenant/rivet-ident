@@ -4,10 +4,11 @@ defmodule Rivet.Email.Example do
   projects may include it in their tests.
   """
   alias Rivet.Email.Example
+  alias Rivet.Data.Ident
 
   use Rivet.Email,
-    otp_app: :rivet_data_ident,
-    user_model: Example.User,
-    email_model: Example.Email,
+    otp_app: :rivet_auth,
+    user_model: Ident.User,
+    email_model: Ident.Email,
     mailer: Example.Mailer
 end

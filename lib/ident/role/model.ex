@@ -1,9 +1,8 @@
 defmodule Rivet.Data.Ident.Role do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :int
-  # use Rivet.Data.Ident.Config
 
-  typed_schema "roles" do #{@ident_table_roles}" do
+  typed_schema "ident_roles" do
     field(:name, Rivet.Utils.Ecto.Atom)
     field(:domain, Rivet.Data.Ident.Access.Domains, default: :global)
     field(:description, :string)

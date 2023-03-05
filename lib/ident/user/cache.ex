@@ -16,7 +16,7 @@ defmodule Rivet.Data.Ident.User.Cache do
 
       _no_cache ->
         with {:ok, user} <- Ident.User.one(id: id) do
-          Ident.User.Db.get_authz(user) |> persist
+          Ident.User.Lib.get_authz(user) |> persist
         end
     end
   end

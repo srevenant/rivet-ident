@@ -1,4 +1,5 @@
 [
+  [include: Rivet.Data.Ident.UserIdent.Migrations, prefix: 210],
   [include: Rivet.Data.Ident.Access.Migrations, prefix: 200],
   [include: Rivet.Data.Ident.RoleMap.Migrations, prefix: 190],
   [include: Rivet.Data.Ident.Role.Migrations, prefix: 180],

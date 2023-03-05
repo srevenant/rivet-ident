@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Handle.Db do
+defmodule Rivet.Data.Ident.Handle.Lib do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Handle
 
@@ -40,7 +40,7 @@ defmodule Rivet.Data.Ident.Handle.Db do
   def gen_good_handle(handle) do
     handle = clean_handle(handle)
 
-    case Ident.Handle.Db.available(handle) do
+    case Ident.Handle.Lib.available(handle) do
       {:error, _, _} ->
         gen_good_handle(handle <> randchar() <> randchar())
 

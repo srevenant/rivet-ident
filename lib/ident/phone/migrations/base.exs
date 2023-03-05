@@ -13,6 +13,6 @@ defmodule Rivet.Data.Ident.Phone.Migrations.Base do
       timestamps()
     end
 
-    # create(index(:user_phones, [:user_id], using: :hash))
+    create(index(:user_phones, [:user_id, :number], using: :hash))
   end
 end

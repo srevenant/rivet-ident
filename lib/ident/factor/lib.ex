@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Factor.Db do
+defmodule Rivet.Data.Ident.Factor.Lib do
   @type str :: String.t()
   @type log_msg :: str
   @type usr_msg :: str
@@ -18,7 +18,7 @@ defmodule Rivet.Data.Ident.Factor.Db do
       :miss ->
         case @repo.one(from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])) do
           %Ident.Factor{user: %Ident.User{} = user} = factor ->
-            user = Ident.User.Db.get_authz(user)
+            user = Ident.User.Lib.get_authz(user)
             user = %Ident.User{user | state: Map.put(user.state, :active_factor_id, factor.id)}
 
             %Ident.Factor{factor | user: user}
@@ -36,7 +36,7 @@ defmodule Rivet.Data.Ident.Factor.Db do
   @doc """
   Preload factors for a related model, with criteria, and only unexpired factors
 
-      Ident.Factor.Db.preloaded_with(model, type)
+      Ident.Factor.Lib.preloaded_with(model, type)
 
   """
   def preloaded_with(model, type) when is_list(type) do
@@ -71,7 +71,7 @@ defmodule Rivet.Data.Ident.Factor.Db do
   change Ident.Factors so there is an archive state, some types when being cleaned
   are archived instead of deleted (such as passwords).
 
-  Then AuthX.Signin.Local.load_password_factor should filter on !archived
+  Then Auth.Signin.Local.load_password_factor should filter on !archived
   """
   @password_history 5
   def set_password(user, password, overrides \\ %{}) do
@@ -154,7 +154,7 @@ defmodule Rivet.Data.Ident.Factor.Db do
 
   # TODO: rename to set_federated_factor
   @spec set_factor(user :: Ident.User.t(), fedid :: Ident.Factor.FedId.t()) ::
-          {:ok, Ident.Factor.t()} | {:error, Changeset.t()}
+          {:ok, Ident.Factor.t()} | {:error, Ecto.Changeset.t()}
   def set_factor(user, fedid) do
     Ident.Factor.create(%{
       name: fedid.provider.kid,
@@ -164,6 +164,19 @@ defmodule Rivet.Data.Ident.Factor.Db do
       user_id: user.id,
       details: Map.from_struct(fedid.provider)
     })
+  end
+
+  def get_user(factor_id) do
+    case get(factor_id) do
+      nil ->
+        {:error, "Invalid"}
+
+      {:ok, %Ident.Factor{user: %Ident.User{}} = factor} ->
+        {:ok, factor}
+
+      {:error, _} ->
+        {:error, "Cannot find identity factor=#{factor_id}"}
+    end
   end
 
   def drop_expired() do

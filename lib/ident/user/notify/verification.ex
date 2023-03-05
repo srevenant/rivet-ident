@@ -1,12 +1,12 @@
 defmodule Rivet.Data.Ident.User.Notify.Verification do
-  # use Rivet.Data.Ident.Config
   alias Rivet.Data.Ident
   use Rivet.Email.Template
   require Logger
 
+  @reset_code_expire_mins 1_440
   def send(%Ident.Email{address: eaddr, user: user} = email) do
     with {:ok, code} <-
-           Ident.UserCode.Db.generate_code(
+           Ident.UserCode.Lib.generate_code(
              email.user_id,
              :email_verify,
              @reset_code_expire_mins,
@@ -15,7 +15,7 @@ defmodule Rivet.Data.Ident.User.Notify.Verification do
              }
            ) do
       Logger.info("added email", user_id: user.id, eaddr: eaddr)
-      @sender.send(email, __MODULE__, code: code)
+      @sender.send(email, __MODULE__, code: code.code)
     end
   end
 

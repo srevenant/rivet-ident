@@ -23,5 +23,4 @@ erl_crash.dump
 
 /**/.DS_Store
 
-src/priv/plts/*.plt
-src/priv/plts/*.plt.hash
+/priv/plts

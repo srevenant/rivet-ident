@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.UserCode.Db do
+defmodule Rivet.Data.Ident.UserCode.Lib do
   alias Rivet.Data.Ident
   alias Ident.UserCode
   use Rivet.Ecto.Collection.Context, model: UserCode
@@ -36,12 +36,12 @@ defmodule Rivet.Data.Ident.UserCode.Db do
   def clear_expired_codes() do
     now = Timex.now()
 
-    from(c in Ident.UserCode, where: c.expires < ^now)
+    from(c in UserCode, where: c.expires < ^now)
     |> @repo.delete_all()
   end
 
   def clear_all_codes(for_user_id, type) do
-    from(c in Ident.UserCode,
+    from(c in UserCode,
       where:
         c.user_id == ^for_user_id and
           c.type == ^type

@@ -3,11 +3,10 @@ defmodule Rivet.Data.Ident.Email do
   Schema for representing and working with a Ident.Email.
   """
   use TypedEctoSchema
-  # use Rivet.Data.Ident.Config
   use Rivet.Ecto.Model
   alias Rivet.Data.Ident
 
-  typed_schema "emails" do #{@ident_table_emails}" do
+  typed_schema "user_emails" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     field(:address, :string)
     field(:primary, :boolean, default: false)

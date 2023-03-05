@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.UserData.Db do
+defmodule Rivet.Data.Ident.UserData.Lib do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.UserData
 

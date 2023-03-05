@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Access.Db do
+defmodule Rivet.Data.Ident.Access.Lib do
   alias Rivet.Data.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Access
 
@@ -46,7 +46,7 @@ defmodule Rivet.Data.Ident.Access.Db do
   #     Enum.reduce(accesses, [], fn access, acc ->
   #       case Ident.Access.preload(access, [:role]) do
   #         {:ok, %Ident.Access{role: %Ident.Role{subscription: true}}} ->
-  #           acc ++ Ident.RoleMap.Db.get_actions(access.role_id)
+  #           acc ++ Ident.RoleMap.Lib.get_actions(access.role_id)
   #
   #         {:ok, _} ->
   #           acc
