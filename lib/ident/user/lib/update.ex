@@ -222,7 +222,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
   # ##############################################################################
   # def mutate_update_role(%{role: role, id: user_id}, info)
   #     when not is_nil(role) and not is_nil(user_id) do
-  #   with {:ok, admin} <- authz_action(info, %AuthAssertion{action: :user_admin}, "updateRole"),
+  #   with {:ok, admin} <- Auth.authz_action(info, %AuthAssertion{action: :user_admin}, "updateRole"),
   #        {:user, {:ok, user}} <- {:user, Ident.User.one(id: user_id)},
   #        {:role, {:ok, role}} <- {:role, Ident.Role.one(id: role)},
   #        {:has_admin, true} <-

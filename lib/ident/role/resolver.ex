@@ -4,7 +4,7 @@ defmodule Rivet.Data.Ident.Role.Resolver do
   alias Rivet.Data.Ident
 
   def query_roles(%{name: name}, info) do
-    with {:ok, _} <- authz_action(info, %Auth.Assertion{action: :user_admin}, "listRoles"),
+    with {:ok, _} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listRoles"),
          {:ok, role} <- Ident.Role.one(name: name) do
       {:ok, [role]}
     else
@@ -13,7 +13,7 @@ defmodule Rivet.Data.Ident.Role.Resolver do
   end
 
   def query_roles(_args, info) do
-    with {:ok, _} <- authz_action(info, %Auth.Assertion{action: :user_admin}, "listRoles") do
+    with {:ok, _} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listRoles") do
       Ident.Role.all()
     end
   end
