@@ -22,7 +22,7 @@ defmodule Rivet.Auth.Signin.Google do
   def check(_, _),
     do:
       {:error,
-       %Db.AuthDomain{
+       %Domain{
          error: "Signup Failed",
          log: "auth signup failed, invalid arguments from client"
        }}

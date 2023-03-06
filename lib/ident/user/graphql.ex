@@ -120,12 +120,12 @@ defmodule Rivet.Data.Ident.User.Graphql do
 
   scalar :auth_domain do
     serialize(&Atom.to_string/1)
-    parse(&parse_enum(&1, Db.Access.Domains))
+    parse(&parse_enum(&1, Ident.Access.Domains))
   end
 
   scalar :user_data_types do
     serialize(&Atom.to_string/1)
-    parse(&parse_enum(&1, Db.UserData.Types))
+    parse(&parse_enum(&1, Ident.UserData.Types))
   end
 
   scalar :auth_status do
@@ -134,7 +134,7 @@ defmodule Rivet.Data.Ident.User.Graphql do
     """)
 
     serialize(&Atom.to_string/1)
-    parse(&parse_enum(&1, Db.User.Types))
+    parse(&parse_enum(&1, Ident.User.Types))
   end
 
   object :public_person_result do
