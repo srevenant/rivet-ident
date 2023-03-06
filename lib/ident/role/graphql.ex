@@ -1,7 +1,6 @@
 defmodule Rivet.Data.Ident.Role.Graphql do
   @moduledoc false
   use Absinthe.Schema.Notation
-  import Rivet.Graphql
   import Rivet.Data.Ident.Role.Resolver
 
   @desc "Authorization Ident.Role"

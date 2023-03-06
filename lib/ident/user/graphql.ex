@@ -3,6 +3,7 @@ defmodule Rivet.Data.Ident.User.Graphql do
   use Absinthe.Schema.Notation
   alias Rivet.Data.Ident
   import Ident.User.Resolver
+  import Rivet.Graphql
   require Logger
 
   import_types(Ident.Factor.Graphql)

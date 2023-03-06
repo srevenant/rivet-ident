@@ -10,7 +10,7 @@ defmodule Rivet.Data.Ident.UserIdent.Migrations.Base do
       timestamps()
     end
 
-    create(index(:user_ident, [:user_id]))
+    create(index(:user_idents, [:user_id]))
 
     # only one user per origin ID
     create(unique_index(:user_idents, [:origin, :ident]))
