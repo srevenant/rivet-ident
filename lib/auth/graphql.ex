@@ -38,28 +38,17 @@ defmodule Rivet.Auth.Graphql do
 
   ########################################################################
   @doc """
-  Accept authorization from a user or CXS (CXS gets all access).
-  If user, punt to authz_action().
+  Accept authorization from a user.
+  Punt to authz_action(), but log graphql bits.
   """
-  def authz_user_or_cxs(
+  def authz_user(
         context,
         assertion \\ %Auth.Assertion{action: :system_admin},
         method \\ nil,
         kwlog \\ []
       )
 
-  def authz_user_or_cxs(
-        %{context: %{app: app}},
-        %Auth.Assertion{app: app},
-        method,
-        kwlog
-      )
-      when not is_nil(app) and is_atom(app) do
-    graphql_log(method, kwlog)
-    {:ok, app}
-  end
-
-  def authz_user_or_cxs(info, assertion, method, kwlog) do
+  def authz_user(info, assertion, method, kwlog) do
     with {:ok, user} <-
            Rivet.Auth.check_authz(info, assertion) do
       graphql_log(method, kwlog)

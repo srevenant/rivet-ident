@@ -23,19 +23,6 @@ defmodule Rivet.Auth.Settings do
     )
   end
 
-  def invert_cxs_apps() do
-    getcfg(:cxs_apps, %{})
-    |> to_map
-    |> Enum.reduce(%{}, fn {key, vals}, acc ->
-      vals = Map.put(vals, :name, as_atom(key))
-
-      acc
-      |> Map.put(key, vals)
-      |> Map.put(as_atom(vals.index), vals)
-    end)
-    |> putcfg(:cxs_apps)
-  end
-
   def start() do
     decode_secrets(:acc)
     decode_secrets(:val)

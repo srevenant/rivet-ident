@@ -35,8 +35,6 @@ defmodule Rivet.Auth.Access do
     with [type, tok] <- String.split(header, " ", parts: 2) do
       case String.downcase(type) do
         "bearer" -> {:bearer, tok}
-        # add alternate token types here
-        "cxs" -> {:cxs, tok}
         _ -> {:error, %Domain{auth | log: "Invalid authorization type: #{type}"}}
       end
     else
@@ -65,11 +63,6 @@ defmodule Rivet.Auth.Access do
           {:error, %Domain{} = auth} -> {:error, %Domain{auth | status: :unknown}}
         end
     end
-  end
-
-  defp process_authorization({:cxs, _token}, auth) do
-    # TODO
-    {:error, %Domain{auth | log: "CXS authorization not reimplemented yet"}}
   end
 
   defp process_authorization(pass, _), do: pass

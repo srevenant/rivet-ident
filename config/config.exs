@@ -16,12 +16,6 @@ config :rivet_auth,
   jwt_acc_secrets: [""],
   jwt_val_secrets: [""],
   jwt_api_secrets: [""],
-  cxs_apps: %{
-    supervisor: %{
-      secrets: [],
-      index: "0"
-    }
-  },
   auth_expire_limits: %{
     val: %{
       acc: 60 * 60 * 24 * 30,
@@ -30,7 +24,6 @@ config :rivet_auth,
     ref: 15 * 60,
     acc: 60 * 60 * 24,
     api: 15 * 60,
-    cxs: 15 * 60 * 24,
     password: 365 * 86400
   }
 

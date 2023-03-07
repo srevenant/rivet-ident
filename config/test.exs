@@ -9,13 +9,7 @@ config :rivet_auth,
   ],
   jwt_api_secrets: [
     "YRVkMHJdT1oxNRqVYl2Ma1QPc8PNjo48xrObO4OgjQs="
-  ],
-  cxs_apps: %{
-    supervisor: %{
-      secrets: ["6aR9E.17AraKJ+jZkdnK8/m06dE4IgsmjMHaPNJM9xkX"],
-      index: "0"
-    }
-  }
+  ]
 
 config :rivet_email,
   enabled: false,
