@@ -26,7 +26,6 @@ defmodule Rivet.Auth.Settings do
   def start() do
     decode_secrets(:acc)
     decode_secrets(:val)
-    invert_cxs_apps()
     getcfg(:federated, %{}) |> to_map |> putcfg(:federated)
     %{} |> putcfg(:client)
   end
