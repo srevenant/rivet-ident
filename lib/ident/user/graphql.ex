@@ -6,6 +6,7 @@ defmodule Rivet.Data.Ident.User.Graphql do
   import Rivet.Graphql
   require Logger
 
+  import_types(Ident.Access.Graphql)
   import_types(Ident.Factor.Graphql)
   import_types(Ident.Role.Graphql)
 
@@ -297,7 +298,7 @@ defmodule Rivet.Data.Ident.User.Graphql do
     # end
 
     field :gen_api_key, :api_key do
-      resolve(&Resolvers.User.ApiKey.mutate_gen_apikey/2)
+      resolve(&mutate_gen_apikey/2)
     end
   end
 end
