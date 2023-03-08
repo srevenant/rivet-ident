@@ -1,7 +1,7 @@
-defmodule Rivet.Data.Ident.Role.Resolver do
+defmodule Rivet.Ident.Role.Resolver do
   @moduledoc false
+  alias Rivet.Ident
   alias Rivet.Auth
-  alias Rivet.Data.Ident
 
   def query_roles(%{name: name}, info) do
     with {:ok, _} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listRoles"),

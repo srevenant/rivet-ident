@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Action.Loader do
+defmodule Rivet.Ident.Action.Loader do
   @moduledoc false
 end

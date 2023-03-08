@@ -1,5 +1,5 @@
-defmodule Rivet.Data.Ident.Phone do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.Phone do
+  alias Rivet.Ident
   use TypedEctoSchema
   use Rivet.Ecto.Model
 

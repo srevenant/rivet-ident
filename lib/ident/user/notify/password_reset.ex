@@ -1,5 +1,5 @@
-defmodule Rivet.Data.Ident.User.Notify.PasswordReset do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.User.Notify.PasswordReset do
+  alias Rivet.Ident
   use Rivet.Email.Template
 
   ##############################################################################

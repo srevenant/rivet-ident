@@ -1,8 +1,8 @@
-defmodule Rivet.Data.Ident.Factor.Graphql do
+defmodule Rivet.Ident.Factor.Graphql do
   @moduledoc false
   use Absinthe.Schema.Notation
   import Rivet.Graphql
-  alias Rivet.Data.Ident.Factor
+  alias Rivet.Ident.Factor
 
   scalar :factor_type do
     serialize(&Atom.to_string/1)

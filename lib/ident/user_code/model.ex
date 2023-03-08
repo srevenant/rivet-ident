@@ -1,10 +1,10 @@
-defmodule Rivet.Data.Ident.UserCode do
+defmodule Rivet.Ident.UserCode do
   @moduledoc """
   Schema for representing and working with a Ident.UserCode.
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :int
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   import EctoEnum
 
   defenum(Types, password_reset: 0, email_verify: 1, file_download: 2)

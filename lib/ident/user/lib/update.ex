@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.User.Lib.Update do
+defmodule Rivet.Ident.User.Lib.Update do
   @moduledoc """
   Making changes to a user (administratively or as the user).
 
@@ -14,19 +14,19 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
   Example (create):
 
     ```elixir
-    ==> Rivet.Data.Ident.UsersUpdate.update(%{
+    ==> Rivet.Ident.UsersUpdate.update(%{
         action: :upsert,
         user: %{name: "The Doctor"},
         email: %{email: "who@tardis.com"}
       }, :admin)
     {:ok, %User{}, %{"password": "R^EkW)aBY9G9", "passwordExp": 1649947803}}
     ```
-    Rivet.Data.Ident.UsersUpdate.update(%{ action: :upsert, user: %{name: "The Doctor"}, email: %{email: "who@tardis.com"} }, :admin)
+    Rivet.Ident.UsersUpdate.update(%{ action: :upsert, user: %{name: "The Doctor"}, email: %{email: "who@tardis.com"} }, :admin)
 
     Example — update a user's name as the user
 
     ```elixir
-    ==> Rivet.Data.Ident.UsersUpdate.update(%{
+    ==> Rivet.Ident.UsersUpdate.update(%{
       action: :upsert,
       user: %{name: "Who"},
     }, :user, %User{...})
@@ -36,7 +36,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
     Example — remove a phone
 
     ```elixir
-    ==> Rivet.Data.Ident.UsersUpdate.update(%{
+    ==> Rivet.Ident.UsersUpdate.update(%{
       action: :remove,
       phone: %{id: "2342343-...-33"},
     }, :user, %User{...})
@@ -44,7 +44,7 @@ defmodule Rivet.Data.Ident.User.Lib.Update do
     ```
 
   """
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   require Logger
 
   @spec update(

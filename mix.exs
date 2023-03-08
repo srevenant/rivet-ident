@@ -23,7 +23,7 @@ defmodule RivetAuth.MixProject do
       ],
       rivet: [
         mod_dir: "ident",
-        app_base: Rivet.Data.Ident
+        app_base: Rivet.Ident
       ],
       aliases: aliases()
     ]
@@ -44,7 +44,6 @@ defmodule RivetAuth.MixProject do
 
   defp aliases do
     [
-      # , "rivet.data.seeds"],
       "ecto.setup": ["ecto.create", "ecto.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
@@ -56,11 +55,9 @@ defmodule RivetAuth.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rivet, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet", branch: "db2lib"},
-      {:rivet_email, "~> 1.0.0", git: "git@github.com:IslandUsurper/rivet-email", branch: "cfg"},
-      {:rivet_utils, "~> 1.0.0",
-       git: "git@github.com:IslandUsurper/rivet-utils", branch: "start-cache", override: true},
-      # {:rivet_utils, "~> 1.0.0"},
+      {:rivet, "~> 1.0.1"},
+      {:rivet_email, "~> 1.0.0", git: "git@github.com:srevenant/rivet-email", branch: "master"},
+      {:rivet_utils, "~> 1.0.1"},
       {:absinthe, "~> 1.7.1", optional: true},
       {:bcrypt_elixir, "~> 1.1.1"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
@@ -89,9 +86,9 @@ defmodule RivetAuth.MixProject do
   defp package() do
     [
       files: ~w(lib .formatter.exs mix.exs README* LICENSE*),
-      licenses: ["AGPL-3.0-or-later"],
-      links: %{"GitHub" => "https://github.com/srevenant/rivet-data-ident"},
-      source_url: "https://github.com/srevenant/rivet-data-ident"
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/srevenant/rivet-ident"},
+      source_url: "https://github.com/srevenant/rivet-ident"
     ]
   end
 end

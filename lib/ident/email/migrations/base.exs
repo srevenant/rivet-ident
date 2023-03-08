@@ -1,7 +1,7 @@
-defmodule Rivet.Data.Ident.Email.Migrations.Base do
+defmodule Rivet.Ident.Email.Migrations.Base do
   @moduledoc false
   use Ecto.Migration
-  # use Rivet.Data.Ident.Config
+  # use Rivet.Ident.Config
 
   def change do
     ############################################################################

@@ -27,6 +27,7 @@ config :rivet_auth,
     password: 365 * 86400
   }
 
+config :rivet_email, sender: Rivet.Email.Example
 config :rivet_auth,
   ecto_repos: [Rivet.Auth.Repo]
 
@@ -48,7 +49,7 @@ config :rivet_auth, Rivet.Auth.Repo,
   log: false,
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :rivet, Rivet.Data.Ident, table_prefix: "ident_"
+config :rivet, Rivet.Ident, table_prefix: "ident_"
 # first_user_admin: false,
 # reset_code_expire_mins: 1440,
 

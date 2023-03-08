@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.RoleMap.Cache do
+defmodule Rivet.Ident.RoleMap.Cache do
   @moduledoc false
 end

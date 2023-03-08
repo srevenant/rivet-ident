@@ -1,11 +1,11 @@
-defmodule Rivet.Data.Ident.UserData do
+defmodule Rivet.Ident.UserData do
   @moduledoc """
   Schema for representing and working with a Ident.UserData.
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model
   import EctoEnum
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   defenum(Types,
     available: 0,

@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Phone.Seeds do
+defmodule Rivet.Ident.Phone.Seeds do
   @moduledoc false
 end

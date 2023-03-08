@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Config do
+defmodule Rivet.Ident.Config do
   @moduledoc """
   Rivets Models for Identity management things.
   """
@@ -10,23 +10,23 @@ defmodule Rivet.Data.Ident.Config do
       @test_environ Application.compile_env!(:rivet, :test) || false
 
       # other
-      @ident_first_user_admin Application.compile_env!(:rivet, Rivet.Data.Ident)[
+      @ident_first_user_admin Application.compile_env!(:rivet, Rivet.Ident)[
                                 :first_user_admin
                               ] || false
-      @ident_first_user_roles Application.compile_env!(:rivet, Rivet.Data.Ident)[
+      @ident_first_user_roles Application.compile_env!(:rivet, Rivet.Ident)[
                                 :first_user_roles
                               ] || []
 
-      @reset_code_expire_mins Application.compile_env!(:rivet, Rivet.Data.Ident)[
+      @reset_code_expire_mins Application.compile_env!(:rivet, Rivet.Ident)[
                                 :reset_code_expire_mins
                               ] || 1440
       # notify
-      @ident_notify Application.compile_env!(:rivet, Rivet.Data.Ident)[:notify_templates] ||
+      @ident_notify Application.compile_env!(:rivet, Rivet.Ident)[:notify_templates] ||
                       [
-                        failed_change: Rivet.Data.Ident.User.Notify.FailedChange,
-                        verification: Rivet.Data.Ident.User.Notify.Verification,
-                        password_reset: Rivet.Data.Ident.User.Notify.PasswordReset,
-                        password_changed: Rivet.Data.Ident.User.Notify.PasswordChanged
+                        failed_change: Rivet.Ident.User.Notify.FailedChange,
+                        verification: Rivet.Ident.User.Notify.Verification,
+                        password_reset: Rivet.Ident.User.Notify.PasswordReset,
+                        password_changed: Rivet.Ident.User.Notify.PasswordChanged
                       ]
       @ident_notify_failed_change @ident_notify[:failed_change]
       @ident_notify_verification @ident_notify[:verification]
@@ -35,10 +35,10 @@ defmodule Rivet.Data.Ident.Config do
 
       # tables
       @rivet_table_prefix Application.compile_env!(:rivet, :table_prefix) || ""
-      @ident_table_prefix Application.compile_env!(:rivet, Rivet.Data.Ident)[:table_prefix] ||
+      @ident_table_prefix Application.compile_env!(:rivet, Rivet.Ident)[:table_prefix] ||
                             "ident_"
       ## if true, put the prefix on the schema, rather than the table
-      @ident_table_schema_prefix Application.compile_env!(:rivet, Rivet.Data.Ident)[
+      @ident_table_schema_prefix Application.compile_env!(:rivet, Rivet.Ident)[
                                    :schema_prefix
                                  ] || false
       if @ident_table_schema_prefix do
@@ -47,7 +47,7 @@ defmodule Rivet.Data.Ident.Config do
         @ident_table_schema_args []
       end
 
-      @ident_table_names (Application.compile_env!(:rivet, Rivet.Data.Ident)[:table_names] ||
+      @ident_table_names (Application.compile_env!(:rivet, Rivet.Ident)[:table_names] ||
                             [
                               accesses: "accesses",
                               actions: "actions",

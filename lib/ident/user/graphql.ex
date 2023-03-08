@@ -1,7 +1,7 @@
-defmodule Rivet.Data.Ident.User.Graphql do
+defmodule Rivet.Ident.User.Graphql do
   @moduledoc false
   use Absinthe.Schema.Notation
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   import Ident.User.Resolver
   import Rivet.Graphql
   require Logger

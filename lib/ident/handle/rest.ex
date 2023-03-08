@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Handle.Rest do
+defmodule Rivet.Ident.Handle.Rest do
   @moduledoc false
 end

@@ -1,5 +1,5 @@
-defmodule Rivet.Data.Ident.RoleMap.Lib do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.RoleMap.Lib do
+  alias Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.RoleMap
 
   # should probably be on Ident.Accesses

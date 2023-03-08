@@ -1,7 +1,7 @@
-defmodule Rivet.Data.Ident.UserIdent do
+defmodule Rivet.Ident.UserIdent do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :none
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   @primary_key false
   typed_schema "user_idents" do

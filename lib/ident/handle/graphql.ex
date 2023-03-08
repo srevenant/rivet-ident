@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Handle.Graphql do
+defmodule Rivet.Ident.Handle.Graphql do
   @moduledoc false
 end

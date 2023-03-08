@@ -4,7 +4,7 @@ defmodule Rivet.Email.Example do
   projects may include it in their tests.
   """
   alias Rivet.Email.Example
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   use Rivet.Email,
     otp_app: :rivet_auth,

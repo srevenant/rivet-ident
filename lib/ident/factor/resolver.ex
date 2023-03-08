@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Factor.Resolver do
+defmodule Rivet.Ident.Factor.Resolver do
   @moduledoc false
 end

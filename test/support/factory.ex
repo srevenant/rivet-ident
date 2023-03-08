@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Test.Factory do
+defmodule Rivet.Ident.Test.Factory do
   use ExMachina.Ecto, repo: Rivet.Auth.Repo
-  use Rivet.Data.Ident.Test.AuthFactory
+  use Rivet.Ident.Test.AuthFactory
 end

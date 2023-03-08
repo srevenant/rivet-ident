@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Factor.FedId do
+defmodule Rivet.Ident.Factor.FedId do
   @moduledoc """
   Structure for in-process authentication result contexts, not directly to one user
   """

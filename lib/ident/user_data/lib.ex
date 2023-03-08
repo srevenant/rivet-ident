@@ -1,5 +1,5 @@
-defmodule Rivet.Data.Ident.UserData.Lib do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.UserData.Lib do
+  alias Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.UserData
 
   def list_types(%Ident.User{id: id}, types) when is_list(types) do

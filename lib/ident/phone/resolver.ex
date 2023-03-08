@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Phone.Resolver do
+defmodule Rivet.Ident.Phone.Resolver do
   @moduledoc false
 end

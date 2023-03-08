@@ -2,7 +2,7 @@ defmodule Rivet.Auth.Domain do
   @moduledoc """
   Structure for in-process authentication result contexts, not directly to one user
   """
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   defstruct type: :acc,
             status: :unknown,

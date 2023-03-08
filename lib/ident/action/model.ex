@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Action do
+defmodule Rivet.Ident.Action do
   @moduledoc """
   Schema for representing and working with a Ident.Action.
   """
