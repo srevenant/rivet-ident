@@ -1,7 +1,6 @@
 defmodule Rivet.Auth.Token.Validation do
   alias Rivet.Auth
-  alias Rivet.Auth.Token
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   require Logger
 
   ##############################################################################
@@ -24,7 +23,7 @@ defmodule Rivet.Auth.Token.Validation do
     scope = %{type: type} |> Map.merge(scope)
 
     with {:ok, tok, claims} <-
-           Token.Create.jwt(:val, "cas1:#{factor.id}", hostname, val_age, nil, scope) do
+           Auth.Token.Create.jwt(:val, "cas1:#{factor.id}", hostname, val_age, nil, scope) do
       {:ok, tok, claims, factor}
     end
   end
@@ -49,11 +48,11 @@ defmodule Rivet.Auth.Token.Validation do
         end
 
       {:error, %{errors: [expires_at: {"is invalid", _}]}} ->
-        Logger.error("Unable to create Auth Token record in DB! Invalid Expiration.")
+        Logger.error("Unable to create Auth Auth.Token record in DB! Invalid Expiration.")
         {:error, "Invalid Expiration"}
 
       error ->
-        Logger.error("Unable to create Auth Token record in DB! #{inspect(error)}")
+        Logger.error("Unable to create Auth Auth.Token record in DB! #{inspect(error)}")
         error
     end
   end

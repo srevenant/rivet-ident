@@ -1,7 +1,7 @@
-defmodule Rivet.Data.Ident.User.Lib.Signin do
-  alias Rivet.Data.Ident
-  alias Rivet.Data.Ident.User.Notify
-  # use Rivet.Data.Ident.Config
+defmodule Rivet.Ident.User.Lib.Signin do
+  alias Rivet.Ident
+  alias Rivet.Ident.User.Notify
+  # use Rivet.Ident.Config
   alias Rivet.Auth
   require Logger
 

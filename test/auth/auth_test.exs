@@ -1,9 +1,9 @@
-defmodule Rivet.AuthTest do
-  use Rivet.Data.Ident.Case, async: true
+defmodule Rivet.IdentTest do
+  use Rivet.Ident.Case, async: true
   alias Rivet.Auth
   alias Auth.Domain
   alias Auth.Token
-  import Rivet.Data.Ident.Test.Factory
+  import Rivet.Ident.Test.Factory
 
   doctest Auth.Access, import: true
   doctest Auth.Refresh, import: true

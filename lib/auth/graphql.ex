@@ -4,7 +4,7 @@ defmodule Rivet.Auth.Graphql do
   """
   import Rivet.Graphql
   alias Rivet.Auth
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   def current_user(info, method \\ nil)
 

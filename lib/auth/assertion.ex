@@ -14,7 +14,7 @@ defmodule Rivet.Auth.Assertion do
           action: atom(),
           # if CXS app auth allowed, match this app
           app: nil | atom(),
-          domain: Rivet.Data.Ident.Access.Domains.t(),
+          domain: Rivet.Auth.Access.Domains.t(),
           # item.id of item defined by domain
           ref_id: nil | String.t(),
           # if key above doesn't work, should we check global privs?

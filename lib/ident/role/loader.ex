@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Role.Loader do
+defmodule Rivet.Ident.Role.Loader do
   @moduledoc false
 end

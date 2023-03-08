@@ -1,14 +1,14 @@
-defmodule Rivet.Data.Ident.Test.EmailTest do
-  use Rivet.Data.Ident.Case, async: true
+defmodule Rivet.Ident.Test.EmailTest do
+  use Rivet.Ident.Case, async: true
 
-  doctest Rivet.Data.Ident.Email, import: true
-  doctest Rivet.Data.Ident.Email.Lib, import: true
-  doctest Rivet.Data.Ident.Email.Loader, import: true
-  doctest Rivet.Data.Ident.Email.Seeds, import: true
-  doctest Rivet.Data.Ident.Email.Graphql, import: true
-  doctest Rivet.Data.Ident.Email.Resolver, import: true
-  doctest Rivet.Data.Ident.Email.Rest, import: true
-  doctest Rivet.Data.Ident.Email.Cache, import: true
+  doctest Rivet.Ident.Email, import: true
+  doctest Rivet.Ident.Email.Lib, import: true
+  doctest Rivet.Ident.Email.Loader, import: true
+  doctest Rivet.Ident.Email.Seeds, import: true
+  doctest Rivet.Ident.Email.Graphql, import: true
+  doctest Rivet.Ident.Email.Resolver, import: true
+  doctest Rivet.Ident.Email.Rest, import: true
+  doctest Rivet.Ident.Email.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do
@@ -20,7 +20,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
   describe "build/1" do
     test "build when valid" do
       params = params_with_assocs(:ident_email)
-      changeset = Rivet.Data.Ident.Email.build(params)
+      changeset = Rivet.Ident.Email.build(params)
       assert changeset.valid?
     end
   end
@@ -28,7 +28,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
   describe "get/1" do
     test "loads saved transactions as expected" do
       c = insert(:ident_email)
-      assert %Rivet.Data.Ident.Email{} = found = Rivet.Data.Ident.Email.one!(id: c.id)
+      assert %Rivet.Ident.Email{} = found = Rivet.Ident.Email.one!(id: c.id)
       assert found.id == c.id
     end
   end
@@ -36,7 +36,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
   describe "create/1" do
     test "inserts a valid record" do
       attrs = params_with_assocs(:ident_email)
-      assert {:ok, model} = Rivet.Data.Ident.Email.create(attrs)
+      assert {:ok, model} = Rivet.Ident.Email.create(attrs)
       assert model.id != nil
     end
   end
@@ -44,7 +44,7 @@ defmodule Rivet.Data.Ident.Test.EmailTest do
   describe "delete/1" do
     test "deletes record" do
       model = insert(:ident_email)
-      assert {:ok, deleted} = Rivet.Data.Ident.Email.delete(model)
+      assert {:ok, deleted} = Rivet.Ident.Email.delete(model)
       assert deleted.id == model.id
     end
   end

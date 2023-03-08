@@ -1,5 +1,5 @@
-defmodule Rivet.Data.Ident.Handle.Lib do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.Handle.Lib do
+  alias Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Handle
 
   @doc """

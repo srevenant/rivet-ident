@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Handle.Cache do
+defmodule Rivet.Ident.Handle.Cache do
   @moduledoc false
 end

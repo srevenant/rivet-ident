@@ -1,7 +1,7 @@
-defmodule Rivet.Data.Ident.User.Lib do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.User.Lib do
+  alias Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.User
-  # use Rivet.Data.Ident.Config
+  # use Rivet.Ident.Config
   alias Rivet.Auth
   require Logger
 
@@ -34,7 +34,7 @@ defmodule Rivet.Data.Ident.User.Lib do
   @spec get_authz(user :: Ident.User.t()) :: Ident.User.t()
   def get_authz(%Ident.User{authz: authz} = user) when is_nil(authz) do
     {:ok, user} = Ident.User.preload(user, :accesses)
-    %Ident.User{user | authz: Rivet.Data.Ident.Access.Lib.get_actions(user)}
+    %Ident.User{user | authz: Rivet.Ident.Access.Lib.get_actions(user)}
   end
 
   def get_authz(%Ident.User{} = user), do: user

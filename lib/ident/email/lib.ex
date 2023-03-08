@@ -1,5 +1,5 @@
-defmodule Rivet.Data.Ident.Email.Lib do
-  alias Rivet.Data.Ident
+defmodule Rivet.Ident.Email.Lib do
+  alias Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Email
 
   ##############################################################################

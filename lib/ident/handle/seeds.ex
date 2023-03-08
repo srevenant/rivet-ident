@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Handle.Seeds do
+defmodule Rivet.Ident.Handle.Seeds do
   @moduledoc false
 end

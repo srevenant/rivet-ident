@@ -1,14 +1,14 @@
-defmodule Rivet.Data.Ident.Test.AccessTest do
-  use Rivet.Data.Ident.Case, async: true
+defmodule Rivet.Ident.Test.AccessTest do
+  use Rivet.Ident.Case, async: true
 
-  doctest Rivet.Data.Ident.Access, import: true
-  doctest Rivet.Data.Ident.Access.Lib, import: true
-  doctest Rivet.Data.Ident.Access.Loader, import: true
-  doctest Rivet.Data.Ident.Access.Seeds, import: true
-  doctest Rivet.Data.Ident.Access.Graphql, import: true
-  doctest Rivet.Data.Ident.Access.Resolver, import: true
-  doctest Rivet.Data.Ident.Access.Rest, import: true
-  doctest Rivet.Data.Ident.Access.Cache, import: true
+  doctest Rivet.Ident.Access, import: true
+  doctest Rivet.Ident.Access.Lib, import: true
+  doctest Rivet.Ident.Access.Loader, import: true
+  doctest Rivet.Ident.Access.Seeds, import: true
+  doctest Rivet.Ident.Access.Graphql, import: true
+  doctest Rivet.Ident.Access.Resolver, import: true
+  doctest Rivet.Ident.Access.Rest, import: true
+  doctest Rivet.Ident.Access.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do
@@ -20,7 +20,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
   describe "build/1" do
     test "build when valid" do
       params = params_with_assocs(:ident_access)
-      changeset = Rivet.Data.Ident.Access.build(params)
+      changeset = Rivet.Ident.Access.build(params)
       assert changeset.valid?
     end
   end
@@ -28,7 +28,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
   describe "get/1" do
     test "loads saved transactions as expected" do
       c = insert(:ident_access)
-      assert %Rivet.Data.Ident.Access{} = found = Rivet.Data.Ident.Access.one!(id: c.id)
+      assert %Rivet.Ident.Access{} = found = Rivet.Ident.Access.one!(id: c.id)
       assert found.id == c.id
     end
   end
@@ -36,7 +36,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
   describe "create/1" do
     test "inserts a valid record" do
       attrs = params_with_assocs(:ident_access)
-      assert {:ok, model} = Rivet.Data.Ident.Access.create(attrs)
+      assert {:ok, model} = Rivet.Ident.Access.create(attrs)
       assert model.id != nil
     end
   end
@@ -44,7 +44,7 @@ defmodule Rivet.Data.Ident.Test.AccessTest do
   describe "delete/1" do
     test "deletes record" do
       model = insert(:ident_access)
-      assert {:ok, deleted} = Rivet.Data.Ident.Access.delete(model)
+      assert {:ok, deleted} = Rivet.Ident.Access.delete(model)
       assert deleted.id == model.id
     end
   end

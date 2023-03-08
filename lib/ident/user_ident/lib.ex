@@ -1,6 +1,6 @@
-defmodule Rivet.Data.Ident.UserIdent.Lib do
-  alias Rivet.Data.Ident.User
-  alias Rivet.Data.Ident.UserIdent
+defmodule Rivet.Ident.UserIdent.Lib do
+  alias Rivet.Ident.User
+  alias Rivet.Ident.UserIdent
   use Rivet.Ecto.Collection.Context, model: UserIdent
 
   def get(origin, key) do

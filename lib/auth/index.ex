@@ -5,7 +5,7 @@ defmodule Rivet.Auth do
   import Rivet.Graphql
   alias Rivet.Auth.Assertion
   alias Rivet.Auth.Signin
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   require Logger
 
   def check_authz(%{context: %{user: %Ident.User{} = u}}, assertion),

@@ -1,9 +1,9 @@
 ---
-type: Rivet.Data
+type: Rivet
 version: 2.1
 
 ---
-type: Rivet.Data.Ident.User
+type: Rivet.Ident.User
 values:
   id: 3bdf2cc8-d360-437c-b977-08fb5cbb32ac
   name: test user

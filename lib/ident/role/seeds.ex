@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.Role.Seeds do
+defmodule Rivet.Ident.Role.Seeds do
   @moduledoc false
 end

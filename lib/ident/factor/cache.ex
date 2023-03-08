@@ -1,11 +1,11 @@
-defmodule Rivet.Data.Ident.Factor.Cache do
+defmodule Rivet.Ident.Factor.Cache do
   use Rivet.Utils.LazyCache,
     bucket_key: :user_factor_cache_bucket,
     keyset_key: :user_factor_cache_keyset
 
   @persist_for 600_000
 
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   @doc """
   Read-through cache for loading user factors from Ident.

@@ -4,7 +4,7 @@ defmodule Rivet.Auth.Application do
   def start(_type, _args) do
     Rivet.Auth.Settings.start()
 
-    children = [Rivet.Data.Ident.Factor.Cache]
+    children = [Rivet.Ident.Factor.Cache]
 
     children =
       if Application.get_env(:rivet_auth, :federated, %{}).google do

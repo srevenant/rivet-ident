@@ -1,4 +1,4 @@
-defmodule Rivet.Data.Ident.Factor.FedId.Email do
+defmodule Rivet.Ident.Factor.FedId.Email do
   defstruct address: "",
             verified: false
 

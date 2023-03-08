@@ -1,10 +1,10 @@
-defmodule Rivet.Data.Ident.RoleMap do
+defmodule Rivet.Ident.RoleMap do
   @moduledoc """
   Schema for representing and working with a Ident.RoleMap.
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :int
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
 
   typed_schema "ident_role_maps" do
     belongs_to(:action, Ident.Action, foreign_key: :action_id)

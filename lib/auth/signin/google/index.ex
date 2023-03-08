@@ -2,27 +2,26 @@ defmodule Rivet.Auth.Signin.Google do
   @moduledoc """
   Google login scheme
   """
+  alias Rivet.Ident
   alias Rivet.Auth
-  alias Rivet.Auth.Domain
-  alias Rivet.Data.Ident
 
   # TODO:
   # - pull imageUrl (tiff?) and converts it / uploads it into user's profile
 
   ##############################################################################
-  # note: this is different from `Domain.result()` typedef, in it can have any
-  # value with :ok, where the second part of Domain.result() is always an Domain
-  @spec check(String.t(), map()) :: Domain.result()
+  # note: this is different from `Auth.Domain.result()` typedef, in it can have any
+  # value with :ok, where the second part of Auth.Domain.result() is always an Auth.Domain
+  @spec check(String.t(), map()) :: Auth.Domain.result()
   def check(hostname, %{"data" => %{"auth" => token}}) when is_binary(hostname) do
     verify_google_signature(token)
     |> find_or_create_user(hostname)
-    |> Rivet.Auth.Signin.post_signin()
+    |> Auth.Signin.post_signin()
   end
 
   def check(_, _),
     do:
       {:error,
-       %Domain{
+       %Auth.Domain{
          error: "Signup Failed",
          log: "auth signup failed, invalid arguments from client"
        }}
@@ -30,7 +29,7 @@ defmodule Rivet.Auth.Signin.Google do
   ##############################################################################
   @spec verify_google_signature(String.t()) ::
           {:ok, %{payload: map(), header: map(), token: String.t()}}
-          | {:error, Domain.t()}
+          | {:error, Auth.Domain.t()}
   defp verify_google_signature(token) do
     case Auth.Token.extract(token, :header) do
       {:ok, header} ->
@@ -39,21 +38,21 @@ defmodule Rivet.Auth.Signin.Google do
         # signature of this jwt
         google_keys = Auth.Signin.Google.KeyManager.get_keys()
         jwk = Map.get(google_keys, header["kid"])
-        auth = %Domain{token: token}
+        auth = %Auth.Domain{token: token}
 
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
           {true, %JOSE.JWT{fields: fields}, %JOSE.JWS{} = jws} ->
             {:ok, %{payload: fields, header: Map.from_struct(jws), token: token}}
 
           {false, %JOSE.JWT{fields: %{"email" => email}}, %JOSE.JWS{}} ->
-            {:error, %Domain{auth | log: "Unable to verify google token for #{email}"}}
+            {:error, %Auth.Domain{auth | log: "Unable to verify google token for #{email}"}}
 
           {:error, _rest} ->
-            {:error, %Domain{auth | log: "Unable to verify google JWT"}}
+            {:error, %Auth.Domain{auth | log: "Unable to verify google JWT"}}
         end
 
       {:error, reason} ->
-        {:error, %Domain{log: reason}}
+        {:error, %Auth.Domain{log: reason}}
     end
   end
 
@@ -68,7 +67,7 @@ defmodule Rivet.Auth.Signin.Google do
 
   ###############################################################################
   # defp update_user_avatar(
-  # {:ok, %Domain{status: :authed, user: %Ident.User{} = _}} = pass,
+  # {:ok, %Auth.Domain{status: :authed, user: %Ident.User{} = _}} = pass,
   # _picurl
   # ) do
   # IO.puts("Need to get avatar")
@@ -112,10 +111,10 @@ defmodule Rivet.Auth.Signin.Google do
 
   defp check_user_allowed({:ok, %Ident.User{} = user}, hostname) do
     if google_allowed?(user) and Ident.User.enabled?(user) do
-      {:ok, %Domain{hostname: hostname, status: :authed, user: user}}
+      {:ok, %Auth.Domain{hostname: hostname, status: :authed, user: user}}
     else
       {:error,
-       %Domain{
+       %Auth.Domain{
          log: "Federated signin when user already exists",
          error:
            "The user has already signed in, but has not authorized google logins. You can try to reset your password."
@@ -125,14 +124,14 @@ defmodule Rivet.Auth.Signin.Google do
 
   defp check_user_allowed(x, _) do
     IO.inspect(x)
-    {:error, %Domain{log: "User identified but unable to load"}}
+    {:error, %Auth.Domain{log: "User identified but unable to load"}}
   end
 
   ##############################################################################
   defp create_user(params, hostname) do
     fedid = payload_to_fedid(params)
 
-    Ident.User.Lib.signup(%Domain{
+    Ident.User.Lib.signup(%Auth.Domain{
       hostname: hostname,
       status: :authed,
       input: %{
@@ -150,7 +149,7 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   # ##############################################################################
-  defp add_ident({:ok, %Domain{user: %Ident.User{} = u}} = pass, ident) do
+  defp add_ident({:ok, %Auth.Domain{user: %Ident.User{} = u}} = pass, ident) do
     with {:ok, _} <- Ident.UserIdent.Lib.put(u, "google", ident) do
       pass
     end

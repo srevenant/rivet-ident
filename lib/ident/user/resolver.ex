@@ -1,12 +1,12 @@
-defmodule Rivet.Data.Ident.User.Resolver do
+defmodule Rivet.Ident.User.Resolver do
   @moduledoc """
-  GraphQL resolver for interacting with Rivet.Data.Ident.User.
+  GraphQL resolver for interacting with Rivet.Ident.User.
   """
   import Rivet.Graphql
   import Rivet.Auth.Graphql
   require Logger
   alias Rivet.Auth
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   alias Ident.User
 
   @doc """

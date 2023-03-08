@@ -1,10 +1,10 @@
-defmodule Rivet.Data.Ident.Handle do
+defmodule Rivet.Ident.Handle do
   @moduledoc """
   Schema for representing and working with a Handle.
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   import Rivet.Utils.Ecto.Changeset, only: [validate_rex: 4]
 
   typed_schema "user_handles" do

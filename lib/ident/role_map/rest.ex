@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.RoleMap.Rest do
+defmodule Rivet.Ident.RoleMap.Rest do
   @moduledoc false
 end

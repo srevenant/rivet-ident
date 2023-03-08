@@ -1,14 +1,14 @@
 defmodule Rivet.Auth.Signin do
-  alias Rivet.Auth.Domain
-  alias Rivet.Data.Ident.User
+  alias Rivet.Auth
+  alias Rivet.Ident.User
   require Logger
 
-  @spec post_signin({:ok | :error, Domain.t()}) :: {:ok | :error, Domain.t()}
-  def post_signin({:ok, auth = %Domain{status: :authed, user: %User{} = u}}) do
+  @spec post_signin({:ok | :error, Auth.Domain.t()}) :: {:ok | :error, Auth.Domain.t()}
+  def post_signin({:ok, auth = %Auth.Domain{status: :authed, user: %User{} = u}}) do
     Logger.info("Signin Success", uid: u.id)
     # TODO: events/triggers to table/signin count, etc
     {:ok, auth}
   end
 
-  def post_signin(pass = {:error, %Domain{}}), do: pass
+  def post_signin(pass = {:error, %Auth.Domain{}}), do: pass
 end

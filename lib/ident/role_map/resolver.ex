@@ -1,3 +1,3 @@
-defmodule Rivet.Data.Ident.RoleMap.Resolver do
+defmodule Rivet.Ident.RoleMap.Resolver do
   @moduledoc false
 end

@@ -1,10 +1,10 @@
-defmodule Rivet.Data.Ident.User do
+defmodule Rivet.Ident.User do
   @moduledoc """
   Schema for representing and working with a Ident.User.
   """
   use TypedEctoSchema
   import EctoEnum
-  alias Rivet.Data.Ident
+  alias Rivet.Ident
   use Rivet.Ecto.Model
 
   defenum(Types,
