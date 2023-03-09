@@ -1,6 +1,6 @@
 import Config
 
-config :rivet_auth,
+config :rivet_ident,
   jwt_acc_secrets: [
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
   ],

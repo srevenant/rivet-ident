@@ -7,7 +7,7 @@ defmodule Rivet.Auth.Application do
     children = [Rivet.Ident.Factor.Cache]
 
     children =
-      if Application.get_env(:rivet_auth, :federated, %{}).google do
+      if Application.get_env(:rivet_ident, :federated, %{}).google do
         [
           {Rivet.Auth.Signin.Google.KeyManager, %{interval: 4_000}}
           | children

@@ -261,8 +261,8 @@ defmodule Rivet.Ident.User.Lib do
   ##############################################################################
   defp signup_promote_first_user({:ok, auth = %Auth.Domain{user: %Ident.User{} = user}}) do
     # except once use case this will be false
-    if Application.get_env(:rivet_auth, :first_user_admin) != false do
-      Application.get_env(:rivet_auth, :first_user_roles, [])
+    if Application.get_env(:rivet_ident, :first_user_admin) != false do
+      Application.get_env(:rivet_ident, :first_user_roles, [])
       |> Enum.each(fn role_name ->
         case Ident.Role.one(name: role_name) do
           {:ok, role} ->

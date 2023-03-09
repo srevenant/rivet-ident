@@ -8,7 +8,7 @@ config :rivet,
   table_prefix: "",
   test: true
 
-config :rivet_auth,
+config :rivet_ident,
   federated: %{
     google: true
   },
@@ -28,18 +28,18 @@ config :rivet_auth,
   }
 
 config :rivet_email, sender: Rivet.Email.Example
-config :rivet_auth,
+config :rivet_ident,
   ecto_repos: [Rivet.Auth.Repo]
 
 # this is where you define common things used in templates
-config :rivet_auth, :email,
+config :rivet_ident, :email,
   link_front: "http://localhost:3000",
   link_back: "http://localhost:4000",
   org: "Example Org",
   email_from: "noreply@example.com",
   email_sig: "Example Org"
 
-config :rivet_auth, Rivet.Auth.Repo,
+config :rivet_ident, Rivet.Auth.Repo,
   migration_repo: Rivet.Auth.Repo,
   pool_size: 20,
   username: "postgres",

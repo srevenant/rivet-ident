@@ -222,7 +222,7 @@ defmodule Rivet.Ident.User.Resolver do
   ##############################################################################
   # private
   def query_public_people(%{filter: %{name: name} = filter}, info) when is_binary(name) do
-    if Application.get_env(:rivet_auth, :public_people) do
+    if Application.get_env(:rivet_ident, :public_people) do
       with_current_user(info, "listPublicPeople", fn user ->
         matches =
           case Ident.Handle.one([handle: name], [:user]) do
@@ -248,7 +248,7 @@ defmodule Rivet.Ident.User.Resolver do
 
   ##############################################################################
   def query_public_person(%{target: handle}, _info) do
-    if Application.get_env(:rivet_auth, :public_people) do
+    if Application.get_env(:rivet_ident, :public_people) do
       case Ident.Handle.one([handle: handle], [:user]) do
         {:ok, handle} ->
           {:ok, %{success: true, result: handle.user}}
@@ -264,7 +264,7 @@ defmodule Rivet.Ident.User.Resolver do
 
   ##############################################################################
   def request_password_reset(%{email: eaddr}, _info) when is_binary(eaddr) do
-    if Application.get_env(:rivet_auth, :password_user_reset) do
+    if Application.get_env(:rivet_ident, :password_user_reset) do
       eaddr = String.trim(eaddr)
       Logger.info("password reset request", eaddr: eaddr)
 

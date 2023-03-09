@@ -3,7 +3,7 @@ defmodule RivetAuth.MixProject do
 
   def project do
     [
-      app: :rivet_auth,
+      app: :rivet_ident,
       version: "2.0.0",
       package: package(),
       elixir: "~> 1.13",

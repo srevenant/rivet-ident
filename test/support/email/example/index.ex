@@ -7,7 +7,7 @@ defmodule Rivet.Email.Example do
   alias Rivet.Ident
 
   use Rivet.Email,
-    otp_app: :rivet_auth,
+    otp_app: :rivet_ident,
     user_model: Ident.User,
     email_model: Ident.Email,
     mailer: Example.Mailer

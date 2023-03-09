@@ -71,8 +71,8 @@ defmodule Rivet.Auth.Settings do
     end
   end
 
-  def getcfg(name, default), do: Application.get_env(:rivet_auth, name, default)
-  def putcfg(value, name), do: Application.put_env(:rivet_auth, name, value)
+  def getcfg(name, default), do: Application.get_env(:rivet_ident, name, default)
+  def putcfg(value, name), do: Application.put_env(:rivet_ident, name, value)
 
   defp to_map(list) do
     if Keyword.keyword?(list) do
