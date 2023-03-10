@@ -1,6 +1,7 @@
 defmodule Rivet.Ident.User.Notify.Verification do
   alias Rivet.Ident
-  use Rivet.Email.Template
+  use Rivet.Email.Template, mailer: Rivet.Email.Test.Mailer
+
   require Logger
 
   @reset_code_expire_mins 1_440
@@ -15,7 +16,7 @@ defmodule Rivet.Ident.User.Notify.Verification do
              }
            ) do
       Logger.info("added email", user_id: user.id, eaddr: eaddr)
-      @sender.send(email, __MODULE__, code: code.code)
+      Rivet.Email.mailer().send(email, __MODULE__, code: code.code)
     end
   end
 

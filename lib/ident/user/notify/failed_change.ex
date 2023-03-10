@@ -1,10 +1,10 @@
 defmodule Rivet.Ident.User.Notify.FailedChange do
   alias Rivet.Ident
-  use Rivet.Email.Template
+  use Rivet.Email.Template, mailer: Rivet.Email.Test.Mailer
 
   ##############################################################################
   def send(%Ident.Email{} = email, action),
-    do: @sender.send(email, __MODULE__, action: action)
+    do: Rivet.Email.mailer().send(email, __MODULE__, action: action)
 
   @behaviour Rivet.Ecto.Collection
   @impl Rivet.Email.Template

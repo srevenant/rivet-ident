@@ -47,7 +47,8 @@ defmodule Rivet.Ident.Test.Signin.LocalTest do
                      %Auth.Domain{
                        error: "Unable to sign in. Did you want to sign up instead?",
                        log: "Cannot find person ~doctor"
-                     }} = Local.check(%Auth.Domain{}, %{"handle" => "doctor", "password" => "who"})
+                     }} =
+                      Local.check(%Auth.Domain{}, %{"handle" => "doctor", "password" => "who"})
 
              assert {:error, _} =
                       Local.check("hostname", %{"handle" => "doctor", "password" => "who"})
@@ -88,7 +89,8 @@ defmodule Rivet.Ident.Test.Signin.LocalTest do
                         "narf"
                       )
 
-             assert {:error, %Auth.Domain{status: :unknown, log: "No password factor exists for user"}} =
+             assert {:error,
+                     %Auth.Domain{status: :unknown, log: "No password factor exists for user"}} =
                       Local.valid_user_factor({:ok, %Auth.Domain{user: user}}, user_pass)
 
              assert {:ok, %Auth.Domain{status: :authed}} =

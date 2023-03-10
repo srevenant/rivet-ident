@@ -1,12 +1,12 @@
 defmodule Rivet.Ident.User.Notify.PasswordReset do
   alias Rivet.Ident
-  use Rivet.Email.Template
+  use Rivet.Email.Template, mailer: Rivet.Email.Test.Mailer
 
   ##############################################################################
   # preload to send to all and not filter verified
   def send(%Ident.User{} = user, %Ident.Email{} = email, %Ident.UserCode{} = code) do
     with {:ok, user} <- Ident.User.preload(user, :emails) do
-      @sender.send(user.emails, __MODULE__, reqaddr: email.address, code: code)
+      Rivet.Email.mailer().send(user.emails, __MODULE__, reqaddr: email.address, code: code)
     end
   end
 

@@ -29,8 +29,7 @@ defmodule Rivet.Ident.Test.UserIdentTest do
     test "loads saved transactions as expected" do
       c = insert(:ident_user_ident)
 
-      assert %Rivet.Ident.UserIdent{} =
-               found = Rivet.Ident.UserIdent.one!(ident: c.ident)
+      assert %Rivet.Ident.UserIdent{} = found = Rivet.Ident.UserIdent.one!(ident: c.ident)
 
       assert found.ident == c.ident
     end

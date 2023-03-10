@@ -67,7 +67,8 @@ defmodule Rivet.Auth.Refresh do
   # turn it into an error if we didn't match above
   def extract_validation_token({:ok, args}, auth),
     do:
-      {:error, %Auth.Domain{auth | log: "Unable to match validation token subject: #{inspect(args)}"}}
+      {:error,
+       %Auth.Domain{auth | log: "Unable to match validation token subject: #{inspect(args)}"}}
 
   ##############################################################################
   @doc """

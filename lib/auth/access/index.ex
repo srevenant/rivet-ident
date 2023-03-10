@@ -38,7 +38,8 @@ defmodule Rivet.Auth.Access do
       end
     else
       _ ->
-        {:error, %Auth.Domain{auth | log: "Authorization header exists but is not formatted properly"}}
+        {:error,
+         %Auth.Domain{auth | log: "Authorization header exists but is not formatted properly"}}
     end
     |> process_authorization(auth)
   end

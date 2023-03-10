@@ -27,7 +27,21 @@ config :rivet_ident,
     password: 365 * 86400
   }
 
-config :rivet_email, sender: Rivet.Email.Example
+# to keep the compiling functional, even if it doesn't work
+config :rivet_email,
+  enabled: false,
+  mailer: Rivet.Ident.Example.Mailer
+
+config :rivet_email, Rivet.Ident.Example.Mailer.Backend,
+  adapter: Bamboo.SMTPAdapter,
+  server: "mail.example.com",
+  hostname: "example.com",
+  port: 25,
+  tls: :if_available,
+  retries: 2,
+  no_mx_lookups: true,
+  auth: :if_available
+
 config :rivet_ident,
   ecto_repos: [Rivet.Auth.Repo]
 

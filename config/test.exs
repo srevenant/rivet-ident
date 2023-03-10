@@ -13,4 +13,4 @@ config :rivet_ident,
 
 config :rivet_email,
   enabled: false,
-  sender: Rivet.Email.Example
+  sender: Rivet.Email.Test.Mailer

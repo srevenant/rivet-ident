@@ -29,7 +29,8 @@ defmodule Rivet.Auth.Signin.Local do
   end
 
   def signup(_, _) do
-    {:error, %Auth.Domain{log: "Auth signup failed, arguments don't match", error: "Signup Failed"}}
+    {:error,
+     %Auth.Domain{log: "Auth signup failed, arguments don't match", error: "Signup Failed"}}
   end
 
   ##############################################################################
