@@ -33,7 +33,7 @@ defmodule RivetAuth.MixProject do
 
   def application do
     [
-      mod: {Rivet.Auth.Application, []},
+      mod: {Rivet.Ident.Application, []},
       extra_applications: [
         :logger,
         {:ex_unit, :optional}
