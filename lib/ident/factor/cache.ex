@@ -1,7 +1,5 @@
 defmodule Rivet.Ident.Factor.Cache do
-  use Rivet.Utils.LazyCache,
-    bucket_key: :fcache_bucket,
-    keyset_key: :fcache_keyset
+  use Rivet.Utils.LazyCache
 
   @persist_for 600_000
 

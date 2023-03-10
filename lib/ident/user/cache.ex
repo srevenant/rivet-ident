@@ -3,7 +3,7 @@ defmodule Rivet.Ident.User.Cache do
   Used by websockets token authentication.  Very short term cache to efficiently
   load ~30 websockets all at once for a single dashboard.
   """
-  use Rivet.Utils.LazyCache, bucket_key: :user_cache_bucket, keyset_key: :user_cache_keyset
+  use Rivet.Utils.LazyCache
 
   @persist_for 30_000
 
