@@ -27,7 +27,7 @@ defmodule RivetAuth.MixProject do
       ],
       aliases: aliases(),
       ##  NOT FOR GA; just internal for now
-      xref: [exclude: [Core.Repo]]
+      # xref: [exclude: [Core.Repo]]
     ]
   end
 
