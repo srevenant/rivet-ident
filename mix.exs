@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.MixProject do
+defmodule RivetIdent.MixProject do
   use Mix.Project
 
   def project do
