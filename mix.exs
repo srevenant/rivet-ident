@@ -22,7 +22,7 @@ defmodule Rivet.Ident.MixProject do
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
       rivet: [
-        mod_dir: "ident",
+        models_dir: "ident",
         app_base: Rivet.Ident
       ],
       aliases: aliases(),
