@@ -1,4 +1,4 @@
-defmodule RivetAuth.MixProject do
+defmodule Rivet.Ident.MixProject do
   use Mix.Project
 
   def project do
@@ -73,7 +73,7 @@ defmodule RivetAuth.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet, "~> 1.0.2", git: "https://github.com/srevenant/rivet", branch: "master"},
+      {:rivet, "~> 1.0.2", git: "https://github.com/srevenant/rivet", branch: "external-deps"},
       {:rivet_email, "~> 1.0.3", git: "https://github.com/srevenant/rivet-email", branch: "master"},
       {:rivet_utils, "~> 1.0.3", git: "https://github.com/srevenant/rivet-utils", branch: "master"},
       {:timex, "~> 3.6"},
