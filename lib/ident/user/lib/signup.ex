@@ -1,39 +1,15 @@
-defmodule Rivet.Ident.User.Lib.Signin do
+defmodule Rivet.Ident.User.Lib.Signup do
   alias Rivet.Ident
   alias Rivet.Ident.User.Notify
   # use Rivet.Ident.Config
   alias Rivet.Auth
   require Logger
 
-  ##############################################################################
-  # @doc """
-  # SignIn pipeline
-  # """
-  # def signin(%{handle: handle, password: password}, conn) do
-  #   # going backwards here, but ohwell - BJG
-  #   Auth.Signin.check(conn, %{"handle" => handle, "password" => password})
-  # end
-
   ################################################################################
   @doc """
   SignUp pipeline
   """
-
-  ##############################################################################
-  ### TODO: check email first, have signup shift to give an error: that user already exists, if it is found
-  # def signup(tenant, %{handle: handle, email: email} = args)
-  #     when handle == "",
-  #     do: signup(tenant, Map.put(args, :handle, email))
-  # def signup(tenant, %{handle: handle, email: email, password: password}) do
-  #   {:ok, %Auth.Domain{input: %{handle: handle, email: email, secret: password}, tenant: tenant}}
-
-  # def update_user(x, y), do: Ident.User.update(x, y)
-  #
-  #
-  # TODO: Need to DRY this out with UsersUpdate module
-  #
-  #
-  def signup(%Auth.Domain{} = auth) do
+  def signup(%Auth.Domain{hostname: h} = auth) when is_binary(h) do
     {:ok, auth}
     |> signup_check_handle
     |> signup_create_user(:authed)
@@ -42,8 +18,6 @@ defmodule Rivet.Ident.User.Lib.Signin do
     |> signup_add_factor
     |> signup_associate_handle
     |> signup_associate_email
-    |> signup_add_new_user
-    |> signup_promote_first_user
     |> mainline
 
     # TODO: this should actually shift to a welcome new user dialog, which can ask for other account attributes
@@ -59,7 +33,7 @@ defmodule Rivet.Ident.User.Lib.Signin do
   end
 
   # variant with less restrictions
-  def signup_only_identity(%Auth.Domain{} = auth) do
+  def only_identity(%Auth.Domain{} = auth) do
     {:ok, auth}
     |> signup_create_user(:identity)
     |> signup_associate_email
@@ -184,50 +158,12 @@ defmodule Rivet.Ident.User.Lib.Signin do
     end
   end
 
-  # TODO: merge better with learning resolver--that code should probably be here
-  defp signup_add_new_user({:ok, auth = %Auth.Domain{user: %Ident.User{} = user}}) do
-    with {:ok, user} <-
-           Ident.User.update(user, %{settings: Map.put(user.settings, "newUser", true)}) do
-      {:ok, %Auth.Domain{auth | user: user}}
-    end
-  end
-
-  defp signup_add_new_user({:error, _, _} = pass), do: pass
-
-  ##############################################################################
-  defp signup_promote_first_user({:ok, auth = %Auth.Domain{user: %Ident.User{} = user}}) do
-    # except once use case this will be false
-    if Application.get_env(:core, :first_user_admin) do
-      Enum.each(Application.get_env(:core, :first_user_roles), fn role_name ->
-        case Ident.Role.one(name: role_name) do
-          {:ok, role} ->
-            case Ident.Access.create(%{role_id: role.id, user_id: user.id}) do
-              {:ok, _} ->
-                Logger.warn("Adding role #{role.name} to first user #{user.id}")
-
-              {:error, what} ->
-                IO.inspect(what, label: "Cannot add role for first user!")
-                Logger.error("Cannot add role #{role.name} for first user!")
-            end
-
-          {:error, _} ->
-            Logger.error("Cannot find role #{role_name} for first user!")
-        end
-      end)
-
-      Application.put_env(:core, :first_user_admin, false)
-    end
-
-    {:ok, auth}
-  end
-
-  defp signup_promote_first_user({:error, _, _} = pass), do: pass
-
   # after success, create a new struct so we don't carry around unecessary or
   # insecure baggage
   defp mainline({:ok, auth = %Auth.Domain{}}) do
     {:ok,
      %Auth.Domain{
+       hostname: auth.hostname,
        user: auth.user,
        handle: auth.handle,
        created: auth.created,

@@ -14,7 +14,7 @@ defmodule Rivet.Auth.Identify do
 
       _other ->
         # create new user profile with identity info only
-        Ident.User.Lib.signup_only_identity(%Auth.Domain{
+        Ident.User.Lib.Signup.only_identity(%Auth.Domain{
           hostname: hostname,
           input: %{email: %{address: eaddr, verified: false}, settings: %{}}
         })

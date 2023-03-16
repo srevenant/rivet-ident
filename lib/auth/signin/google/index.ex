@@ -131,7 +131,7 @@ defmodule Rivet.Auth.Signin.Google do
   defp create_user(params, hostname) do
     fedid = payload_to_fedid(params)
 
-    Ident.User.Lib.signup(%Auth.Domain{
+    Ident.User.Lib.Signup.signup(%Auth.Domain{
       hostname: hostname,
       status: :authed,
       input: %{
