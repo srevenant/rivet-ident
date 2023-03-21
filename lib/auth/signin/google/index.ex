@@ -154,7 +154,7 @@ defmodule Rivet.Auth.Signin.Google do
         email: fedid.email,
         # pass this through
         email_verified: true,
-        settings: %{authAllowed: Map.put(fedid.settings, fedid.provider.type, true)}
+        settings: put_in(fedid.settings, ["authAllowed", fedid.provider.type], true)
       }
     })
     |> add_ident(params["sub"])
@@ -190,6 +190,7 @@ defmodule Rivet.Auth.Signin.Google do
   #   "jti": "casfdasdfasdfasdfasdf"
   # }
   defp payload_to_fedid(payload) do
+    # could update locale if we have it here in settings
     %Ident.Factor.FedId{
       name: payload["name"],
       handle: Ident.Handle.Lib.gen_good_handle(payload["email"]),
@@ -198,9 +199,6 @@ defmodule Rivet.Auth.Signin.Google do
         verified: true
       },
       phone: nil,
-      settings: %{
-        locale: payload["locale"]
-      },
       provider: %Ident.Factor.FedId.Provider{
         type: :google,
         sub: payload["sub"],
