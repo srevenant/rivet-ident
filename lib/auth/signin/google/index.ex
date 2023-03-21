@@ -154,7 +154,7 @@ defmodule Rivet.Auth.Signin.Google do
         email: fedid.email,
         # pass this through
         email_verified: true,
-        settings: put_in(fedid.settings, ["authAllowed", fedid.provider.type], true)
+        settings: %{"authAllowed" => %{"google" => true}}
       }
     })
     |> add_ident(params["sub"])
