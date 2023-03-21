@@ -154,6 +154,7 @@ defmodule Rivet.Auth.Signin.Google do
         email: fedid.email,
         # pass this through
         email_verified: true,
+        # Todo: this should merge in better with what comes from fedid.settings
         settings: %{"authAllowed" => %{"google" => true}}
       }
     })
