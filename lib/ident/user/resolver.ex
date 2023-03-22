@@ -47,23 +47,6 @@ defmodule Rivet.Ident.User.Resolver do
     {:ok, false}
   end
 
-  @doc """
-  Resolve the current user from context
-  """
-  def query_self(_args, info) do
-    with_current_user(
-      info,
-      "self",
-      fn current_user ->
-        User.one(id: current_user.id)
-      end,
-      fn _ ->
-        Logger.info("query self when not signed in")
-        {:error, "not signed in"}
-      end
-    )
-  end
-
   ##############################################################################
   defp user_edit_allowed(args, info) do
     with {:ok, user} <- current_user(info) do
@@ -188,34 +171,42 @@ defmodule Rivet.Ident.User.Resolver do
 
   def resolve_settings(_, _), do: {:ok, %{}}
 
-  def query_people(%{id: id}, info) when is_binary(id) do
-    with {:ok, _} <- Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople"),
-         {:ok, user} <- User.one(id: id) do
-      {:ok, %{success: true, total: 1, result: [user]}}
+  ##############################################################################
+  @doc """
+  Resolve the current user from context
+  """
+  def query_self(_args, info) do
+    with {:ok, user} <- current_user(info, "self") do
+      Db.Users.one(id: user.id)
     else
-      _ -> {:ok, %{success: false}}
+      _ ->
+        Logger.info("query self when not signed in")
+        {:error, "not signed in"}
     end
   end
 
-  def query_people(%{matching: matching}, info) when is_binary(matching) do
-    if String.length(matching) == 0 do
-      query_people(%{}, info)
-    else
-      with {:ok, admin} <-
-             Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
-        matching = "%" <> matching <> "%"
+  def query_people(%{id: id} = args, info) do
+    with {:ok, _, _, user} <- user_edit_allowed(args, info, "people(id)") do
+      {:ok, user}
+    end
+    |> graphql_status_result
+  end
 
-        User.Lib.Search.search(%{matching: matching, limit: 25}, admin)
-        |> ecto_query_to_result(User.count!())
+  @limit_user_results 25
+  def query_people(%{matching: matching}, info) do
+    with {:ok, _admin} <- authz(info, action(:admin_user), "people(matching)") do
+      if is_binary(matching) and byte_size(matching) > 0 do
+        Db.Users.search(%{matching: matching},
+          limit: @limit_user_results,
+          desc: :last_seen
+        )
+      else
+        Db.Users.all([],
+          limit: @limit_user_results,
+          desc: :last_seen
+        )
       end
-    end
-  end
-
-  def query_people(%{}, info) do
-    with {:ok, _admin} <-
-           Auth.authz_action(info, %Auth.Assertion{action: :user_admin}, "listPeople") do
-      User.all([], limit: 25)
-      |> ecto_query_to_result(User.count!())
+      |> ecto_query_to_result(Db.Users.count!())
     end
   end
 
@@ -223,7 +214,7 @@ defmodule Rivet.Ident.User.Resolver do
   # private
   def query_public_people(%{filter: %{name: name} = filter}, info) when is_binary(name) do
     if Application.get_env(:rivet_ident, :public_people) do
-      with_current_user(info, "listPublicPeople", fn user ->
+      with {:ok, user} <- current_user(info, "listPublicPeople") do
         matches =
           case Ident.Handle.one([handle: name], [:user]) do
             {:ok, handle} ->
@@ -238,7 +229,7 @@ defmodule Rivet.Ident.User.Resolver do
           mapped = (matches ++ result) |> Enum.reduce(%{}, fn m, acc -> Map.put(acc, m.id, m) end)
           {:ok, Map.values(mapped)}
         end
-      end)
+      end
     else
       Logger.warn("Query for public people ignored <disabled by system config>")
       {:error, :authz}
@@ -303,19 +294,24 @@ defmodule Rivet.Ident.User.Resolver do
   end
 
   def mutate_change_password(%{current: current, new: new}, info) do
-    with_current_user(info, "changePassword(change)", fn user ->
+    with {:ok, user} <- current_user(info, "changePassword(change)") do
       # pass to authX module; accept reset code in lieu of password
       if Auth.change_password(user, current, new) do
         {:ok, %{success: true}}
       else
         {:ok, %{success: false, reason: "current password or reset code do not match"}}
       end
-    end)
+    end
   end
+
+
+
+  next todo move this back to adi-backend; so we can do tests
+
 
   ##############################################################################
   def mutate_gen_apikey(%{}, %{context: %{hostname: hostname}} = info) do
-    with_current_user(info, "genApikey", fn user ->
+    with {:ok, user} <- current_user(info, "genApikey") do
       validation =
         case Ident.Factor.all(user_id: user.id, type: :valtok, name: "generated apikey") do
           {:ok, [validation | _]} ->
@@ -341,7 +337,7 @@ defmodule Rivet.Ident.User.Resolver do
         |> random_upper()
 
       {:ok, %{key: validation.id, secret: secret, access: token}}
-    end)
+    end
   end
 
   def generate_new_validation(user, hostname) do

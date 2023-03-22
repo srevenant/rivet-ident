@@ -2,7 +2,7 @@ defmodule Rivet.Ident.User.Graphql do
   @moduledoc false
   use Absinthe.Schema.Notation
   alias Rivet.Ident
-  import Ident.User.Resolver
+  alias Ident.User
   import Rivet.Graphql
   require Logger
 
@@ -38,39 +38,39 @@ defmodule Rivet.Ident.User.Graphql do
     field(:inserted_at, :datetime)
 
     field :verified, :boolean do
-      resolve(&resolve_verified_email/2)
+      resolve(&User.Resolver.resolve_verified_email/2)
     end
 
     field :handle, :string do
-      resolve(&reduce_handle/2)
+      resolve(&User.Resolver.reduce_handle/2)
     end
 
     field :settings, :json do
-      resolve(&resolve_settings/2)
+      resolve(&User.Resolver.resolve_settings/2)
     end
 
     field :emails, list_of(:email) do
-      resolve(&resolve_emails/2)
+      resolve(&User.Resolver.resolve_emails/2)
     end
 
     field :phones, list_of(:phone) do
-      resolve(&resolve_phones/2)
+      resolve(&User.Resolver.resolve_phones/2)
     end
 
     field :factors, list_of(:factor) do
       arg(:historical, :boolean, default_value: false)
       arg(:created, :boolean, default_value: false)
       arg(:type, :string)
-      resolve(&resolve_factors/2)
+      resolve(&User.Resolver.resolve_factors/2)
     end
 
     field :access, :access do
-      resolve(&resolve_access/2)
+      resolve(&User.Resolver.resolve_access/2)
     end
 
     field :auth_status, :auth_status do
       # note: only when my_auth queried as user==connection_user
-      resolve(&resolve_auth_status/2)
+      resolve(&User.Resolver.resolve_auth_status/2)
     end
 
     # field :tags, list_of(:tag_user) do
@@ -79,7 +79,7 @@ defmodule Rivet.Ident.User.Graphql do
 
     field :data, list_of(:user_data) do
       arg(:types, list_of(:string))
-      resolve(&resolve_user_data/3)
+      resolve(&User.Resolver.resolve_user_data/3)
     end
   end
 
@@ -96,11 +96,11 @@ defmodule Rivet.Ident.User.Graphql do
 
     # todo: perhaps make this a primary value on the row
     field :verified, :boolean do
-      resolve(&resolve_verified_email/2)
+      resolve(&User.Resolver.resolve_verified_email/2)
     end
 
     field :handle, :string do
-      resolve(&reduce_handle/2)
+      resolve(&User.Resolver.reduce_handle/2)
     end
 
     # field :tags, list_of(:tag_user) do
@@ -109,7 +109,7 @@ defmodule Rivet.Ident.User.Graphql do
 
     field :data, list_of(:user_data) do
       arg(:types, list_of(:string))
-      resolve(&resolve_public_user_data/3)
+      resolve(&User.Resolver.resolve_public_user_data/3)
     end
   end
 
@@ -223,30 +223,19 @@ defmodule Rivet.Ident.User.Graphql do
   ##############################################################################
   object :user_queries do
     field :self, :person do
-      resolve(&query_self/2)
+      resolve(&User.Resolver.query_self/2)
     end
 
     field :people, :people do
       arg(:matching, :string)
       arg(:id, :string)
-      resolve(&query_people/2)
-    end
-
-    field :public_person, :person_result do
-      arg(:target, :string)
-      arg(:id, :string)
-      resolve(&query_public_person/2)
-    end
-
-    field :public_people, :public_people do
-      arg(:filter, :people_filter)
-      resolve(&query_public_people/2)
+      resolve(&UsersResolver.query_people/2)
     end
 
     field :get_access, list_of(:string) do
       arg(:type, non_null(:auth_domain))
       arg(:ref_id, non_null(:string))
-      resolve(&query_get_access/2)
+      resolve(&User.Resolver.query_get_access/2)
     end
   end
 
@@ -276,19 +265,19 @@ defmodule Rivet.Ident.User.Graphql do
       arg(:data, :input_user_data)
       arg(:role, :input_role)
 
-      resolve(&mutate_update_person/2)
+      resolve(&User.Resolver.mutate_update_person/2)
     end
 
     field :request_password_reset, :status_result do
       arg(:email, non_null(:string))
-      resolve(&request_password_reset/2)
+      resolve(&User.Resolver.request_password_reset/2)
     end
 
     field :change_password, :status_result do
       arg(:current, non_null(:string))
       arg(:new, non_null(:string))
       arg(:email, :string)
-      resolve(&mutate_change_password/2)
+      resolve(&User.Resolver.mutate_change_password/2)
     end
 
     # field :update_role, type: :person_result do
@@ -298,7 +287,7 @@ defmodule Rivet.Ident.User.Graphql do
     # end
 
     field :gen_api_key, :api_key do
-      resolve(&mutate_gen_apikey/2)
+      resolve(&User.Resolver.mutate_gen_apikey/2)
     end
   end
 end
