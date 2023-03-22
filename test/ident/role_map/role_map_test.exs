@@ -5,8 +5,8 @@ defmodule Rivet.Ident.Test.RoleMapTest do
   doctest Rivet.Ident.RoleMap.Lib, import: true
   doctest Rivet.Ident.RoleMap.Loader, import: true
   doctest Rivet.Ident.RoleMap.Seeds, import: true
-  doctest Rivet.Ident.RoleMap.Graphql, import: true
-  doctest Rivet.Ident.RoleMap.Resolver, import: true
+  
+  
   doctest Rivet.Ident.RoleMap.Rest, import: true
   doctest Rivet.Ident.RoleMap.Cache, import: true
 

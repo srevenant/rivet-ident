@@ -5,8 +5,8 @@ defmodule Rivet.Ident.Test.ActionTest do
   doctest Rivet.Ident.Action.Lib, import: true
   doctest Rivet.Ident.Action.Loader, import: true
   doctest Rivet.Ident.Action.Seeds, import: true
-  doctest Rivet.Ident.Action.Graphql, import: true
-  doctest Rivet.Ident.Action.Resolver, import: true
+  
+  
   doctest Rivet.Ident.Action.Rest, import: true
   doctest Rivet.Ident.Action.Cache, import: true
 

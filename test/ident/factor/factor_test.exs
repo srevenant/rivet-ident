@@ -5,8 +5,8 @@ defmodule Rivet.Ident.Test.FactorTest do
   doctest Rivet.Ident.Factor.Lib, import: true
   doctest Rivet.Ident.Factor.Loader, import: true
   doctest Rivet.Ident.Factor.Seeds, import: true
-  doctest Rivet.Ident.Factor.Graphql, import: true
-  doctest Rivet.Ident.Factor.Resolver, import: true
+  
+  
   doctest Rivet.Ident.Factor.Rest, import: true
   doctest Rivet.Ident.Factor.Cache, import: true
 

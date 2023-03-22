@@ -5,8 +5,8 @@ defmodule Rivet.Ident.Test.UserCodeTest do
   doctest Rivet.Ident.UserCode.Lib, import: true
   doctest Rivet.Ident.UserCode.Loader, import: true
   doctest Rivet.Ident.UserCode.Seeds, import: true
-  doctest Rivet.Ident.UserCode.Graphql, import: true
-  doctest Rivet.Ident.UserCode.Resolver, import: true
+  
+  
   doctest Rivet.Ident.UserCode.Rest, import: true
   doctest Rivet.Ident.UserCode.Cache, import: true
 

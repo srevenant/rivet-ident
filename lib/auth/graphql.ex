@@ -5,36 +5,29 @@ defmodule Rivet.Auth.Graphql do
   import Rivet.Graphql
   alias Rivet.Auth
   alias Rivet.Ident
+  alias Absinthe.Resolution
 
-  def current_user(info, method \\ nil)
+  ##############################################################################
+  @doc """
+  Handles extracting the current user from the Absinthe context, and then will
+  either call `func` and pass in the current user or return an error if there is
+  no user in the context
+  """
+  def current_user(%Resolution{context: %{user: %Ident.User{} = u}}),
+    do: {:ok, u}
 
-  def current_user(%{context: %{user: %Ident.User{} = u}}, method) do
-    graphql_log(method)
+  def current_user(_), do: {:error, :authn}
 
-    {:ok, u}
+  def current_user(%Resolution{context: %{user: %Ident.User{} = user}}, method) do
+    if not is_nil(method) do
+      graphql_log(method)
+    end
+
+    {:ok, user}
   end
 
   def current_user(_, method), do: graphql_error(method, :authn)
 
-  def with_current_user(info, method, good_func \\ nil, bad_func \\ nil)
-
-  def with_current_user(
-        %{context: %{user: %Ident.User{} = user}},
-        method,
-        good,
-        _
-      )
-      when is_function(good) do
-    graphql_log(method)
-    good.(user)
-  end
-
-  def with_current_user(_, method, _good, bad) when is_function(bad) do
-    graphql_log(method)
-    bad.(nil)
-  end
-
-  def with_current_user(_, method, _, _), do: graphql_error(method, :authn)
 
   ########################################################################
   @doc """

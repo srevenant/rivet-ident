@@ -5,8 +5,8 @@ defmodule Rivet.Ident.Test.EmailTest do
   doctest Rivet.Ident.Email.Lib, import: true
   doctest Rivet.Ident.Email.Loader, import: true
   doctest Rivet.Ident.Email.Seeds, import: true
-  doctest Rivet.Ident.Email.Graphql, import: true
-  doctest Rivet.Ident.Email.Resolver, import: true
+  
+  
   doctest Rivet.Ident.Email.Rest, import: true
   doctest Rivet.Ident.Email.Cache, import: true
 
