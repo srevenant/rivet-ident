@@ -25,9 +25,8 @@ defmodule RivetIdent.MixProject do
         models_dir: "ident",
         app_base: Rivet.Ident
       ],
+      xref: [exclude: List.wrap(Application.get_env(:rivet_ident, :repo))],
       aliases: aliases(),
-      ##  NOT FOR GA; just internal for now
-      # xref: [exclude: [Core.Repo]]
     ]
   end
 
