@@ -8,7 +8,7 @@ defmodule Rivet.Ident.User.Notify.FailedChange do
 
   @behaviour Rivet.Ecto.Collection
   @impl Rivet.Email.Template
-  def generate(%Ident.Email{}, attr) do
+  def generate(%Ident.Email{}, attr) when is_map(attr) do
     {:ok, "#{attr.org} Account Change Failed",
      """
      <p/>
