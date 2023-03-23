@@ -56,6 +56,7 @@ defmodule Rivet.Auth.Graphql do
   and if the assertion includes a domain reference, it will attempt to walk
   up the reference tree (if a parent_id exists) and try checking auth again.
   """
+  # @spec 
   def check_authz(%{context: %{user: %Ident.User{} = u}}, assertion),
     do: check_authz(u, assertion)
 

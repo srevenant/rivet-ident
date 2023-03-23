@@ -204,4 +204,40 @@ defmodule Rivet.Ident.User.Lib do
   end
 
   def has_other_admin?(_, _), do: true
+
+  ##############################################################################
+  @doc """
+  iex> get_user("asdf")
+  {:error, :not_found}
+
+  iex> get_user("A73DD874-A724-494F-B9E2-2042A4383144")
+  {:error, :not_found}
+
+  iex> handle = insert(:ident_handle)
+  ...> {:ok, u} = get_user(handle.user_id)
+  ...> u.id
+  handle.user_id
+
+  iex> handle = insert(:ident_handle)
+  ...> {:ok, u} = get_user(handle.handle)
+  ...> u.id
+  handle.user_id
+
+  """
+  def get_user(id, preload \\ [])
+
+  def get_user(id, preload) when is_binary(id) and byte_size(id) == 36 do
+    with {:error, _} <- Ident.User.one([id: id], preload) do
+      get_user_by_handle(id, preload)
+    end
+  end
+
+  def get_user(id, preload), do: get_user_by_handle(id, preload)
+
+  def get_user_by_handle(id, preload \\ []) do
+    case Ident.Handle.one([handle: id], preload ++ [:user]) do
+      {:ok, %{user: user} = handle} -> {:ok, %Ident.User{user | handle: handle}}
+      {:error, _} -> {:error, :not_found}
+    end
+  end
 end
