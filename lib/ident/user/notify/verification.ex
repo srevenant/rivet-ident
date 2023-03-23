@@ -1,6 +1,6 @@
 defmodule Rivet.Ident.User.Notify.Verification do
   alias Rivet.Ident
-  use Rivet.Email.Template, mailer: Rivet.Email.Test.Mailer
+  use Rivet.Email.Template
 
   require Logger
 

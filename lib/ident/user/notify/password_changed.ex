@@ -1,6 +1,6 @@
 defmodule Rivet.Ident.User.Notify.PasswordChanged do
   alias Rivet.Ident
-  use Rivet.Email.Template, mailer: Rivet.Email.Test.Mailer
+  use Rivet.Email.Template
 
   ##############################################################################
   # preload to send to all and not filter verified

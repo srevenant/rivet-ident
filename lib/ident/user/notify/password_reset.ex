@@ -1,6 +1,6 @@
 defmodule Rivet.Ident.User.Notify.PasswordReset do
   alias Rivet.Ident
-  use Rivet.Email.Template, mailer: Rivet.Email.Test.Mailer
+  use Rivet.Email.Template
 
   ##############################################################################
   # preload to send to all and not filter verified
@@ -15,6 +15,7 @@ defmodule Rivet.Ident.User.Notify.PasswordReset do
   def generate(%Ident.Email{address: eaddr}, attrs) when is_map(attrs) do
 
     encoded = Regex.replace(~r/\s+/, eaddr, "+")
+    link = "#{attrs.link_front}/pwreset/#{attrs.code}"
 
     {:ok, "#{attrs.org} Password Reset",
      """
@@ -23,10 +24,10 @@ defmodule Rivet.Ident.User.Notify.PasswordReset do
      If you initiated this request, you can reset your password with this one-time-use code by clicking
      the Reset Password link:
      <p/>
-     <a href="#{attrs.link_front}/#/pwreset?code=#{attrs.code}&email=#{eaddr}">Reset Password</a>
+     <a href="#{link}">Reset Password</a>
      <p/>
      If you are unable to view or click the link in this message, copy the following URL and paste it in your browser:
-     <p/><code>#{attrs.link_front}/#/pwreset?code=#{attrs.code}&email=#{encoded}</code>
+     <p/><code>#{link}</code>
      <p/>
      This reset code will expire in 1 hour.
      <p/>
