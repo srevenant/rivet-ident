@@ -219,7 +219,7 @@ defmodule Rivet.Ident.User.Lib do
   handle.user_id
 
   iex> handle = insert(:ident_handle)
-  ...> {:ok, u} = get_user(handle.handle)
+  ...> {:ok, u} = get_user(handle.handle, [:handle])
   ...> u.id
   handle.user_id
 
@@ -235,8 +235,8 @@ defmodule Rivet.Ident.User.Lib do
   def get_user(id, preload), do: get_user_by_handle(id, preload)
 
   def get_user_by_handle(id, preload \\ []) do
-    case Ident.Handle.one([handle: id], preload ++ [:user]) do
-      {:ok, %{user: user} = handle} -> {:ok, %Ident.User{user | handle: handle}}
+    case Ident.Handle.one([handle: id], [user: preload]) do
+      {:ok, %{user: user}} -> {:ok, user}
       {:error, _} -> {:error, :not_found}
     end
   end
