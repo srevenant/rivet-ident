@@ -46,6 +46,7 @@ defmodule Rivet.Ident.User.Lib.Update do
   """
   alias Rivet.Ident
   require Logger
+  import Rivet.Auth.Settings, only: [getcfg: 2]
 
   @spec update(
           user_changes :: map(),
@@ -64,7 +65,7 @@ defmodule Rivet.Ident.User.Lib.Update do
       generated = Ident.User.PasswordGenerator.generate()
 
       expires_at =
-        Rivet.Utils.Time.now() + get_user_conf(:initial_password_expiration_days) * 86_400
+        Rivet.Utils.Time.now() + getcfg(:initial_password_expiration_days, 1) * 86_400
 
       with {:ok, factor} <-
              Ident.Factor.Lib.set_password(user, generated, %{expires_at: expires_at}) do
@@ -253,9 +254,6 @@ defmodule Rivet.Ident.User.Lib.Update do
 
   ################################################################################
   def update(_, _, user), do: {:ok, user}
-
-  ##############################################################################
-  defp get_user_conf(key), do: Application.get_env(:authx, key)
 
   ##############################################################################
   defp finish_update(args, did_type, admin, user),

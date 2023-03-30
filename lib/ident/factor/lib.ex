@@ -126,7 +126,7 @@ defmodule Rivet.Ident.Factor.Lib do
   defp clean_old_factors(_, _), do: :ok
 
   defp get_expiration(provider_exp, type) do
-    cfg = Application.get_env(:authx, :auth_expire_limits)
+    cfg = Rivet.Auth.Settings.getcfg(:auth_expire_limits, %{})
     def_exp = 86400 * 365
 
     # because of how releases bring in configs, this appears as a keyword
