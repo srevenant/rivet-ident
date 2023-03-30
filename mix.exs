@@ -25,7 +25,7 @@ defmodule RivetIdent.MixProject do
         models_dir: "ident",
         app_base: Rivet.Ident
       ],
-      xref: [exclude: List.wrap(Application.get_env(:rivet_ident, :repo))],
+      xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
       aliases: aliases(),
     ]
   end

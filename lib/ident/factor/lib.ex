@@ -16,7 +16,7 @@ defmodule Rivet.Ident.Factor.Lib do
         pass
 
       :miss ->
-        case @repo.one(from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])) do
+        case Ident.Factor.one!(from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])) do
           %Ident.Factor{user: %Ident.User{} = user} = factor ->
             user = Ident.User.Lib.get_authz(user)
             user = %Ident.User{user | state: Map.put(user.state, :active_factor_id, factor.id)}
@@ -39,10 +39,10 @@ defmodule Rivet.Ident.Factor.Lib do
       Ident.Factor.Lib.preloaded_with(model, type)
 
   """
-  def preloaded_with(model, type) when is_list(type) do
+  def preloaded_with(%Ident.User{} = user, type) when is_list(type) do
     now = epoch_time(:second)
 
-    @repo.preload(model,
+    Ident.User.preload!(user,
       factors:
         from(a in Ident.Factor,
           where: a.type in ^type and a.expires_at > ^now,
@@ -51,10 +51,10 @@ defmodule Rivet.Ident.Factor.Lib do
     )
   end
 
-  def preloaded_with(model, type) when is_atom(type) do
+  def preloaded_with(%Ident.User{} = user, type) when is_atom(type) do
     now = epoch_time(:second)
 
-    @repo.preload(model,
+    Ident.User.preload!(user,
       factors:
         from(a in Ident.Factor,
           where: a.type == ^type and a.expires_at > ^now,
@@ -101,7 +101,7 @@ defmodule Rivet.Ident.Factor.Lib do
       where: f.user_id == ^user_id and f.type == :password,
       order_by: [asc: f.expires_at]
     )
-    |> @repo.all()
+    |> Ident.Factor.all!()
     |> Enum.filter(fn f -> f.id != excluding_id end)
     |> clean_old_factors(@password_history)
   end
@@ -168,9 +168,6 @@ defmodule Rivet.Ident.Factor.Lib do
 
   def get_user(factor_id) do
     case get(factor_id) do
-      nil ->
-        {:error, "Invalid"}
-
       {:ok, %Ident.Factor{user: %Ident.User{}} = factor} ->
         {:ok, factor}
 
@@ -187,14 +184,14 @@ defmodule Rivet.Ident.Factor.Lib do
     from(f in Ident.Factor,
       where: f.expires_at < ^now and f.type != :password
     )
-    |> @repo.delete_all()
+    |> Ident.Factor.delete_all()
   end
 
   def all_not_expired!(%Ident.User{id: user_id}) do
     now = epoch_time(:second)
 
     from(f in Ident.Factor, where: f.user_id == ^user_id and f.expires_at > ^now)
-    |> @repo.all()
+    |> Ident.Factor.all!()
   end
 
   def all_not_expired!(%Ident.User{} = user, type) when is_binary(type),
@@ -206,6 +203,6 @@ defmodule Rivet.Ident.Factor.Lib do
     from(f in Ident.Factor,
       where: f.user_id == ^user_id and f.expires_at > ^now and f.type == ^type
     )
-    |> @repo.all()
+    |> Ident.Factor.all!()
   end
 end

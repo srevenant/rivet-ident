@@ -7,7 +7,7 @@ defmodule Rivet.Ident.Access.Lib do
   """
   @spec get_actions(Ident.User.t()) :: MapSet.t()
   def get_actions(%Ident.User{id: u_id}) do
-    @repo.all(
+    Ident.Access.all!(
       from(acc in Ident.Access,
         join: map in Ident.RoleMap,
         on: map.role_id == acc.role_id,
@@ -25,7 +25,7 @@ defmodule Rivet.Ident.Access.Lib do
 
   @spec get_actions(Ident.User.t(), domain :: atom(), ref_id :: binary()) :: MapSet.t()
   def get_actions(%Ident.User{id: u_id}, domain, ref_id) do
-    @repo.all(
+    Ident.Access.all!(
       from(acc in Ident.Access,
         join: map in Ident.RoleMap,
         on: map.role_id == acc.role_id,
@@ -101,12 +101,9 @@ defmodule Rivet.Ident.Access.Lib do
     end
   end
 
-  def delete_by_user(user_id, domain, ref_id) do
-    Ident.Access.delete_all(user_id: user_id, domain: domain, ref_id: ref_id)
-    :ok
-  end
+  def delete_by_user(user_id, domain, ref_id),
+    do: Ident.Access.delete_all(user_id: user_id, domain: domain, ref_id: ref_id)
 
-  def delete_by_user(user_id) do
-    {:ok, @repo.delete_all(from(a in Ident.Access, where: a.user_id == ^user_id))}
-  end
+  def delete_by_user(user_id),
+    do: Ident.Access.delete_all(from(a in Ident.Access, where: a.user_id == ^user_id))
 end

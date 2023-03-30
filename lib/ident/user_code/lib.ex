@@ -37,7 +37,7 @@ defmodule Rivet.Ident.UserCode.Lib do
     now = Timex.now()
 
     from(c in UserCode, where: c.expires < ^now)
-    |> @repo.delete_all()
+    |> Ident.UserCode.delete_all()
   end
 
   def clear_all_codes(for_user_id, type) do
@@ -46,6 +46,6 @@ defmodule Rivet.Ident.UserCode.Lib do
         c.user_id == ^for_user_id and
           c.type == ^type
     )
-    |> @repo.delete_all()
+    |> Ident.UserCode.delete_all()
   end
 end

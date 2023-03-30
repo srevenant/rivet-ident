@@ -26,7 +26,7 @@ defmodule Rivet.Ident.User.Lib do
   """
   @spec get_authz(user :: Ident.User.t()) :: Ident.User.t()
   def get_authz(%Ident.User{authz: authz} = user) when is_nil(authz) do
-    {:ok, user} = Ident.User.preload(user, :accesses)
+    {:ok, user} = Ident.User.preload(user, [:accesses])
     %Ident.User{user | authz: Rivet.Ident.Access.Lib.get_actions(user)}
   end
 
@@ -69,9 +69,7 @@ defmodule Rivet.Ident.User.Lib do
     end
   end
 
-  def search_name!(pattern) do
-    @repo.all(from(u in Ident.User, where: like(u.name, ^pattern)))
-  end
+  def search_name!(pattern), do: Ident.User.all!(from(u in Ident.User, where: like(u.name, ^pattern)))
 
   ##############################################################################
   @doc """
@@ -98,7 +96,7 @@ defmodule Rivet.Ident.User.Lib do
   # ##############################################################################
   # def send_password_reset(%Ident.User{} = user, %Ident.Email{} = email, %Ident.UserCode{} = code) do
   #   # let all emails on the account know
-  #   with {:ok, user} <- Ident.User.preload(user, :emails) do
+  #   with {:ok, user} <- Ident.User.preload(user, [:emails]) do
   #     sendmail(user.emails, &templates.password_reset/2, [email, code])
   #   end
   # end
@@ -110,15 +108,13 @@ defmodule Rivet.Ident.User.Lib do
   #
   # ##############################################################################
   # def send_password_changed(%Ident.User{} = user) do
-  #   with {:ok, user} <- Ident.User.preload(user, :emails) do
+  #   with {:ok, user} <- Ident.User.preload(user, [:emails]) do
   #     sendmail(user.emails, &templates.password_changed/2)
   #   end
   # end
 
   ##############################################################################
-  def all_since(time) do
-    @repo.all(from(u in Ident.User, where: u.last_seen > ^time))
-  end
+  def all_since(time), do: Ident.User.all!(from(u in Ident.User, where: u.last_seen > ^time))
 
   ##############################################################################
   def add_email(user, eaddr, verified \\ false) do
@@ -196,7 +192,7 @@ defmodule Rivet.Ident.User.Lib do
   def has_other_admin?(%Ident.Role{name: :system_admin, id: r_id}, %Ident.User{id: user_id}) do
     query = from(a in Ident.Access, where: a.role_id == ^r_id and a.user_id != ^user_id)
 
-    if @repo.aggregate(query, :count) > 0 do
+    if Ident.User.aggregate(query, :count) > 0 do
       true
     else
       {:error, "Cannot remove last system_admin"}

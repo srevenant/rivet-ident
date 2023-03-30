@@ -1,14 +1,15 @@
 defmodule Rivet.Ident.Test.FactorTest do
-  use Rivet.Ident.Case, async: true
+  alias Rivet.Ident
+  use Ident.Case, async: true
 
-  doctest Rivet.Ident.Factor, import: true
-  doctest Rivet.Ident.Factor.Lib, import: true
-  doctest Rivet.Ident.Factor.Loader, import: true
-  doctest Rivet.Ident.Factor.Seeds, import: true
-  
-  
-  doctest Rivet.Ident.Factor.Rest, import: true
-  doctest Rivet.Ident.Factor.Cache, import: true
+  doctest Ident.Factor, import: true
+  doctest Ident.Factor.Lib, import: true
+  doctest Ident.Factor.Loader, import: true
+  doctest Ident.Factor.Seeds, import: true
+
+
+  doctest Ident.Factor.Rest, import: true
+  doctest Ident.Factor.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do
@@ -20,7 +21,7 @@ defmodule Rivet.Ident.Test.FactorTest do
   describe "build/1" do
     test "build when valid" do
       params = params_with_assocs(:ident_factor)
-      changeset = Rivet.Ident.Factor.build(params)
+      changeset = Ident.Factor.build(params)
       assert changeset.valid?
     end
   end
@@ -28,7 +29,7 @@ defmodule Rivet.Ident.Test.FactorTest do
   describe "get/1" do
     test "loads saved transactions as expected" do
       c = insert(:ident_factor)
-      assert %Rivet.Ident.Factor{} = found = Rivet.Ident.Factor.one!(id: c.id)
+      assert %Ident.Factor{} = found = Ident.Factor.one!(id: c.id)
       assert found.id == c.id
     end
   end
@@ -36,7 +37,7 @@ defmodule Rivet.Ident.Test.FactorTest do
   describe "create/1" do
     test "inserts a valid record" do
       attrs = params_with_assocs(:ident_factor)
-      assert {:ok, model} = Rivet.Ident.Factor.create(attrs)
+      assert {:ok, model} = Ident.Factor.create(attrs)
       assert model.id != nil
     end
   end
@@ -44,8 +45,20 @@ defmodule Rivet.Ident.Test.FactorTest do
   describe "delete/1" do
     test "deletes record" do
       model = insert(:ident_factor)
-      assert {:ok, deleted} = Rivet.Ident.Factor.delete(model)
+      assert {:ok, deleted} = Ident.Factor.delete(model)
       assert deleted.id == model.id
+    end
+  end
+
+  describe "preload_with" do
+    test "properly preloads" do
+      # insert an extra that isn't ours
+      insert(:ident_factor, type: :password)
+
+      # insert ours
+      %{user: user, id: f_id} = insert(:ident_factor, type: :password)
+
+      assert %Ident.User{factors: [%Ident.Factor{id: ^f_id}]} = Ident.Factor.Lib.preloaded_with(user, :password)
     end
   end
 end
