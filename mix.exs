@@ -74,7 +74,7 @@ defmodule RivetIdent.MixProject do
       {:random_password, "~> 1.1"},
       {:rivet, "~> 1.0.2", git: "https://github.com/srevenant/rivet", branch: "master"},
       {:rivet_email, "~> 1.0.3", git: "https://github.com/srevenant/rivet-email", branch: "master"},
-      {:rivet_utils, "~> 1.0.3", git: "https://github.com/srevenant/rivet-utils", branch: "master"},
+      {:rivet_utils, "~> 1.0.3"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0", override: true},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
