@@ -13,7 +13,7 @@ defmodule Rivet.Ident.User.Notify.PasswordReset do
 
   @impl Rivet.Email.Template
   def generate(%Ident.Email{address: _} = email, attrs) when is_map(attrs) do
-    with {:error, error} <- load(email, attr) do
+    with {:error, error} <- load(email, attrs) do
       Logger.warn(error)
       link = "#{attrs.link_front}/pwreset/#{attrs.code}"
 
