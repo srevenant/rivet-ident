@@ -13,6 +13,7 @@ defmodule Rivet.Ident.Application do
             {Rivet.Auth.Signin.Google.KeyManager, %{interval: 4_000}}
             | children
           ]
+
         _ ->
           children
       end

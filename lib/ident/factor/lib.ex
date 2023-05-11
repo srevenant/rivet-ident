@@ -16,7 +16,9 @@ defmodule Rivet.Ident.Factor.Lib do
         pass
 
       :miss ->
-        case Ident.Factor.one!(from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])) do
+        case Ident.Factor.one!(
+               from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])
+             ) do
           %Ident.Factor{user: %Ident.User{} = user} = factor ->
             user = Ident.User.Lib.get_authz(user)
             user = %Ident.User{user | state: Map.put(user.state, :active_factor_id, factor.id)}

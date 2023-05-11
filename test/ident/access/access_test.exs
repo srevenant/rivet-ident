@@ -5,8 +5,7 @@ defmodule Rivet.Ident.Test.AccessTest do
   doctest Rivet.Ident.Access.Lib, import: true
   doctest Rivet.Ident.Access.Loader, import: true
   doctest Rivet.Ident.Access.Seeds, import: true
-  
-  
+
   doctest Rivet.Ident.Access.Rest, import: true
   doctest Rivet.Ident.Access.Cache, import: true
 

@@ -26,7 +26,7 @@ defmodule RivetIdent.MixProject do
         app_base: Rivet.Ident
       ],
       xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
-      aliases: aliases(),
+      aliases: aliases()
     ]
   end
 

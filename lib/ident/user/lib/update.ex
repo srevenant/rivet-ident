@@ -64,8 +64,7 @@ defmodule Rivet.Ident.User.Lib.Update do
          {:ok, user} <- Ident.User.create(args.user) do
       generated = Ident.User.PasswordGenerator.generate()
 
-      expires_at =
-        Rivet.Utils.Time.now() + getcfg(:initial_password_expiration_days, 1) * 86_400
+      expires_at = Rivet.Utils.Time.now() + getcfg(:initial_password_expiration_days, 1) * 86_400
 
       with {:ok, factor} <-
              Ident.Factor.Lib.set_password(user, generated, %{expires_at: expires_at}) do
