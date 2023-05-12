@@ -12,7 +12,6 @@ defmodule Rivet.Ident.UserData.Migrations.Base do
       timestamps()
     end
 
-    create(index(:user_datas, [:user_id]))
     create(unique_index(:user_datas, [:user_id, :type]))
   end
 end
