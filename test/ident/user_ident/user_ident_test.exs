@@ -5,8 +5,7 @@ defmodule Rivet.Ident.Test.UserIdentTest do
   doctest Rivet.Ident.UserIdent.Lib, import: true
   doctest Rivet.Ident.UserIdent.Loader, import: true
   doctest Rivet.Ident.UserIdent.Seeds, import: true
-  
-  
+
   doctest Rivet.Ident.UserIdent.Rest, import: true
   doctest Rivet.Ident.UserIdent.Cache, import: true
 

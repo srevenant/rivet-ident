@@ -36,8 +36,12 @@ defmodule Rivet.Auth.Settings do
   """
   def current_jwt_secret(token_type) do
     case secret_keys(token_type) do
-      [secret | _rest] -> secret
-      _ -> raise ArgumentError, "Missing configuration as array: `:rivet_ident, jwt_acc_secrets: []`?"
+      [secret | _rest] ->
+        secret
+
+      _ ->
+        raise ArgumentError,
+              "Missing configuration as array: `:rivet_ident, jwt_acc_secrets: []`?"
     end
   end
 

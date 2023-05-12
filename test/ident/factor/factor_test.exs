@@ -7,7 +7,6 @@ defmodule Rivet.Ident.Test.FactorTest do
   doctest Ident.Factor.Loader, import: true
   doctest Ident.Factor.Seeds, import: true
 
-
   doctest Ident.Factor.Rest, import: true
   doctest Ident.Factor.Cache, import: true
 
@@ -58,7 +57,8 @@ defmodule Rivet.Ident.Test.FactorTest do
       # insert ours
       %{user: user, id: f_id} = insert(:ident_factor, type: :password)
 
-      assert %Ident.User{factors: [%Ident.Factor{id: ^f_id}]} = Ident.Factor.Lib.preloaded_with(user, :password)
+      assert %Ident.User{factors: [%Ident.Factor{id: ^f_id}]} =
+               Ident.Factor.Lib.preloaded_with(user, :password)
     end
   end
 end

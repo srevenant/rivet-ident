@@ -6,17 +6,17 @@ defmodule Rivet.Ident.User.Lib do
   require Logger
 
   def search(%{matching: match}, args) do
-   match = String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))
+    match = String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))
 
-   from(u in Ident.User,
-     join: e in Ident.UserEmail,
-     on: e.user_id == u.id,
-     join: h in Ident.UserHandle,
-     on: h.user_id == u.id,
-     where: like(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
-   )
-   |> Rivet.Ecto.Collection.enrich_query_args(args)
-   |> Rivet.Ident.User.all()
+    from(u in Ident.User,
+      join: e in Ident.UserEmail,
+      on: e.user_id == u.id,
+      join: h in Ident.UserHandle,
+      on: h.user_id == u.id,
+      where: like(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
+    )
+    |> Rivet.Ecto.Collection.enrich_query_args(args)
+    |> Rivet.Ident.User.all()
   end
 
   @doc """
@@ -69,7 +69,8 @@ defmodule Rivet.Ident.User.Lib do
     end
   end
 
-  def search_name!(pattern), do: Ident.User.all!(from(u in Ident.User, where: like(u.name, ^pattern)))
+  def search_name!(pattern),
+    do: Ident.User.all!(from(u in Ident.User, where: like(u.name, ^pattern)))
 
   ##############################################################################
   @doc """
@@ -231,7 +232,7 @@ defmodule Rivet.Ident.User.Lib do
   def get_user(id, preload), do: get_user_by_handle(id, preload)
 
   def get_user_by_handle(id, preload \\ []) do
-    case Ident.Handle.one([handle: id], [user: preload]) do
+    case Ident.Handle.one([handle: id], user: preload) do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, _} -> {:error, :not_found}
     end

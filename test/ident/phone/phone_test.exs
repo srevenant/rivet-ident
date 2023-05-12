@@ -5,8 +5,7 @@ defmodule Rivet.Ident.Test.PhoneTest do
   doctest Rivet.Ident.Phone.Lib, import: true
   doctest Rivet.Ident.Phone.Loader, import: true
   doctest Rivet.Ident.Phone.Seeds, import: true
-  
-  
+
   doctest Rivet.Ident.Phone.Rest, import: true
   doctest Rivet.Ident.Phone.Cache, import: true
 

@@ -83,14 +83,16 @@ defmodule Rivet.Auth.Signin.Local do
   def load_password_factor({:ok, auth = %Auth.Domain{user: user = %Ident.User{}}}) do
     case Ident.Factor.Lib.preloaded_with(user, :password) do
       %Ident.User{factors: []} = user ->
-          Logger.metadata(uid: user.id)
-          {:error, %Auth.Domain{auth | log: "No auth factor for user"}}
+        Logger.metadata(uid: user.id)
+        {:error, %Auth.Domain{auth | log: "No auth factor for user"}}
+
       %Ident.User{factors: [factor | _]} = user ->
-          Logger.metadata(uid: user.id)
-          {:ok, %Auth.Domain{auth | factor: factor}}
+        Logger.metadata(uid: user.id)
+        {:ok, %Auth.Domain{auth | factor: factor}}
+
       _error ->
-          Logger.metadata(uid: user.id)
-          {:error, %Auth.Domain{auth | log: "Unexpected result from factor preload"}}
+        Logger.metadata(uid: user.id)
+        {:error, %Auth.Domain{auth | log: "Unexpected result from factor preload"}}
     end
   end
 

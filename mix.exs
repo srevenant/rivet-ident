@@ -26,7 +26,7 @@ defmodule RivetIdent.MixProject do
         app_base: Rivet.Ident
       ],
       xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
-      aliases: aliases(),
+      aliases: aliases()
     ]
   end
 
@@ -72,8 +72,9 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet, "~> 1.0"},
-      {:rivet_email, "~> 1.0.3", git: "https://github.com/srevenant/rivet-email", branch: "master"},
+      {:rivet, "~> 1.0.6"},
+      {:rivet_email, "~> 1.0.3",
+       git: "https://github.com/srevenant/rivet-email", branch: "template"},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0", override: true},

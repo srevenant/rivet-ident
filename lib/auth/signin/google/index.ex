@@ -106,10 +106,11 @@ defmodule Rivet.Auth.Signin.Google do
     case get_in(user.settings, ["authAllowed", "google"]) do
       nil ->
         # add google in if it wasn't set at all
-        settings = case user.settings do
-          %{"authAllowed" => _} -> put_in(user.settings, ["authAllowed", "google"], true)
-          _ -> Map.put(user.settings, "authAllowed", %{"google" => true})
-        end
+        settings =
+          case user.settings do
+            %{"authAllowed" => _} -> put_in(user.settings, ["authAllowed", "google"], true)
+            _ -> Map.put(user.settings, "authAllowed", %{"google" => true})
+          end
 
         with {:error, err} <- Ident.User.update(user, %{settings: settings}) do
           IO.inspect(err, label: "Unexpected error updating user settings on signin")
@@ -117,7 +118,8 @@ defmodule Rivet.Auth.Signin.Google do
 
         true
 
-      value -> value
+      value ->
+        value
     end
   end
 
