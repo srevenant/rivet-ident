@@ -1,10 +1,13 @@
 defmodule RivetIdent.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/srevenant/rivet-ident"
   def project do
     [
       app: :rivet_ident,
-      version: "2.0.2",
+      version: "2.0.3",
+      description: "Authentication and Authorization add-on for Rivets Framework",
+      source_url: @source_url,
       package: package(),
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -60,6 +63,7 @@ defmodule RivetIdent.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ecto_enum, "~> 1.0"},
       {:ecto_sql, "~> 3.7"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:excoveralls, "~> 0.14", only: :test},
       {:faker, "~> 0.10"},
@@ -86,8 +90,8 @@ defmodule RivetIdent.MixProject do
     [
       files: ~w(lib .formatter.exs mix.exs README* LICENSE* test/lib),
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/srevenant/rivet-ident"},
-      source_url: "https://github.com/srevenant/rivet-ident"
+      links: %{"GitHub" => @source_url},
+      source_url: @source_url,
     ]
   end
 end
