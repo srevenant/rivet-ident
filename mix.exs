@@ -76,7 +76,7 @@ defmodule RivetIdent.MixProject do
       {:rivet_email, "~> 1.0.5"},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
-      {:transmogrify, "~> 1.1.0", override: true},
+      {:transmogrify, "~> 1.1.0"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
       {:yaml_elixir, "~> 2.8.0"}
     ]
