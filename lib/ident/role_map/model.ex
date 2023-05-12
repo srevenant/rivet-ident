@@ -11,5 +11,5 @@ defmodule Rivet.Ident.RoleMap do
     belongs_to(:role, Ident.Role, foreign_key: :role_id)
   end
 
-  use Rivet.Ecto.Collection, required: [:action_id, :role_id], unique: [:action_id]
+  use Rivet.Ecto.Collection, required: [:action_id, :role_id], unique: [[:role_id, :action_id]]
 end
