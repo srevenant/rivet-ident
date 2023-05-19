@@ -24,10 +24,6 @@ defmodule RivetIdent.MixProject do
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
-      rivet: [
-        models_dir: "ident",
-        app_base: Rivet.Ident
-      ],
       xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
       aliases: aliases()
     ]
@@ -36,6 +32,13 @@ defmodule RivetIdent.MixProject do
   def application do
     [
       mod: {Rivet.Ident.Application, []},
+      env: [
+        rivet: [
+          app: :rivet_ident,
+          models_dir: "ident",
+          app_base: Rivet.Ident
+        ]
+      ],
       extra_applications: [
         :logger,
         {:ex_unit, :optional}
@@ -76,7 +79,7 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet, "~> 1.0.6"},
+      {:rivet, "~> 1.0.6", git: "https://github.com/srevenant/rivet", branch: "migrate-release", override: true},
       {:rivet_email, "~> 1.0.5"},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
@@ -91,7 +94,7 @@ defmodule RivetIdent.MixProject do
       files: ~w(lib .formatter.exs mix.exs README* LICENSE* test/lib),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url},
-      source_url: @source_url,
+      source_url: @source_url
     ]
   end
 end
