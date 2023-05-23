@@ -6,12 +6,12 @@ defmodule Rivet.Ident.User.Lib do
   require Logger
 
   def search(%{matching: match}, args) do
-    match = String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))
+    match = "%#{String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))}%"
 
     from(u in Ident.User,
-      join: e in Ident.UserEmail,
+      join: e in Ident.Email,
       on: e.user_id == u.id,
-      join: h in Ident.UserHandle,
+      join: h in Ident.Handle,
       on: h.user_id == u.id,
       where: like(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
     )
