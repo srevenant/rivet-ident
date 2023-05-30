@@ -3,7 +3,7 @@ type: Rivet.Email.Template
 values:
   id: 9628698f-e2be-4995-8cfe-fad2d5965322
   name: Elixir.Rivet.Ident.User.Notify.FailedChange
-  data: |
+  data: |-
     === rivet-template-v1
     sections:
       subject: eex
@@ -23,7 +23,7 @@ type: Rivet.Email.Template
 values:
   id: 20fb335d-2e70-4203-b7de-3c28fd806a5c
   name: Elixir.Rivet.Ident.User.Notify.PasswordChanged
-  data: |
+  data: |-
     === rivet-template-v1
     sections:
       subject: eex
@@ -41,7 +41,7 @@ type: Rivet.Email.Template
 values:
   id: aeb3ccca-857e-442f-ba27-577efdc4fabd
   name: Elixir.Rivet.Ident.User.Notify.PasswordReset
-  data: |
+  data: |-
     === rivet-template-v1
     sections:
       subject: eex
@@ -73,7 +73,7 @@ type: Rivet.Email.Template
 values:
   id: 7da20d21-c4ee-40b7-a64a-d1afe8d88bd3
   name: Elixir.Rivet.Ident.User.Notify.Verification
-  data: |
+  data: |-
     === rivet-template-v1
     sections:
       subject: eex

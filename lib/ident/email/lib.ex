@@ -31,7 +31,6 @@ defmodule Rivet.Ident.Email.Lib do
     case Ident.UserCode.Lib.generate_code(user.id, :password_reset, @expire_minutes) do
       {:ok, code} ->
         Ident.User.Notify.PasswordReset.send(user, email, code)
-        :ok
 
       error ->
         IO.inspect(error, label: "Cannot generate UserCode?")

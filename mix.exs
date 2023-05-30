@@ -77,7 +77,10 @@ defmodule RivetIdent.MixProject do
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
       {:rivet, "~> 1.0.6"},
-      {:rivet_email, "~> 1.1"},
+      {:rivet_email,
+       git: "git@github.com:srevenant/rivet-email",
+       ref: "a43369b992c74f46bca067ca0c9fcfd7e95f0a26",
+       override: true},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0"},
@@ -91,7 +94,7 @@ defmodule RivetIdent.MixProject do
       files: ~w(lib .formatter.exs mix.exs README* LICENSE* test/lib),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url},
-      source_url: @source_url,
+      source_url: @source_url
     ]
   end
 end
