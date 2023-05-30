@@ -79,7 +79,7 @@ defmodule RivetIdent.MixProject do
       {:rivet, "~> 1.0.6"},
       {:rivet_email,
        git: "git@github.com:srevenant/rivet-email",
-       ref: "a43369b992c74f46bca067ca0c9fcfd7e95f0a26",
+       ref: "d49304440df822053d790906bab9ab36770ca680",
        override: true},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
