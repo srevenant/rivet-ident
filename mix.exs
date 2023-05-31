@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "2.0.3",
+      version: "2.1.1",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -35,8 +35,8 @@ defmodule RivetIdent.MixProject do
       env: [
         rivet: [
           app: :rivet_ident,
-          models_dir: "ident",
-          app_base: Rivet.Ident
+          base: Rivet.Ident,
+          models_dir: "ident"
         ]
       ],
       extra_applications: [
@@ -79,8 +79,8 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet, "~> 1.0.6", git: "https://github.com/srevenant/rivet", branch: "migrate-release", override: true},
-      {:rivet_email, "~> 1.0.5", git: "https://github.com/srevenant/rivet-email", branch: "migrate-release"},
+      {:rivet, "~> 2.0", git: "https://github.com/srevenant/rivet", branch: "migrate-release", override: true},
+      {:rivet_email, "~> 1.1.1", git: "https://github.com/srevenant/rivet-email", branch: "migrate-release"},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0"},
