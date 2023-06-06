@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Example.Mailer.Template do
-  @behaviour Rivet.Email.Template
+  use Rivet.Email.Template
 
   @impl Rivet.Email.Template
   def generate(recip, attrs) do
