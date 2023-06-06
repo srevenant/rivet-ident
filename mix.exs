@@ -89,7 +89,7 @@ defmodule RivetIdent.MixProject do
 
   defp package() do
     [
-      files: ~w(lib .formatter.exs mix.exs README* LICENSE* test/lib),
+      files: ~w(lib .formatter.exs mix.exs priv README* LICENSE* test/lib),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url},
       source_url: @source_url

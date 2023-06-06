@@ -10,5 +10,11 @@
   [include: "phone", prefix: 130],
   [include: "email", prefix: 120],
   [include: "handle", prefix: 110],
-  [include: "user", prefix: 100]
+  [include: "user", prefix: 100],
+  [
+    external: :rivet_email,
+    migrations: [
+      [include: "template", prefix: 220]
+    ]
+  ]
 ]
