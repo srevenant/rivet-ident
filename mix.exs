@@ -79,7 +79,7 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet_email, "~> 1.2"},
+      {:rivet_email, "~> 1.2.1"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
