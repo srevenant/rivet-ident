@@ -80,7 +80,7 @@ defmodule RivetIdent.MixProject do
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
       {:rivet, "~> 2.0"},
-      {:rivet_email, "~> 1.1.1", git: "https://github.com/srevenant/rivet-email", branch: "migrate-release"},
+      {:rivet_email, "~> 1.2"},
       {:rivet_utils, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0"},
