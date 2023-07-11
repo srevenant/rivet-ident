@@ -13,9 +13,9 @@ defmodule Rivet.Ident.UserCode.Migrations.AtomType do
 
     repo().query("""
       UPDATE user_codes SET atom_type = CASE type
-        WHEN 0 THEN "password_reset"
-        WHEN 1 THEN "email_verify"
-        WHEN 2 THEN "file_download"
+        WHEN 0 THEN 'password_reset'
+        WHEN 1 THEN 'email_verify'
+        WHEN 2 THEN 'file_download'
         ELSE NULL END
     """)
 
