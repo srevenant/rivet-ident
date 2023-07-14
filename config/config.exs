@@ -30,7 +30,14 @@ config :rivet_ident,
 # to keep the compiling functional, even if it doesn't work
 config :rivet_email,
   enabled: false,
-  mailer: Rivet.Ident.Example.Mailer
+  mailer: Rivet.Ident.Example.Mailer,
+  site: [
+    # link_front: "http://localhost:3000",
+    # link_back: "http://localhost:4000",
+    # org: "Example Org",
+    # email_sig: "Example Org"
+    email_from: "noreply@example.com"
+  ]
 
 config :rivet_email, Rivet.Ident.Example.Mailer.Backend,
   adapter: Bamboo.SMTPAdapter,
