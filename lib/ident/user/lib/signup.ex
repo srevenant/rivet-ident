@@ -98,6 +98,10 @@ defmodule Rivet.Ident.User.Lib.Signup do
       {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
         {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
+
+      {:error, reason} ->
+        signup_abort_create(auth)
+        {:error, auth, {"", reason}}
     end
   end
 

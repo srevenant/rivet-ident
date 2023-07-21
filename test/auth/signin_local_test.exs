@@ -18,7 +18,7 @@ defmodule Rivet.Ident.Test.Signin.LocalTest do
                        error: "Signup Failed"
                      }} = Local.signup("example.com", "narf")
 
-             user_pass = "jelly"
+             user_pass = "VFR$#EDCvfr43edc"
              user_handle = "narf"
              user_email = "narf@narf.com"
 
