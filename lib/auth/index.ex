@@ -38,7 +38,7 @@ defmodule Rivet.Auth do
     if Signin.Local.check_password(user, current) do
       set_password(user, new)
     else
-      Logger.warn("password change failure: current password mis-match", user_id: user.id)
+      Logger.warning("password change failure: current password mis-match", user_id: user.id)
 
       false
     end
