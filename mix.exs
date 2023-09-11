@@ -62,7 +62,7 @@ defmodule RivetIdent.MixProject do
   defp deps do
     [
       {:absinthe, "~> 1.7.1", optional: true},
-      {:bcrypt_elixir, "~> 1.1.1"},
+      {:bcrypt_elixir, "~> 3.0"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ecto_enum, "~> 1.0"},
       {:ecto_sql, "~> 3.7"},
@@ -72,18 +72,18 @@ defmodule RivetIdent.MixProject do
       {:faker, "~> 0.10"},
       {:jason, "~> 1.0"},
       {:joken, "~> 2.6.0"},
-      {:jose, "~> 1.11.5"},
+      {:jose, "~> 1.11"},
       {:junit_formatter, "~> 3.1", only: [:test]},
       {:lazy_cache, "~> 0.1.0"},
-      {:mix_test_watch, "~> 0.8", only: [:test, :dev], runtime: false},
+      {:mix_test_watch, "~> 1.0", only: [:test, :dev], runtime: false},
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet_email, "~> 1.2.1"},
+      {:rivet_email, "~> 1.2.1", git: "https://github.com/srevenant/rivet-email.git", branch: "deps-update"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
-      {:yaml_elixir, "~> 2.8.0"}
+      {:yaml_elixir, "~> 2.8"}
     ]
   end
 
