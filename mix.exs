@@ -5,11 +5,11 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "2.3.1",
+      version: "2.4.0",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
-      elixir: "~> 1.13",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
@@ -79,7 +79,7 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet_email, "~> 1.2.1"},
+      {:rivet_email, "~> 1.3.0"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 1.1.0"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
