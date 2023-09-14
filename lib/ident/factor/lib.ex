@@ -232,7 +232,7 @@ defmodule Rivet.Ident.Factor.Lib do
   end
 
   def all_not_expired!(%Ident.User{} = user, type) when is_binary(type),
-    do: all_not_expired!(user, Rivet.Utils.Types.as_atom(type))
+    do: all_not_expired!(user, Transmogrify.As.as_atom!(type))
 
   def all_not_expired!(%Ident.User{id: user_id}, type) when is_atom(type) do
     now = epoch_time(:second)

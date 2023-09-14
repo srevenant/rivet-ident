@@ -79,9 +79,11 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet_email, "~> 1.3.0"},
+      # {:rivet_email, "~> 1.3.0"},
+      {:rivet_email, "~> 1.4",  git: "https://github.com/srevenant/rivet-email.git", branch: "v2"},
       {:timex, "~> 3.6"},
-      {:transmogrify, "~> 1.1.0"},
+      #{:transmogrify, "~> 1.1.0"},
+      {:transmogrify, "~> 2.0.2",  git: "https://github.com/srevenant/transmogrify.git", branch: "master"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}
     ]
