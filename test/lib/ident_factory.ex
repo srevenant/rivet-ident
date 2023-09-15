@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Test.AuthFactory do
       ################################################################################
       def ident_action_factory do
         %Ident.Action{
-          name: Rivet.Utils.Types.as_atom(sequence("action") <> "_edit"),
+          name: Transmogrify.As.as_atom!(sequence("action") <> "_edit"),
           description: Faker.Cat.name()
         }
       end
@@ -14,7 +14,7 @@ defmodule Rivet.Ident.Test.AuthFactory do
       ################################################################################
       def ident_role_factory do
         %Ident.Role{
-          name: Rivet.Utils.Types.as_atom("#{sequence("role")}"),
+          name: Transmogrify.As.as_atom!("#{sequence("role")}"),
           description: "#{sequence("role")} #{Faker.Cat.name()}"
         }
       end

@@ -3,7 +3,7 @@ defmodule Rivet.Auth.Settings do
   How we are configured globally
   """
   require Logger
-  import Rivet.Utils.Types, only: [as_atom: 1]
+  import Transmogrify.As
 
   ###########################################################################
   def secret_keys(:val), do: getcfg(:jwt_val_secrets_decoded, [])
@@ -13,13 +13,13 @@ defmodule Rivet.Auth.Settings do
   Called by Application.start, to configure the runtime state from other sources
   """
   def decode_secrets(source) do
-    key = as_atom("jwt_#{source}_secrets")
+    key = as_atom!("jwt_#{source}_secrets")
 
     putcfg(
       Enum.map(getcfg(key, []), fn x ->
         Base.decode64!(x)
       end),
-      as_atom("#{key}_decoded")
+      as_atom!("#{key}_decoded")
     )
   end
 
@@ -81,7 +81,7 @@ defmodule Rivet.Auth.Settings do
   defp to_map(list) do
     if Keyword.keyword?(list) do
       Map.new(list, fn {k, v} ->
-        {as_atom(k), to_map(v)}
+        {as_atom!(k), to_map(v)}
       end)
     else
       list

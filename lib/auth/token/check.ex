@@ -4,7 +4,7 @@ defmodule Rivet.Auth.Token.Check do
   """
   alias Rivet.Auth
   alias Rivet.Ident
-  import Rivet.Utils.Types, only: [as_atom: 1]
+  import Transmogrify.As
 
   @doc ~S"""
   Checks payload information to verify proper authorization matches
@@ -48,8 +48,8 @@ defmodule Rivet.Auth.Token.Check do
 
   defp expand_claim_value(key, val) do
     with [type, value] <- String.split(val, ":", parts: 2) do
-      tkey = as_atom("#{key}_type")
-      atype = as_atom(type)
+      tkey = as_atom!("#{key}_type")
+      atype = as_atom!(type)
       {:ok, %{key => value, tkey => atype}}
     else
       _err ->
