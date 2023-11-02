@@ -77,16 +77,16 @@ defmodule Rivet.Ident.Access.Lib do
     end
   end
 
-  @spec drop(Ident.User.t(), atom() | nil, String.t() | nil) ::
+  @spec drop(Ident.User.t(), atom(), atom(), String.t() | nil) ::
           {:ok, Ident.Access.t()} | {:error, String.t()}
 
-  def drop(%Ident.User{} = user, role_atom, ref_id \\ nil) when is_atom(role_atom) do
+  def drop(%Ident.User{} = user, role_atom, domain \\ :global, ref_id \\ nil) when is_atom(role_atom) and is_atom(domain) do
     case Ident.Role.one(name: role_atom) do
       {:ok, role} ->
         case Ident.Access.one(
                role_id: role.id,
                user_id: user.id,
-               domain: role.domain,
+               domain: domain,
                ref_id: ref_id
              ) do
           {:ok, access} ->
@@ -101,9 +101,9 @@ defmodule Rivet.Ident.Access.Lib do
     end
   end
 
-  def delete_by_user(user_id, domain, ref_id),
+  def delete_user_domain(user_id, domain, ref_id),
     do: Ident.Access.delete_all(user_id: user_id, domain: domain, ref_id: ref_id)
 
-  def delete_by_user(user_id),
+  def delete_user_access(user_id),
     do: Ident.Access.delete_all(from(a in Ident.Access, where: a.user_id == ^user_id))
 end
