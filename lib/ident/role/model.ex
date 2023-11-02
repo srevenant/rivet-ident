@@ -4,12 +4,11 @@ defmodule Rivet.Ident.Role do
 
   typed_schema "ident_roles" do
     field(:name, Rivet.Utils.Ecto.Atom)
-    field(:domain, Rivet.Ident.Access.Domains, default: :global)
     field(:description, :string)
     many_to_many(:actions, Rivet.Ident.Action, join_through: Rivet.Ident.RoleMap, unique: true)
   end
 
   use Rivet.Ecto.Collection,
     required: [:name, :description],
-    update: [:description, :name, :domain]
+    update: [:description, :name]
 end

@@ -57,23 +57,23 @@ defmodule Rivet.Ident.Access.Lib do
 
   @spec add(Ident.User.t() | String.t(), atom(), String.t() | nil) ::
           {:ok, Ident.Access.t()} | {:error, String.t()}
-  def add(user, role, ref_id \\ nil)
+  def add(user, role, domain \\ :global, ref_id \\ nil)
 
-  def add(%Ident.User{} = user, role_atom, ref_id),
-    do: add(user.id, role_atom, ref_id)
+  def add(%Ident.User{} = user, role, domain, ref_id),
+    do: add(user.id, role, domain, ref_id)
 
-  def add(user_id, role_atom, ref_id) when is_atom(role_atom) and is_binary(user_id) do
-    case Ident.Role.one(name: role_atom) do
+  def add(user_id, role, domain, ref_id) when is_atom(role) and is_binary(user_id) and is_atom(domain) do
+    case Ident.Role.one(name: role) do
       {:ok, role} ->
         Ident.Access.upsert(%{
           role_id: role.id,
           user_id: user_id,
-          domain: role.domain,
+          domain: domain,
           ref_id: ref_id
         })
 
       _ ->
-        {:error, "cannot find role #{inspect(role_atom)}"}
+        {:error, "cannot find role #{inspect(role)}"}
     end
   end
 

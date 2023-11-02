@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Access.Migrations.Base do
     create table(:ident_accesses) do
       add(:user_id, references(:users, on_delete: :delete_all, type: :uuid))
       add(:role_id, references(:ident_roles, on_delete: :delete_all))
-      add(:domain, :integer, default: 0)
+      add(:domain, :string, default: "global")
       add(:ref_id, :binary_id, default: nil)
     end
 
