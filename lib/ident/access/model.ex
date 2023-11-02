@@ -5,8 +5,6 @@ defmodule Rivet.Ident.Access do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :int
   alias Rivet.Ident
-  import EctoEnum
-
 
   typed_schema "ident_accesses" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
