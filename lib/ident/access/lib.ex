@@ -55,7 +55,7 @@ defmodule Rivet.Ident.Access.Lib do
   #   )
   # end
 
-  @spec add(Ident.User.t() | String.t(), atom(), String.t() | nil) ::
+  @spec add(Ident.User.t() | String.t(), atom(), atom(), String.t() | nil) ::
           {:ok, Ident.Access.t()} | {:error, String.t()}
   def add(user, role, domain \\ :global, ref_id \\ nil)
 
