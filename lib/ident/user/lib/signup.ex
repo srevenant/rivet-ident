@@ -98,6 +98,10 @@ defmodule Rivet.Ident.User.Lib.Signup do
       {:error, %Ecto.Changeset{} = changeset} ->
         signup_abort_create(auth)
         {:error, auth, {"", Rivet.Utils.Ecto.Errors.convert_error_changeset(changeset)}}
+
+      {:error, reason} ->
+        signup_abort_create(auth)
+        {:error, auth, {"", reason}}
     end
   end
 
@@ -182,7 +186,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
     # basic
     case Ident.Email.one(address: eaddr) do
       {:ok, %Ident.Email{} = email} ->
-        Logger.warn("failed adding email", user_id: user.id, eaddr: eaddr)
+        Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
         Notify.FailedChange.send(email, "add email to your account.")
 
         {:error, "That email already is associated with a different account"}
