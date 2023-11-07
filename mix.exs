@@ -28,22 +28,22 @@ defmodule RivetIdent.MixProject do
       [
          Application.get_env(:rivet, :repo),
           Application.get_env(
-                                    :rivet_ident,
+                                    :rivet,
                                     :notify_password_changed,
                                     Rivet.Ident.User.Notify.PasswordChanged
                                   ),
           Application.get_env(
-                                  :rivet_ident,
+                                  :rivet,
                                   :notify_password_reset,
                                   Rivet.Ident.User.Notify.PasswordReset
                                 ),
           Application.get_env(
-                                      :rivet_ident,
+                                      :rivet,
                                       :notify_user_failed_change,
                                       Rivet.Ident.User.Notify.FailedChange
                                     ),
           Application.get_env(
-                                     :rivet_ident,
+                                     :rivet,
                                      :notify_user_verification,
                                      Rivet.Ident.User.Notify.Verification
                                    )]
