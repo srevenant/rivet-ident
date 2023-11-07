@@ -82,16 +82,21 @@ defmodule Rivet.Ident.Factor.Lib do
   @password_minlen 8
   def strong_password(password) do
     cond do
-      String.length(password)  < @password_minlen ->
+      String.length(password) < @password_minlen ->
         {:error, "Password is not long enough (greater than #{@password_minlen})"}
+
       Regex.replace(~r/[a-z]/i, password, "") == password ->
         {:error, "Password needs letters"}
+
       String.downcase(password) == password ->
         {:error, "Password needs both upper and lower case characters"}
+
       Regex.replace(~r/[^a-z0-9]/i, password, "") == password ->
         {:error, "Password needs special characters (not alphanumeric)"}
+
       Regex.replace(~r/[0-9]/, password, "") == password ->
         {:error, "Password needs numbers"}
+
       true ->
         :ok
     end

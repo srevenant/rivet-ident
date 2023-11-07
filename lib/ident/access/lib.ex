@@ -62,7 +62,8 @@ defmodule Rivet.Ident.Access.Lib do
   def add(%Ident.User{} = user, role, domain, ref_id),
     do: add(user.id, role, domain, ref_id)
 
-  def add(user_id, role, domain, ref_id) when is_atom(role) and is_binary(user_id) and is_atom(domain) do
+  def add(user_id, role, domain, ref_id)
+      when is_atom(role) and is_binary(user_id) and is_atom(domain) do
     case Ident.Role.one(name: role) do
       {:ok, role} ->
         Ident.Access.upsert(%{
@@ -80,7 +81,8 @@ defmodule Rivet.Ident.Access.Lib do
   @spec drop(Ident.User.t(), atom(), atom(), String.t() | nil) ::
           {:ok, Ident.Access.t()} | {:error, String.t()}
 
-  def drop(%Ident.User{} = user, role_atom, domain \\ :global, ref_id \\ nil) when is_atom(role_atom) and is_atom(domain) do
+  def drop(%Ident.User{} = user, role_atom, domain \\ :global, ref_id \\ nil)
+      when is_atom(role_atom) and is_atom(domain) do
     case Ident.Role.one(name: role_atom) do
       {:ok, role} ->
         case Ident.Access.one(

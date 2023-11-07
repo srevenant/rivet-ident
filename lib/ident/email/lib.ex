@@ -23,18 +23,4 @@ defmodule Rivet.Ident.Email.Lib do
         func.(email)
     end
   end
-
-  @expire_minutes 60
-  def send_reset_code(%Ident.Email{user: %Ident.User{} = user} = email) do
-    Ident.UserCode.Lib.clear_all_codes(user.id, :password_reset)
-
-    case Ident.UserCode.Lib.generate_code(user.id, :password_reset, @expire_minutes) do
-      {:ok, code} ->
-        Ident.User.Notify.PasswordReset.send(user, email, code)
-
-      error ->
-        IO.inspect(error, label: "Cannot generate UserCode?")
-        :error
-    end
-  end
 end
