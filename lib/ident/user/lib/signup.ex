@@ -1,6 +1,5 @@
 defmodule Rivet.Ident.User.Lib.Signup do
   alias Rivet.Ident
-  use Rivet.Ident.Context
   alias Rivet.Auth
   require Logger
 
@@ -151,7 +150,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
           }}
        )
        when is_binary(eaddr) do
-    case add_email(user, eaddr, status) do
+    case Ident.User.Lib.add_email(user, eaddr, status) do
       {:ok, email} ->
         {:ok, %Auth.Domain{auth | email: email}}
 
@@ -176,63 +175,5 @@ defmodule Rivet.Ident.User.Lib.Signup do
 
   defp mainline({:error, _auth, {inner, outer}}) do
     {:error, %Auth.Domain{log: inner, error: outer}}
-  end
-
-  ##############################################################################
-  def add_email(user, eaddr, verified \\ false) do
-    eaddr = String.trim(eaddr)
-
-    # basic
-    case Ident.Email.one(address: eaddr) do
-      {:ok, %Ident.Email{} = email} ->
-        Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
-        @notify_user_failed_change.send(email, "add email to your account.")
-
-        {:error, "That email already is associated with a different account"}
-
-      {:error, _} ->
-        # add it
-        case Ident.Email.create(%{
-               user_id: user.id,
-               verified: verified,
-               address: eaddr
-             }) do
-          {:ok, %Ident.Email{} = email} ->
-            email = %Ident.Email{email | user: user}
-            @notify_user_verification.send(email)
-
-            {:ok, email}
-
-          {:error, chgset} ->
-            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
-        end
-    end
-  end
-
-  ##############################################################################
-  def add_phone(user, phone) do
-    # TODO: do an internal ph# validation
-    phone = String.trim(phone)
-
-    case Ident.Phone.one(user_id: user.id, number: phone) do
-      {:ok, %Ident.Phone{} = phone} ->
-        {:ok, phone}
-
-      {:error, _} ->
-        # add it
-        case Ident.Phone.create(%{
-               user_id: user.id,
-               number: phone
-             }) do
-          {:ok, %Ident.Phone{} = phone} ->
-            # TODO santity checks:
-            # - pick primary
-            # Logger.info("added phone", user_id: user.id, phone: phone)
-            {:ok, phone}
-
-          {:error, chgset} ->
-            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
-        end
-    end
   end
 end

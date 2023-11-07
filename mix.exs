@@ -24,31 +24,7 @@ defmodule RivetIdent.MixProject do
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
-      xref: [exclude:
-      [
-         Application.get_env(:rivet, :repo),
-          Application.get_env(
-                                    :rivet,
-                                    :notify_password_changed,
-                                    Rivet.Ident.User.Notify.PasswordChanged
-                                  ),
-          Application.get_env(
-                                  :rivet,
-                                  :notify_password_reset,
-                                  Rivet.Ident.User.Notify.PasswordReset
-                                ),
-          Application.get_env(
-                                      :rivet,
-                                      :notify_user_failed_change,
-                                      Rivet.Ident.User.Notify.FailedChange
-                                    ),
-          Application.get_env(
-                                     :rivet,
-                                     :notify_user_verification,
-                                     Rivet.Ident.User.Notify.Verification
-                                   )]
-
-      ],
+      xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
       aliases: aliases()
     ]
   end

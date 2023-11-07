@@ -1,4 +1,7 @@
 defmodule Rivet.Ident.Context do
+
+  def mailer(), do: Application.get_env(:rivet_email, :mailer)
+
   defmacro __using__(_) do
     quote location: :keep do
       @notify_password_changed Application.get_env(

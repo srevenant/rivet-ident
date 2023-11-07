@@ -2,7 +2,7 @@ defmodule Rivet.Ident.Example.Mailer.Template do
   use Rivet.Email.Template
 
   @impl Rivet.Email.Template
-  def send(targets, assigns), do: Rivet.Email.mailer().send(targets, __MODULE__, assigns)
+  def sendto(targets, assigns), do: Rivet.Email.mailer().sendto(targets, __MODULE__, assigns)
 
   @impl Rivet.Email.Template
   def generate(recip, attrs) do

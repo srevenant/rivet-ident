@@ -7,7 +7,6 @@ defmodule Rivet.Auth do
   alias Rivet.Auth.Signin
   alias Rivet.Ident
   require Logger
-  use Rivet.Ident.Context
 
   def check_authz(%{context: %{user: %Ident.User{} = u}}, assertion),
     do: check_authz(u, assertion)
@@ -49,7 +48,7 @@ defmodule Rivet.Auth do
   defp set_password(%Ident.User{} = user, new) do
     case Ident.Factor.Lib.set_password(user, new) do
       {:ok, %Ident.Factor{}} ->
-        @notify_password_changed.send(user)
+        Rivet.Ident.cfg(:notify_password_changed).sendto(user)
         true
 
       error ->

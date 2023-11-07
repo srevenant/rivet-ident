@@ -1,7 +1,6 @@
 defmodule Rivet.Ident.User.Lib do
   alias Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.User
-  use Rivet.Ident.Context
   alias Rivet.Auth
   require Logger
 
@@ -125,7 +124,7 @@ defmodule Rivet.Ident.User.Lib do
     case Ident.Email.one(address: eaddr) do
       {:ok, %Ident.Email{} = email} ->
         Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
-        @notify_user_failed_change.sendto(email, "add email to your account.")
+        Rivet.Ident.cfg(:notify_user_failed_change).sendto(email, "add email to your account.")
 
         {:error, "That email already is associated with a different account"}
 
@@ -138,7 +137,7 @@ defmodule Rivet.Ident.User.Lib do
              }) do
           {:ok, %Ident.Email{} = email} ->
             email = %Ident.Email{email | user: user}
-            @notify_user_verification.sendto(email)
+            Rivet.Ident.cfg(:notify_user_verification).sendto(email)
 
             {:ok, email}
 
