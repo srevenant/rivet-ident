@@ -25,7 +25,7 @@ defmodule RivetIdent.MixProject do
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
       xref: [exclude:
-         List.wrap(
+      [
          Application.get_env(:rivet, :repo),
           Application.get_env(
                                     :rivet_ident,
@@ -46,7 +46,7 @@ defmodule RivetIdent.MixProject do
                                      :rivet_ident,
                                      :notify_user_verification,
                                      Rivet.Ident.User.Notify.Verification
-                                   ))
+                                   )]
 
       ],
       aliases: aliases()
