@@ -24,7 +24,30 @@ defmodule RivetIdent.MixProject do
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
-      xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
+      xref: [exclude:
+         List.wrap(Application.get_env(:rivet, :repo))
+          Application.get_env(
+                                    :rivet_ident,
+                                    :notify_password_changed,
+                                    Rivet.Ident.User.Notify.PasswordChanged
+                                  ),
+          Application.get_env(
+                                  :rivet_ident,
+                                  :notify_password_reset,
+                                  Rivet.Ident.User.Notify.PasswordReset
+                                ),
+          Application.get_env(
+                                      :rivet_ident,
+                                      :notify_user_failed_change,
+                                      Rivet.Ident.User.Notify.FailedChange
+                                    ),
+          Application.get_env(
+                                     :rivet_ident,
+                                     :notify_user_verification,
+                                     Rivet.Ident.User.Notify.Verification
+                                   )
+
+      ],
       aliases: aliases()
     ]
   end
@@ -79,7 +102,7 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.13"},
       {:puid, "~> 2.0"},
       {:random_password, "~> 1.1"},
-      {:rivet_email, "~> 1.4"},
+      {:rivet_email, "~> 1.5"},
       {:timex, "~> 3.6"},
       {:transmogrify, "~> 2.0.2"},
       {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
