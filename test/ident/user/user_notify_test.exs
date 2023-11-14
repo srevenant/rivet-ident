@@ -3,7 +3,7 @@ defmodule Rivet.Ident.Test.UserNotifyTest do
   alias Rivet.Ident.User.Notify
 
   @templates %{
-    Notify.FailedChange => %{
+    Notify.UserFailedChange => %{
       assigns: %{action: "reset"},
       template: ~S"""
       === rivet-template-v1
@@ -70,7 +70,7 @@ defmodule Rivet.Ident.Test.UserNotifyTest do
       <%= @site.email_sig %>
       """
     },
-    Notify.Verification => %{
+    Notify.UserVerification => %{
       assigns: %{code: "code"},
       template: ~S"""
       === rivet-template-v1
