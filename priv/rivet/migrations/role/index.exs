@@ -1,4 +1,5 @@
+alias Rivet.Ident.Role.Migrations, as: M
 [
-  [module: Rivet.Ident.Role.Migrations.DropDomain, version: 20231116154450],
-  [base: true, version: 0, module: Rivet.Ident.Role.Migrations.Base]
+  [version: 20231116154450, module: M.DropDomain],
+  [base: true, version: 0, module: M.Base]
 ]
