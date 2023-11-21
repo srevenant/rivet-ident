@@ -4,7 +4,7 @@ defmodule Elixir.Rivet.Ident.Role.Migrations.DropDomain do
 
   def change do
     alter table(:ident_roles) do
-      remove(:domain)
+      remove_if_exists(:domain, :integer)
     end
   end
 end
