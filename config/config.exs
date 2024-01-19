@@ -31,7 +31,6 @@ config :rivet_ident,
   notify_user_failed_change: Rivet.Ident.User.Notify.UserFailedChange,
   notify_user_verification: Rivet.Ident.User.Notify.UserVerification
 
-
 # to keep the compiling functional, even if it doesn't work
 config :rivet_email,
   enabled: false,

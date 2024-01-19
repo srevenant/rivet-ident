@@ -129,10 +129,13 @@ defmodule Rivet.Ident.User.Lib do
         {:error, "That email already is associated with a different account"}
 
       {:error, _} ->
+        has_email? = not Ident.Email.exists?(user_id: user.id)
+
         # add it
         case Ident.Email.create(%{
                user_id: user.id,
                verified: verified,
+               primary: not has_email?,
                address: eaddr
              }) do
           {:ok, %Ident.Email{} = email} ->
