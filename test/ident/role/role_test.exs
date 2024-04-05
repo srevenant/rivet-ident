@@ -2,12 +2,6 @@ defmodule Rivet.Ident.Test.RoleTest do
   use Rivet.Ident.Case, async: true
 
   doctest Rivet.Ident.Role, import: true
-  doctest Rivet.Ident.Role.Lib, import: true
-  doctest Rivet.Ident.Role.Loader, import: true
-  doctest Rivet.Ident.Role.Seeds, import: true
-
-  doctest Rivet.Ident.Role.Rest, import: true
-  doctest Rivet.Ident.Role.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do

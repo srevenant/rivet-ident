@@ -23,4 +23,15 @@ defmodule Rivet.Ident.Email.Lib do
         func.(email)
     end
   end
+
+  def bouncing(%Ident.Email{} = e, log) do
+    bounce = e.bounce || []
+    now = Rivet.Utils.Time.now()
+    bounce = [%{at: now, log: log} | bounce]
+    Ident.Email.update(e, %{bounce: bounce})
+  end
+
+  def bouncing(eaddr, log) when is_binary(eaddr) do
+    with {:ok, e} <- Ident.Email.one(address: eaddr), do: bouncing(e, log)
+  end
 end

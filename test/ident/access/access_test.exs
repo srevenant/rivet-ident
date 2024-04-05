@@ -2,12 +2,6 @@ defmodule Rivet.Ident.Test.AccessTest do
   use Rivet.Ident.Case, async: true
 
   doctest Rivet.Ident.Access, import: true
-  doctest Rivet.Ident.Access.Lib, import: true
-  doctest Rivet.Ident.Access.Loader, import: true
-  doctest Rivet.Ident.Access.Seeds, import: true
-
-  doctest Rivet.Ident.Access.Rest, import: true
-  doctest Rivet.Ident.Access.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do

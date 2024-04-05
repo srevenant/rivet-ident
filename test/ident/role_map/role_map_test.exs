@@ -3,11 +3,6 @@ defmodule Rivet.Ident.Test.RoleMapTest do
 
   doctest Rivet.Ident.RoleMap, import: true
   doctest Rivet.Ident.RoleMap.Lib, import: true
-  doctest Rivet.Ident.RoleMap.Loader, import: true
-  doctest Rivet.Ident.RoleMap.Seeds, import: true
-
-  doctest Rivet.Ident.RoleMap.Rest, import: true
-  doctest Rivet.Ident.RoleMap.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do

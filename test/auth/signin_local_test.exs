@@ -47,11 +47,9 @@ defmodule Rivet.Ident.Test.Signin.LocalTest do
             %Auth.Domain{
               error: "Unable to sign in. Did you want to sign up instead?",
               log: "Cannot find person ~doctor"
-            }} =
-             Local.check(%Auth.Domain{}, %{"handle" => "doctor", "password" => "who"})
+            }} = Local.check(%Auth.Domain{}, %{"handle" => "doctor", "password" => "who"})
 
-    assert {:error, _} =
-             Local.check("hostname", %{"handle" => "doctor", "password" => "who"})
+    assert {:error, _} = Local.check("hostname", %{"handle" => "doctor", "password" => "who"})
 
     # Load user
     assert {:error, %{log: "Cannot find email red@narf"}} =
