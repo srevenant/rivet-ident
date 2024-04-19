@@ -16,7 +16,7 @@ defmodule Rivet.Ident.Handle do
   @required_fields [:user_id, :handle]
   use Rivet.Ecto.Collection,
     required: @required_fields,
-    unique: [:handle],
+    unique: [{:handle, name: :user_handles_handle_index}],
     update: [:handle]
 
   @behaviour Rivet.Ecto.Collection
