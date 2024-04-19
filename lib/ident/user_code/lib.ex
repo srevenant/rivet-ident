@@ -39,7 +39,7 @@ defmodule Rivet.Ident.UserCode.Lib do
   end
 
   def get_valid(code) do
-    with {:ok, code} <- Db.UserCodes.one(code: code) do
+    with {:ok, code} <- UserCode.one(code: code) do
       if Timex.diff(Timex.now(), code.expires) < 0 do
         {:ok, code}
       else
