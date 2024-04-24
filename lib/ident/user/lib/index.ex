@@ -12,7 +12,7 @@ defmodule Rivet.Ident.User.Lib do
       on: e.user_id == u.id,
       join: h in Ident.Handle,
       on: h.user_id == u.id,
-      where: like(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
+      where: ilike(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
     )
     |> Rivet.Ecto.Collection.enrich_query_args(args)
     |> Rivet.Ident.User.all()

@@ -43,4 +43,16 @@ defmodule Rivet.Ident.Test.UserTest do
       assert deleted.id == model.id
     end
   end
+
+  describe "lib" do
+    test "search" do
+      name = "RICHTHOFEN"
+      user = insert(:ident_user, name: name)
+      insert(:ident_handle, user: user)
+      insert(:ident_email, user: user)
+
+      assert {:ok, [%Rivet.Ident.User{name: ^name}]} =
+               Rivet.Ident.User.Lib.search(%{matching: String.downcase(name)}, [])
+    end
+  end
 end
