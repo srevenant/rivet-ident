@@ -26,10 +26,10 @@ config :rivet_ident,
     api: 15 * 60,
     password: 365 * 86400
   },
-  notify_password_changed: Rivet.Ident.User.Notify.PasswordChanged,
-  notify_password_reset: Rivet.Ident.User.Notify.PasswordReset,
-  notify_user_failed_change: Rivet.Ident.User.Notify.UserFailedChange,
-  notify_user_verification: Rivet.Ident.User.Notify.UserVerification
+  notify_password_changed: Rivet.Ident.Test.NotifyTemplate,
+  notify_password_reset: Rivet.Ident.Test.NotifyTemplate,
+  notify_user_failed_change: Rivet.Ident.Test.NotifyTemplate,
+  notify_user_verification: Rivet.Ident.Test.NotifyTemplate
 
 # to keep the compiling functional, even if it doesn't work
 config :rivet_email,

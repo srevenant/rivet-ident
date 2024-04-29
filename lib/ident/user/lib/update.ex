@@ -154,7 +154,7 @@ defmodule Rivet.Ident.User.Lib.Update do
       ) do
     with {:ok, %Ident.Email{user_id: ^user_id} = email} <-
            Ident.Email.one([id: email_id], [:user]) do
-      Rivet.Ident.cfg(:notify_user_verification).sendto(email)
+      Rivet.Ident.cfg(:notify_user_verification).queue(email)
       finish_update(args, :email, admin, user)
     end
   end

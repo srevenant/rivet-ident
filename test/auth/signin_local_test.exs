@@ -6,7 +6,6 @@ defmodule Rivet.Ident.Test.Signin.LocalTest do
   alias Rivet.Auth
   alias Rivet.Auth.Signin.Local
   alias Rivet.Ident
-  import ExUnit.CaptureLog
   import Rivet.Ident.Test.Factory
 
   test "Signin Local" do
