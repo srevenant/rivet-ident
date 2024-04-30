@@ -124,9 +124,9 @@ defmodule Rivet.Ident.User.Lib do
     case Ident.Email.one(address: eaddr) do
       {:ok, %Ident.Email{} = email} ->
         Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
-        Rivet.Ident.cfg(:notify_user_failed_change).queue(email, "add this email to a different account")
+        Rivet.Ident.cfg(:notify_user_failed_change).queue(email, "add this email address to a different account")
 
-        {:error, "That email already is associated with a different account"}
+        {:error, "Sorry, that email address is associated with a different account."}
 
       {:error, _} ->
         has_email? = Ident.Email.exists?(user_id: user.id)
