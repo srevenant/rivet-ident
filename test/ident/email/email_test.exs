@@ -3,11 +3,6 @@ defmodule Rivet.Ident.Test.EmailTest do
 
   doctest Rivet.Ident.Email, import: true
   doctest Rivet.Ident.Email.Lib, import: true
-  doctest Rivet.Ident.Email.Loader, import: true
-  doctest Rivet.Ident.Email.Seeds, import: true
-
-  doctest Rivet.Ident.Email.Rest, import: true
-  doctest Rivet.Ident.Email.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do

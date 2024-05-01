@@ -7,6 +7,8 @@ old
 /**/_build
 # The directory Mix downloads your dependencies sources to.
 /**/deps
+deps
+_build
 # Also ignore archive artifacts (built via "mix archive.build").
 /**/*.ez
 # If you run "mix test --cover", coverage assets end up here.

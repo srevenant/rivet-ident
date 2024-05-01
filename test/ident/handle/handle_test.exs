@@ -3,11 +3,6 @@ defmodule Rivet.Ident.Test.HandleTest do
 
   doctest Rivet.Ident.Handle, import: true
   doctest Rivet.Ident.Handle.Lib, import: true
-  doctest Rivet.Ident.Handle.Loader, import: true
-  doctest Rivet.Ident.Handle.Seeds, import: true
-
-  doctest Rivet.Ident.Handle.Rest, import: true
-  doctest Rivet.Ident.Handle.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do

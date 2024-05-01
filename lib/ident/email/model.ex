@@ -11,6 +11,7 @@ defmodule Rivet.Ident.Email do
     field(:address, :string)
     field(:primary, :boolean, default: false)
     field(:verified, :boolean, default: false)
+    field(:bounce, {:array, :map})
     timestamps()
   end
 

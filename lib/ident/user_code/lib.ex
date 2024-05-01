@@ -3,6 +3,12 @@ defmodule Rivet.Ident.UserCode.Lib do
   alias Ident.UserCode
   use Rivet.Ecto.Collection.Context, model: UserCode
 
+  def reset_generate(for_user_id, type, meta \\ %{}) do
+    clear_all_codes(for_user_id, type)
+    expire = Application.get_env(:core, :user_code_expires)[type] || 60
+    generate_code(for_user_id, type, expire, meta)
+  end
+
   def generate_code(for_user_id, type, expiration_minutes, meta \\ %{}) when is_atom(type) do
     code =
       Ecto.UUID.generate()
@@ -29,6 +35,16 @@ defmodule Rivet.Ident.UserCode.Lib do
             IO.inspect(chgset, label: "Cannot generate code?")
             {:error, "cannot generate code"}
         end
+    end
+  end
+
+  def get_valid(code) do
+    with {:ok, code} <- UserCode.one(code: code) do
+      if Timex.diff(Timex.now(), code.expires) < 0 do
+        {:ok, code}
+      else
+        {:error, "Code Expired"}
+      end
     end
   end
 

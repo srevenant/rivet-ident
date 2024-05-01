@@ -4,10 +4,6 @@ defmodule Rivet.Ident.Test.FactorTest do
 
   doctest Ident.Factor, import: true
   doctest Ident.Factor.Lib, import: true
-  doctest Ident.Factor.Loader, import: true
-  doctest Ident.Factor.Seeds, import: true
-
-  doctest Ident.Factor.Rest, import: true
   doctest Ident.Factor.Cache, import: true
 
   describe "factory" do

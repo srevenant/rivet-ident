@@ -2,12 +2,6 @@ defmodule Rivet.Ident.Test.PhoneTest do
   use Rivet.Ident.Case, async: true
 
   doctest Rivet.Ident.Phone, import: true
-  doctest Rivet.Ident.Phone.Lib, import: true
-  doctest Rivet.Ident.Phone.Loader, import: true
-  doctest Rivet.Ident.Phone.Seeds, import: true
-
-  doctest Rivet.Ident.Phone.Rest, import: true
-  doctest Rivet.Ident.Phone.Cache, import: true
 
   describe "factory" do
     test "factory creates a valid instance" do

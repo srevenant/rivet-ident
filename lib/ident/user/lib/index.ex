@@ -12,7 +12,7 @@ defmodule Rivet.Ident.User.Lib do
       on: e.user_id == u.id,
       join: h in Ident.Handle,
       on: h.user_id == u.id,
-      where: like(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
+      where: ilike(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
     )
     |> Rivet.Ecto.Collection.enrich_query_args(args)
     |> Rivet.Ident.User.all()
@@ -124,9 +124,9 @@ defmodule Rivet.Ident.User.Lib do
     case Ident.Email.one(address: eaddr) do
       {:ok, %Ident.Email{} = email} ->
         Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
-        Rivet.Ident.cfg(:notify_user_failed_change).sendto(email, "add email to your account.")
+        Rivet.Ident.cfg(:notify_user_failed_change).queue(email, "add this email address to a different account")
 
-        {:error, "That email already is associated with a different account"}
+        {:error, "Sorry, that email address is associated with a different account."}
 
       {:error, _} ->
         has_email? = Ident.Email.exists?(user_id: user.id)
@@ -140,7 +140,7 @@ defmodule Rivet.Ident.User.Lib do
              }) do
           {:ok, %Ident.Email{} = email} ->
             email = %Ident.Email{email | user: user}
-            Rivet.Ident.cfg(:notify_user_verification).sendto(email)
+            Rivet.Ident.cfg(:notify_user_verification).queue(email)
 
             {:ok, email}
 

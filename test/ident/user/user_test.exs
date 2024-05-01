@@ -3,10 +3,6 @@ defmodule Rivet.Ident.Test.UserTest do
 
   doctest Rivet.Ident.User, import: true
   doctest Rivet.Ident.User.Lib, import: true
-  doctest Rivet.Ident.User.Loader, import: true
-  doctest Rivet.Ident.User.Seeds, import: true
-
-  doctest Rivet.Ident.User.Rest, import: true
   doctest Rivet.Ident.User.Cache, import: true
 
   describe "factory" do
@@ -45,6 +41,18 @@ defmodule Rivet.Ident.Test.UserTest do
       model = insert(:ident_user)
       assert {:ok, deleted} = Rivet.Ident.User.delete(model)
       assert deleted.id == model.id
+    end
+  end
+
+  describe "lib" do
+    test "search" do
+      name = "RICHTHOFEN"
+      user = insert(:ident_user, name: name)
+      insert(:ident_handle, user: user)
+      insert(:ident_email, user: user)
+
+      assert {:ok, [%Rivet.Ident.User{name: ^name}]} =
+               Rivet.Ident.User.Lib.search(%{matching: String.downcase(name)}, [])
     end
   end
 end

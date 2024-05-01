@@ -52,12 +52,9 @@ defmodule Rivet.Ident.Test.AuthFactory do
       end
 
       def ident_handle_factory do
-        user = build(:ident_user)
-        seq_id = sequence(:ident_handle, &"#{&1}")
-
         %Ident.Handle{
-          user: user,
-          handle: "user-#{seq_id}"
+          user: build(:ident_user),
+          handle: sequence("user-handle-")
         }
       end
 
