@@ -1,4 +1,4 @@
-defmodule Elixir.Rivet.Ident.Role.Migrations.DropDomain do
+defmodule Elixir.Rivet.Ident.Role.Migrations.AddType do
   @moduledoc false
   use Ecto.Migration
 
