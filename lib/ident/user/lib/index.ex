@@ -117,8 +117,18 @@ defmodule Rivet.Ident.User.Lib do
   def all_since(time), do: Ident.User.all!(from(u in Ident.User, where: u.last_seen > ^time))
 
   ##############################################################################
+  @doc """
+  iex> clean_email(" narf@narf.com.")
+  "narf@narf.com"
+  """
+  def clean_email(eaddr) do
+    eaddr
+    |> String.trim()
+    |> String.replace(~r/\.$/, "")
+  end
+
   def add_email(user, eaddr, verified \\ false) do
-    eaddr = String.trim(eaddr)
+    eaddr = clean_email(eaddr)
 
     # basic
     case Ident.Email.one(address: eaddr) do
