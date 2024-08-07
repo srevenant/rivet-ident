@@ -10,7 +10,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
   def signup(%Auth.Domain{hostname: h} = auth) when is_binary(h) do
     {:ok, auth}
     |> signup_check_handle
-    |> signup_create_user(:authed)
+    |> signup_create_user(:need_verify)
     # |> signup_add_password
     # TODO: be intelligent
     |> signup_add_factor
