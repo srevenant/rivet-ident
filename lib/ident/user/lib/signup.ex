@@ -7,10 +7,12 @@ defmodule Rivet.Ident.User.Lib.Signup do
   @doc """
   SignUp pipeline
   """
-  def signup(%Auth.Domain{hostname: h} = auth) when is_binary(h) do
+  def signup(auth, type \\ :authed)
+
+  def signup(%Auth.Domain{hostname: h} = auth, type) when is_binary(h) do
     {:ok, auth}
     |> signup_check_handle
-    |> signup_create_user(:authed)
+    |> signup_create_user(type)
     # |> signup_add_password
     # TODO: be intelligent
     |> signup_add_factor
@@ -22,7 +24,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
   end
 
   # WAS: signup(tenant, input)
-  def signup(input) do
+  def signup(input,  _) do
     {:error,
      %Auth.Domain{
        log: "No match for signup with args:\n#{inspect(input)}",
