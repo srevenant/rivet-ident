@@ -7,9 +7,11 @@ defmodule Rivet.Auth.Signin.Local do
   import Ident.User.Lib, only: [check_user_status: 1]
 
   @spec signup(String.t(), params :: map()) :: Auth.Domain.result()
+  def signup(host, args, type \\ :authed)
   def signup(
         hostname,
-        %{"handle" => handle, "password" => password, "email" => eaddr}
+        %{"handle" => handle, "password" => password, "email" => eaddr},
+        type
       )
       when is_binary(hostname) do
     case Ident.Email.one([address: eaddr], [:user]) do
@@ -24,11 +26,11 @@ defmodule Rivet.Auth.Signin.Local do
             secret: password,
             email: %{address: eaddr, verified: false}
           }
-        })
+        }, type)
     end
   end
 
-  def signup(_, _) do
+  def signup(_, _, _) do
     {:error,
      %Auth.Domain{log: "Auth signup failed, arguments don't match", error: "Signup Failed"}}
   end

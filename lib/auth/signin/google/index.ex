@@ -12,13 +12,15 @@ defmodule Rivet.Auth.Signin.Google do
   # note: this is different from `Auth.Domain.result()` typedef, in it can have any
   # value with :ok, where the second part of Auth.Domain.result() is always an Auth.Domain
   @spec check(String.t(), map()) :: Auth.Domain.result()
-  def check(hostname, %{"data" => %{"auth" => token}}) when is_binary(hostname) do
+  def check(hostname, args, type \\ :authed)
+
+  def check(hostname, %{"data" => %{"auth" => token}}, type) when is_binary(hostname) do
     verify_google_signature(token)
-    |> find_or_create_user(hostname)
+    |> find_or_create_user(hostname, type)
     |> Auth.Signin.post_signin()
   end
 
-  def check(_, _),
+  def check(_, _, _),
     do:
       {:error,
        %Auth.Domain{
@@ -57,13 +59,13 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   ##############################################################################
-  defp find_or_create_user({:ok, %{payload: %{"email_verified" => true} = payload}}, hostname) do
+  defp find_or_create_user({:ok, %{payload: %{"email_verified" => true} = payload}}, hostname, type) do
     payload
-    |> find_user(hostname)
+    |> find_user(hostname, type)
     |> update_user_avatar(payload["picture"])
   end
 
-  defp find_or_create_user(pass, _), do: pass
+  defp find_or_create_user(pass, _, _), do: pass
 
   ###############################################################################
   # defp update_user_avatar(
@@ -79,18 +81,18 @@ defmodule Rivet.Auth.Signin.Google do
   defp update_user_avatar(pass, _), do: pass
 
   ###############################################################################
-  defp find_user(%{"sub" => ident} = params, hostname) do
+  defp find_user(%{"sub" => ident} = params, hostname, type) do
     case Ident.UserIdent.Lib.get("google", ident) do
       {:ok, user_ident} -> Ident.User.one(id: user_ident.user_id) |> check_user_allowed(hostname)
-      _ -> find_user_by_email(params, hostname)
+      _ -> find_user_by_email(params, hostname, type)
     end
   end
 
-  defp find_user(_, _),
+  defp find_user(_, _, _),
     do: {:error, "Unrecognized payload values, cannot continue; missing 'sub'"}
 
   ###############################################################################
-  defp find_user_by_email(%{"email" => email, "sub" => ident} = params, hostname) do
+  defp find_user_by_email(%{"email" => email, "sub" => ident} = params, hostname, type) do
     case Ident.Email.one([address: email], [:user]) do
       {:ok, %Ident.Email{user: %Ident.User{} = u}} ->
         {:ok, u}
@@ -98,7 +100,7 @@ defmodule Rivet.Auth.Signin.Google do
         |> add_ident(ident)
 
       _ ->
-        create_user(params, hostname)
+        create_user(params, hostname, type)
     end
   end
 
@@ -142,7 +144,7 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   ##############################################################################
-  defp create_user(params, hostname) do
+  defp create_user(params, hostname, type) do
     fedid = payload_to_fedid(params)
 
     Ident.User.Lib.Signup.signup(%Auth.Domain{
@@ -159,7 +161,7 @@ defmodule Rivet.Auth.Signin.Google do
         # Todo: this should merge in better with what comes from fedid.settings
         settings: %{"authAllowed" => %{"google" => true}}
       }
-    })
+    }, type)
     |> add_ident(params["sub"])
   end
 
