@@ -18,12 +18,12 @@ defmodule Rivet.Ident.Email do
   @required_fields [:user_id, :address]
   use Rivet.Ecto.Collection,
     required: @required_fields,
-    update: [:address, :primary, :verified]
+    update: [:address, :primary, :verified, :bounce]
 
   def validate(chgset) do
     chgset
     |> validate_required(@required_fields)
-    |> validate_format(:address, ~r/[a-z0-9+-]@[a-z0-9-]+\.[a-z0-9-]/i,
+    |> validate_format(:address, ~r/[a-z0-9+_-]@[a-z0-9-]+\.[a-z0-9-]/i,
       message: "needs to be a valid email address"
     )
     |> unique_constraint(:address, message: "is already registered")

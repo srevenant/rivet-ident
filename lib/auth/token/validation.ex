@@ -48,11 +48,11 @@ defmodule Rivet.Auth.Token.Validation do
         end
 
       {:error, %{errors: [expires_at: {"is invalid", _}]}} ->
-        Logger.error("Unable to create Auth Auth.Token record in DB! Invalid Expiration.")
+        Logger.error("Unable to create Auth Token record in DB! Invalid Expiration.")
         {:error, "Invalid Expiration"}
 
       error ->
-        Logger.error("Unable to create Auth Auth.Token record in DB! #{inspect(error)}")
+        Logger.error("Unable to create Auth Token record in DB! #{inspect(error)}")
         error
     end
   end

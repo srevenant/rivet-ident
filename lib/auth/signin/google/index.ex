@@ -59,7 +59,11 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   ##############################################################################
-  defp find_or_create_user({:ok, %{payload: %{"email_verified" => true} = payload}}, hostname, type) do
+  defp find_or_create_user(
+         {:ok, %{payload: %{"email_verified" => true} = payload}},
+         hostname,
+         type
+       ) do
     payload
     |> find_user(hostname, type)
     |> update_user_avatar(payload["picture"])
@@ -147,21 +151,24 @@ defmodule Rivet.Auth.Signin.Google do
   defp create_user(params, hostname, type) do
     fedid = payload_to_fedid(params)
 
-    Ident.User.Lib.Signup.signup(%Auth.Domain{
-      hostname: hostname,
-      status: :authed,
-      input: %{
-        fedid: fedid,
-        name: params["name"],
-        handle: fedid.handle,
-        # todo: we should retain the 'verified' on this email
-        email: fedid.email,
-        # pass this through
-        email_verified: true,
-        # Todo: this should merge in better with what comes from fedid.settings
-        settings: %{"authAllowed" => %{"google" => true}}
-      }
-    }, type)
+    Ident.User.Lib.Signup.signup(
+      %Auth.Domain{
+        hostname: hostname,
+        status: :authed,
+        input: %{
+          fedid: fedid,
+          name: params["name"],
+          handle: fedid.handle,
+          # todo: we should retain the 'verified' on this email
+          email: fedid.email,
+          # pass this through
+          email_verified: true,
+          # Todo: this should merge in better with what comes from fedid.settings
+          settings: %{"authAllowed" => %{"google" => true}}
+        }
+      },
+      type
+    )
     |> add_ident(params["sub"])
   end
 

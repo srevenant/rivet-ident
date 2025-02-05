@@ -2,6 +2,7 @@ import Config
 
 config :logger, level: :info
 config :ex_unit, capture_log: true
+
 config :rivet,
   repo: Rivet.Auth.Repo,
   table_prefix: "",

@@ -11,13 +11,13 @@ defmodule Rivet.Ident.User do
     unknown: 0,
     # we have something to identify them like an email, but no authN
     identity: 1,
-    # we have an authN, but have not verified their account
-    need_verify: 3,
-    # we have one authN but are waiting for MFA
-    need_mfa: 5,
     # we're fully authenticated
     authed: 2,
+    # we have an authN, but have not verified their account
+    need_verify: 3,
     hidden: 4,
+    # we have one authN but are waiting for MFA
+    need_mfa: 5,
     disabled: 200
   )
 

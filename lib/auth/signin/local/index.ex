@@ -8,6 +8,7 @@ defmodule Rivet.Auth.Signin.Local do
 
   @spec signup(String.t(), params :: map()) :: Auth.Domain.result()
   def signup(host, args, type \\ :authed)
+
   def signup(
         hostname,
         %{"handle" => handle, "password" => password, "email" => eaddr},
@@ -19,14 +20,17 @@ defmodule Rivet.Auth.Signin.Local do
         {:error, %Auth.Domain{error: "A signin already exists for `#{eaddr}`"}}
 
       _ ->
-        Ident.User.Lib.Signup.signup(%Auth.Domain{
-          hostname: hostname,
-          input: %{
-            handle: Ident.Handle.Lib.gen_good_handle(handle),
-            secret: password,
-            email: %{address: eaddr, verified: false}
-          }
-        }, type)
+        Ident.User.Lib.Signup.signup(
+          %Auth.Domain{
+            hostname: hostname,
+            input: %{
+              handle: Ident.Handle.Lib.gen_good_handle(handle),
+              secret: password,
+              email: %{address: eaddr, verified: false}
+            }
+          },
+          type
+        )
     end
   end
 

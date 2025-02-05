@@ -11,7 +11,5 @@ defmodule Rivet.Ident.Phone do
     timestamps()
   end
 
-  use Rivet.Ecto.Collection,
-    required: [:user_id, :number],
-    update: [:number, :primary, :verified]
+  use Rivet.Ecto.Collection, required: [:user_id, :number], update: [:number, :primary, :verified]
 end

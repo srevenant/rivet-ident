@@ -24,7 +24,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
   end
 
   # WAS: signup(tenant, input)
-  def signup(input,  _) do
+  def signup(input, _) do
     {:error,
      %Auth.Domain{
        log: "No match for signup with args:\n#{inspect(input)}",
