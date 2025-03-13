@@ -6,16 +6,6 @@ defmodule Rivet.Auth.Signin.Google.AuthKeys do
   def get!(path) do
     {:ok, 200, headers, body} =
       :hackney.request(:get, "https://www.googleapis.com/oauth2/v1/#{path}", [], "",
-        ssl_options: [
-          versions: [:"tlsv1.2"],
-          # HTTPoison default_ssl_options()
-          verify: :verify_peer,
-          cacertfile: :certifi.cacertfile(),
-          depth: 10,
-          customize_hostname_check: [
-            match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-          ]
-        ],
         recv_timeout: 500,
         with_body: true
       )
