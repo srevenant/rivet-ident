@@ -142,10 +142,8 @@ defmodule Rivet.Auth.Signin.Google do
     end
   end
 
-  defp check_user_allowed(x, _) do
-    IO.inspect(x)
-    {:error, %Auth.Domain{log: "User identified but unable to load"}}
-  end
+  defp check_user_allowed(_, _),
+    do: {:error, %Auth.Domain{log: "User identified but unable to load"}}
 
   ##############################################################################
   defp create_user(params, hostname, type) do
