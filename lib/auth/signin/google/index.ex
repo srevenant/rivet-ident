@@ -142,33 +142,18 @@ defmodule Rivet.Auth.Signin.Google do
     end
   end
 
-  defp check_user_allowed(x, _) do
-    IO.inspect(x)
-    {:error, %Auth.Domain{log: "User identified but unable to load"}}
-  end
+  defp check_user_allowed(_, _),
+    do: {:error, %Auth.Domain{log: "User identified but unable to load"}}
 
   ##############################################################################
   defp create_user(params, hostname, type) do
     fedid = payload_to_fedid(params)
 
-    Ident.User.Lib.Signup.signup(
-      %Auth.Domain{
-        hostname: hostname,
-        status: :authed,
-        input: %{
-          fedid: fedid,
-          name: params["name"],
-          handle: fedid.handle,
-          # todo: we should retain the 'verified' on this email
-          email: fedid.email,
-          # pass this through
-          email_verified: true,
-          # Todo: this should merge in better with what comes from fedid.settings
-          settings: %{"authAllowed" => %{"google" => true}}
-        }
-      },
-      type
-    )
+    Rivet.Auth.Signin.create_user(fedid.handle, fedid.email.address, hostname, type, %{
+      fedid: fedid,
+      name: params["name"],
+      settings: %{"authAllowed" => %{"google" => true}}
+    })
     |> add_ident(params["sub"])
   end
 

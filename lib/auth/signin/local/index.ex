@@ -20,17 +20,12 @@ defmodule Rivet.Auth.Signin.Local do
         {:error, %Auth.Domain{error: "A signin already exists for `#{eaddr}`"}}
 
       _ ->
-        Ident.User.Lib.Signup.signup(
-          %Auth.Domain{
-            hostname: hostname,
-            input: %{
-              handle: Ident.Handle.Lib.gen_good_handle(handle),
-              secret: password,
-              email: %{address: eaddr, verified: false}
-            }
-          },
-          type
-        )
+        handle = Ident.Handle.Lib.gen_good_handle(handle)
+
+        Rivet.Auth.Signin.create_user(handle, eaddr, hostname, type, %{
+          secret: password
+        })
+        |> Rivet.Auth.Signin.post_signin()
     end
   end
 
