@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.4.0",
+      version: "3.4.1",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -62,27 +62,26 @@ defmodule RivetIdent.MixProject do
   defp deps do
     [
       {:absinthe, "~> 1.7.1"},
-      {:bcrypt_elixir, "~> 3.0"},
+      {:bcrypt_elixir, "~> 3.3"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ecto_enum, "~> 1.0"},
-      {:ecto_sql, "~> 3.7"},
+      {:ecto_enum, "~> 1.4"},
+      {:ecto_sql, "~> 3.12"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_machina, "~> 2.7.0", only: :test},
-      {:excoveralls, "~> 0.14", only: :test},
-      {:faker, "~> 0.10"},
-      {:jason, "~> 1.0"},
+      {:excoveralls, "~> 0.18", only: :test},
+      {:faker, "~> 0.18"},
+      {:jason, "~> 1.4"},
       {:joken, "~> 2.6.0"},
       {:jose, "~> 1.11"},
       {:junit_formatter, "~> 3.1", only: [:test]},
-      {:lazy_cache, "~> 0.1.0"},
       {:mix_test_watch, "~> 1.0", only: [:test, :dev], runtime: false},
-      {:postgrex, "~> 0.13"},
-      {:puid, "~> 2.0"},
-      {:random_password, "~> 1.1"},
-      {:rivet_email, "~> 2.0"},
-      {:timex, "~> 3.6"},
+      {:postgrex, "~> 0.20"},
+      {:puid, "~> 2.3"},
+      {:random_password, "~> 1.2"},
+      {:rivet_email, "~> 2.5"},
+      {:timex, "~> 3.7"},
       {:transmogrify, "~> 2.0.2"},
-      {:typed_ecto_schema, "~> 0.3.0 or ~> 0.4.1"},
+      {:typed_ecto_schema, "~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}
     ]
   end
