@@ -10,5 +10,5 @@ defmodule Rivet.Ident.Action do
     field(:description, :string)
   end
 
-  use Rivet.Ecto.Collection, required: [:name], update: [:description, :name]
+  use Rivet.Ecto.Collection, not_found: :atom, required: [:name], update: [:description, :name]
 end

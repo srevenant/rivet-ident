@@ -45,7 +45,7 @@ defmodule Rivet.Ident.Factor do
 
   @required_fields [:type, :expires_at, :user_id]
   @update_fields [:fedtype, :name, :value, :details, :password]
-  use Rivet.Ecto.Collection, required: @required_fields, update: @update_fields
+  use Rivet.Ecto.Collection, not_found: :atom, required: @required_fields, update: @update_fields
 
   @behaviour Rivet.Ecto.Collection
   @impl Rivet.Ecto.Collection

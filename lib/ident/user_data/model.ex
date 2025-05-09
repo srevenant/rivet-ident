@@ -23,6 +23,7 @@ defmodule Rivet.Ident.UserData do
   end
 
   use Rivet.Ecto.Collection,
+    not_found: :atom,
     required: [:user_id, :type, :value],
     update: [:value],
     unique: [:type]

@@ -14,6 +14,7 @@ defmodule Rivet.Ident.Role do
   end
 
   use Rivet.Ecto.Collection,
+    not_found: :atom,
     required: [:name, :description],
     update: [:description, :name, :type]
 end

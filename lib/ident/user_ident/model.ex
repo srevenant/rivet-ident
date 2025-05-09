@@ -11,5 +11,5 @@ defmodule Rivet.Ident.UserIdent do
     timestamps()
   end
 
-  use Rivet.Ecto.Collection, create: [], required: [:origin, :ident, :user_id]
+  use Rivet.Ecto.Collection, not_found: :atom, create: [], required: [:origin, :ident, :user_id]
 end

@@ -15,6 +15,7 @@ defmodule Rivet.Ident.Handle do
 
   @required_fields [:user_id, :handle]
   use Rivet.Ecto.Collection,
+    not_found: :atom,
     required: @required_fields,
     unique: [:handle],
     update: [:handle]

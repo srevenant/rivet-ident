@@ -19,6 +19,7 @@ defmodule Rivet.Ident.Access do
   end
 
   use Rivet.Ecto.Collection,
+    not_found: :atom,
     required: [:user_id, :role_id],
     update: [:domain, :ref_id],
     unique: [:role_id]

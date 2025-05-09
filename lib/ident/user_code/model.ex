@@ -16,6 +16,7 @@ defmodule Rivet.Ident.UserCode do
   end
 
   use Rivet.Ecto.Collection,
+    not_found: :atom,
     required: [:user_id, :code, :type, :expires],
     update: [:meta],
     foreign_keys: [:user_id]

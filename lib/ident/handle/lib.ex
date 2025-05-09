@@ -13,14 +13,14 @@ defmodule Rivet.Ident.Handle.Lib do
         {:ok, %Ident.Handle{user_id: ^user_id}} ->
           {:ok, :current}
 
+        {:error, :not_found} ->
+          {:ok, :available}
+
         {:ok, _} ->
           {:error, "existing handle not by user", "Sorry, that handle isn't available"}
 
-        {:error, "Nothing found"} ->
-          {:ok, :available}
-
         {:error, err} ->
-          {:error, "unexected error=#{inspect(err)}", "Sorry, that handle isn't available"}
+          {:error, "unexpected error=#{inspect(err)}", "Sorry, that handle isn't available"}
       end
     end
   end

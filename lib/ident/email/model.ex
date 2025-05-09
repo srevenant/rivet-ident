@@ -17,6 +17,7 @@ defmodule Rivet.Ident.Email do
 
   @required_fields [:user_id, :address]
   use Rivet.Ecto.Collection,
+    not_found: :atom,
     required: @required_fields,
     update: [:address, :primary, :verified, :bounce]
 
