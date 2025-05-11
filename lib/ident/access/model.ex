@@ -3,7 +3,7 @@ defmodule Rivet.Ident.Access do
   Schema for representing and working with a Ident.Access.
   """
   use TypedEctoSchema
-  use Rivet.Ecto.Model, id_type: :int
+  use Rivet.Ecto.Model, id_type: :intid
   alias Rivet.Ident
 
   typed_schema "ident_accesses" do
