@@ -1,6 +1,6 @@
 defmodule Rivet.Ident.Role do
   use TypedEctoSchema
-  use Rivet.Ecto.Model, id_type: :int
+  use Rivet.Ecto.Model, id_type: :intid
 
   import EctoEnum
 

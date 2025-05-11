@@ -3,7 +3,7 @@ defmodule Rivet.Ident.Action do
   Schema for representing and working with a Ident.Action.
   """
   use TypedEctoSchema
-  use Rivet.Ecto.Model, id_type: :int
+  use Rivet.Ecto.Model, id_type: :intid
 
   typed_schema "ident_actions" do
     field(:name, Rivet.Utils.Ecto.Atom)

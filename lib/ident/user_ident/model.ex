@@ -3,7 +3,6 @@ defmodule Rivet.Ident.UserIdent do
   use Rivet.Ecto.Model, id_type: :none
   alias Rivet.Ident
 
-  @primary_key false
   typed_schema "user_idents" do
     field(:ident, :string)
     field(:origin, :string)
