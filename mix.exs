@@ -78,6 +78,9 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.20"},
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
+      # hardcode rivet min version
+      {:rivet, git: "https://github.com/srevenant/rivet/", branch: "debugging", override: true},
+      #{:rivet}
       {:rivet_email, "~> 2.5"},
       {:timex, "~> 3.7"},
       {:transmogrify, "~> 2.0.2"},
