@@ -79,7 +79,7 @@ defmodule RivetIdent.MixProject do
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
       # hardcode rivet min version
-      {:rivet, git: "https://github.com/srevenant/rivet/", branch: "debugging", override: true},
+      {:rivet, git: "https://github.com/srevenant/rivet/", branch: "atomic", override: true},
       #{:rivet}
       {:rivet_email, "~> 2.5"},
       {:timex, "~> 3.7"},
