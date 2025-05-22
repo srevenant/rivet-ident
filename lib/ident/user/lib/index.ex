@@ -118,8 +118,10 @@ defmodule Rivet.Ident.User.Lib do
 
   ##############################################################################
   @doc """
+  ```
   iex> clean_email(" narf@narf.com.")
   "narf@narf.com"
+  ```
   """
   def clean_email(eaddr) do
     eaddr
@@ -220,6 +222,7 @@ defmodule Rivet.Ident.User.Lib do
 
   ##############################################################################
   @doc """
+  ```
   iex> get_user("asdf")
   {:error, :not_found}
 
@@ -227,15 +230,15 @@ defmodule Rivet.Ident.User.Lib do
   {:error, :not_found}
 
   iex> handle = insert(:ident_handle)
-  ...> {:ok, u} = get_user(handle.user_id)
-  ...> u.id
+  iex> {:ok, u} = get_user(handle.user_id)
+  iex> u.id
   handle.user_id
 
   iex> handle = insert(:ident_handle)
-  ...> {:ok, u} = get_user(handle.handle, [:handle])
-  ...> u.id
+  iex> {:ok, u} = get_user(handle.handle, [:handle])
+  iex> u.id
   handle.user_id
-
+  ```
   """
   def get_user(id, preload \\ [])
 

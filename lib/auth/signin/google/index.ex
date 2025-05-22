@@ -49,7 +49,7 @@ defmodule Rivet.Auth.Signin.Google do
           {false, %JOSE.JWT{fields: %{"email" => email}}, %JOSE.JWS{}} ->
             {:error, %Auth.Domain{auth | log: "Unable to verify google token for #{email}"}}
 
-          {:error, _rest} ->
+          _ ->
             {:error, %Auth.Domain{auth | log: "Unable to verify google JWT"}}
         end
 

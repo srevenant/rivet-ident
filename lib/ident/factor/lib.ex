@@ -66,6 +66,7 @@ defmodule Rivet.Ident.Factor.Lib do
   end
 
   @doc """
+  ```
   iex> strong_password("<KO)(IJM,ko09ijm")
   :ok
   iex> strong_password("boo")
@@ -78,6 +79,7 @@ defmodule Rivet.Ident.Factor.Lib do
   {:error, "Password needs numbers"}
   iex> strong_password("<)(,)(*&^%$#@><")
   {:error, "Password needs letters"}
+  ```
   """
   @password_minlen 8
   def strong_password(password) do

@@ -9,10 +9,12 @@ defmodule Rivet.Auth.Token.Check do
   @doc ~S"""
   Checks payload information to verify proper authorization matches
 
+  ```
   iex> {:ok, _token, claims} = Rivet.Auth.Token.Access.jwt("narf", "example.com", 5)
   ...> {:error, %Auth.Domain{} = a} = jwt(%Auth.Domain{hostname: "example.com", token: %{claims: claims}})
   ...> a.log
   "Cannot find identity factor=narf"
+  ```
 
   """
   def jwt(%Auth.Domain{} = auth) do
@@ -30,10 +32,12 @@ defmodule Rivet.Auth.Token.Check do
 
   ###########################################################################
   @doc """
+  ```
   iex> alias Rivet.Ident.Auth.Domain
   iex> {:error, auth} = enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: "asdf", aud: "asdf"}}})
   iex> auth.log
   "Cannot parse token.sub=asdf"
+  ```
   """
   def enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: sub, aud: aud}}} = auth) do
     with {:ok, sub} <- expand_claim_value(:sub, sub),
@@ -59,6 +63,7 @@ defmodule Rivet.Auth.Token.Check do
 
   ###########################################################################
   @doc """
+  ```
   iex> alias Rivet.Ident.Auth.Domain
   iex> {:error, auth} = valid_audience(%Auth.Domain{token: %{aud: "asdf"}})
   iex> auth.log
@@ -68,6 +73,7 @@ defmodule Rivet.Auth.Token.Check do
   "Token audience does not match: a.domain != b.domain"
   iex> valid_audience({:error, "narf"})
   {:error, "narf"}
+  ```
   """
   def valid_audience(%Auth.Domain{token: %{aud: audience}} = auth) do
     case expand_claim_value(:tok, audience) do
@@ -87,6 +93,7 @@ defmodule Rivet.Auth.Token.Check do
 
   ###########################################################################
   @doc """
+  ```
   iex> alias Rivet.Ident.Auth.Domain
   iex> now = System.os_time(:second)
   iex> {:error, auth} = valid_expiration(%Auth.Domain{token: %{claims: %{for: %{}, exp: 0}}, type: :acc})
@@ -97,6 +104,7 @@ defmodule Rivet.Auth.Token.Check do
   "Token expiration out of bounds"
   iex> valid_expiration({:error, "narf"})
   {:error, "narf"}
+  ```
   """
   def valid_expiration(%Auth.Domain{token: %{claims: %{for: scope} = claims}, type: type} = auth) do
     now = System.os_time(:second)
@@ -120,6 +128,7 @@ defmodule Rivet.Auth.Token.Check do
 
   ###########################################################################
   @doc """
+  ```
   iex> alias Rivet.Ident.Auth.Domain
   iex> {:error, auth} = valid_subject(%Auth.Domain{})
   iex> auth.log
@@ -135,6 +144,7 @@ defmodule Rivet.Auth.Token.Check do
   "Cannot find identity factor=subject"
   iex> valid_subject({:error, "narf"})
   {:error, "narf"}
+  ```
   """
   def valid_subject(%Auth.Domain{type: :acc, token: %{sub_type: :cas1, sub: sub}} = auth) do
     case Ident.Factor.Lib.get_user(sub) do

@@ -5,6 +5,7 @@ defmodule Rivet.Auth.Token.Access do
   @doc ~S"""
   Generate an auth JWT to our specification
 
+  ```
   iex> alias Rivet.Ident.Factor
   iex> {:ok, token, claims} = jwt(%Factor{id: "AB", details: %{type: "acc"}}, "example.com", 5*60)
   iex> claims.aud
@@ -23,6 +24,7 @@ defmodule Rivet.Auth.Token.Access do
   "ey"
 
   iex> {:ok, "ey" <> _rest, %{sub: "cas1:userid"}} = jwt("userid", "hostname")
+  ```
   """
   @spec jwt(
           target :: Ident.Factor.t(),

@@ -30,9 +30,11 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
   @doc """
   External interface to request a current copy of the keys for google
 
+  ```
   iex> dict = Rivet.Auth.Signin.Google.KeyManager.get_keys()
   iex> is_map(dict)
   true
+  ```
   """
   def get_keys() do
     GenServer.call(:google_key_manager, :get_keys)

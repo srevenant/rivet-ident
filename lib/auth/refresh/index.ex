@@ -13,8 +13,10 @@ defmodule Rivet.Auth.Refresh do
   3. using the sub:uuid from the validation token, verify the signature on the ref token
   4. update connection data (or abort)
 
+  ```
   iex> assure(%Auth.Domain{}, nil)
   {:error, %Auth.Domain{log: "Invalid refresh request"}}
+  ```
   """
   def assure(%Auth.Domain{} = auth, %{"client_assertion" => refresh_token})
       when is_binary(refresh_token) do
@@ -32,9 +34,11 @@ defmodule Rivet.Auth.Refresh do
 
   ##############################################################################
   @doc ~S"""
+  ```
   iex> {:error, %Auth.Domain{log: "Invalid authorization"}} = extract_validation_token({:ok, %{sub: "cas2:asdf"}}, %Auth.Domain{})
   iex> {:error, %Auth.Domain{log: "Unable to match validation token subject: \"wut\""}} = extract_validation_token({:ok, "wut"}, %Auth.Domain{})
   iex> {:error, %Auth.Domain{log: "narf!"}} = extract_validation_token({:error, "narf!"}, %Auth.Domain{})
+  ```
   """
   def extract_validation_token({:ok, %{sub: "cas2:" <> validation_token}}, auth) do
     # now check the signature
@@ -72,7 +76,9 @@ defmodule Rivet.Auth.Refresh do
 
   ##############################################################################
   @doc """
+  ```
   iex> {:error, "narf!"} = check_refresh_token({:error, "narf!"})
+  ```
   """
   def check_refresh_token(
         {:ok, %Auth.Domain{token: %{ref: token}} = refauth,

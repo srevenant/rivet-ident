@@ -2,9 +2,11 @@ defmodule Rivet.Auth.Token.Create do
   import Rivet.Auth.Settings
 
   @doc """
+  ```
   iex> {:ok, _tok, claims} = jwt(:acc, "narf", "NARF", 10, "narf", %{})
   iex> claims.aud
   "caa1:acc:NARF"
+  ```
   """
   def jwt(type, subject, hostname, exp \\ nil, secret \\ nil, scope \\ %{}, claims \\ %{})
 

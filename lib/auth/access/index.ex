@@ -9,6 +9,7 @@ defmodule Rivet.Auth.Access do
   alias Rivet.Ident
 
   @doc """
+  ```
   iex> alias Rivet.Auth
   iex> check([""], %Auth.Domain{})
   {:missing, %Auth.Domain{log: "Missing authorization header value"}}
@@ -20,6 +21,7 @@ defmodule Rivet.Auth.Access do
   {:error, %Auth.Domain{log: "Authorization header exists but is not formatted properly"}}
   iex> check(["narf narf"], %Auth.Domain{})
   {:error, %Auth.Domain{log: "Invalid authorization type: narf"}}
+  ```
   """
 
   @spec check(auth_header :: list(String.t()), Auth.Domain.t()) ::
