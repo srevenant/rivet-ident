@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.5.0",
+      version: "3.5.1",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -78,6 +78,8 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.20"},
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
+      # hardcode rivet min version
+      {:rivet, "~> 2.6"},
       {:rivet_email, "~> 2.5"},
       {:timex, "~> 3.7"},
       {:transmogrify, "~> 2.0.2"},

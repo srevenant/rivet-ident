@@ -47,7 +47,6 @@ defmodule Rivet.Ident.Factor do
   @update_fields [:fedtype, :name, :value, :details, :password]
   use Rivet.Ecto.Collection, not_found: :atom, required: @required_fields, update: @update_fields
 
-  @behaviour Rivet.Ecto.Collection
   @impl Rivet.Ecto.Collection
   def build(params) do
     %__MODULE__{}

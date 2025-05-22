@@ -20,7 +20,6 @@ defmodule Rivet.Ident.Handle do
     unique: [:handle],
     update: [:handle]
 
-  @behaviour Rivet.Ecto.Collection
   @impl Rivet.Ecto.Collection
   def validate(chgset) do
     handle = String.downcase(get_change(chgset, :handle))
