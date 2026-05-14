@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.6.1",
+      version: "3.6.2",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -61,7 +61,7 @@ defmodule RivetIdent.MixProject do
 
   defp deps do
     [
-      {:absinthe, "~> 1.7.11"},
+      {:absinthe, "~> 1.7"},
       {:bcrypt_elixir, "~> 3.3"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
