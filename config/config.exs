@@ -44,15 +44,15 @@ config :rivet_email,
     email_from: "noreply@example.com"
   ]
 
-config :rivet_email, Rivet.Ident.Example.Mailer.Backend,
-  adapter: Bamboo.SMTPAdapter,
-  server: "mail.example.com",
-  hostname: "example.com",
-  port: 25,
-  tls: :if_available,
-  retries: 2,
-  no_mx_lookups: true,
-  auth: :if_available
+# config :rivet_email, Rivet.Ident.Example.Mailer.Backend,
+#   adapter: Bamboo.SMTPAdapter,
+#   server: "mail.example.com",
+#   hostname: "example.com",
+#   port: 25,
+#   tls: :if_available,
+#   retries: 2,
+#   no_mx_lookups: true,
+#   auth: :if_available
 
 config :rivet_ident,
   ecto_repos: [Rivet.Auth.Repo]

@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.5.2",
+      version: "3.6.2",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -61,24 +61,21 @@ defmodule RivetIdent.MixProject do
 
   defp deps do
     [
-      {:absinthe, "~> 1.7.1"},
+      {:absinthe, "~> 1.7.11"},
       {:bcrypt_elixir, "~> 3.3"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ecto_enum, "~> 1.4"},
-      {:ecto_sql, "~> 3.12"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:ex_machina, "~> 2.7.0", only: :test},
+      {:ex_machina, "~> 2.7", only: :test},
       {:excoveralls, "~> 0.18", only: :test},
-      {:faker, "~> 0.18"},
+      {:faker, "~> 0.18", only: :test},
       {:jason, "~> 1.4"},
-      {:joken, "~> 2.6.0"},
+      {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
       {:junit_formatter, "~> 3.1", only: [:test]},
       {:mix_test_watch, "~> 1.0", only: [:test, :dev], runtime: false},
-      {:postgrex, "~> 0.20"},
+      {:postgrex, "~> 0.21"},
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
-      # hardcode rivet min version
       {:rivet, "~> 2.7"},
       {:rivet_email, "~> 4.0"},
       # https://rfc1123-datetime.hexdocs.pm/api-reference.html
