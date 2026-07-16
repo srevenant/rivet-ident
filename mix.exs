@@ -79,8 +79,8 @@ defmodule RivetIdent.MixProject do
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
       # hardcode rivet min version
-      {:rivet, "~> 2.6"},
-      {:rivet_email, "~> 2.5"},
+      {:rivet, "~> 2.7"},
+      {:rivet_email, "~> 4.0"},
       # https://rfc1123-datetime.hexdocs.pm/api-reference.html
       # https://github.com/dkuku/rfc1123_datetime
       {:rfc1123_datetime, "~> 0.1.2"},
