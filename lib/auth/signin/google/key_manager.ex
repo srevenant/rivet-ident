@@ -51,7 +51,15 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
     exp_t =
       case Enum.find(result.headers, fn {k, _} -> String.downcase(k) == "expires" end) do
         {_, expires} ->
-          Timex.parse!(expires, "{RFC1123}") |> Timex.to_unix()
+          case Rfc1123DateTime.parse(expires) do
+            {:ok, datetime} ->
+              DateTime.to_unix(datetime)
+
+            _ ->
+              Logger.error("Response Headers: #{inspect(result.headers)}")
+              # giving a 1-min expiration will force a recheck in 1 min
+              now_t + 60
+          end
 
         nil ->
           Logger.error("Unexpected: google auth did not respond with an expires")

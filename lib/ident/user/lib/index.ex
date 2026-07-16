@@ -52,9 +52,10 @@ defmodule Rivet.Ident.User.Lib do
   # only periodically update last seen, to avoid severe performance hit
   @update_min_seconds 60
   def user_seen(%Ident.User{} = user) do
-    now = Timex.now()
+    now = DateTime.utc_now()
 
-    if is_nil(user.last_seen) or Timex.diff(now, user.last_seen, :seconds) > @update_min_seconds do
+    if is_nil(user.last_seen) or
+         DateTime.diff(now, user.last_seen, :seconds) > @update_min_seconds do
       with {:ok, user} <- Ident.User.update(user, %{last_seen: now}) do
         Ident.Factor.Cache.update_user(user)
         user

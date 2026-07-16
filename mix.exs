@@ -5,11 +5,11 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.5.1",
+      version: "3.5.2",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
-      elixir: "~> 1.14",
+      elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
@@ -81,7 +81,9 @@ defmodule RivetIdent.MixProject do
       # hardcode rivet min version
       {:rivet, "~> 2.6"},
       {:rivet_email, "~> 2.5"},
-      {:timex, "~> 3.7"},
+      # https://rfc1123-datetime.hexdocs.pm/api-reference.html
+      # https://github.com/dkuku/rfc1123_datetime
+      {:rfc1123_datetime, "~> 0.1.2"},
       {:transmogrify, "~> 2.0.2"},
       {:typed_ecto_schema, "~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}
