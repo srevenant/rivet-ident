@@ -1,132 +1,136 @@
-defmodule Rivet.Auth.Signin.Google.AuthKeys do
-  @moduledoc """
-  Syntactic sugar to wrap the HTTP call in requesting the keys.  Questionable
-  if this is worthwhile, but it's working now...
-  """
-  def get!(path) do
-    {:ok, 200, headers, body} =
-      :hackney.request(:get, "https://www.googleapis.com/oauth2/v1/#{path}", [], "",
-        recv_timeout: 500,
-        with_body: true
-      )
-
-    %{headers: headers, body: Jason.decode!(body)}
-  end
-end
-
 defmodule Rivet.Auth.Signin.Google.KeyManager do
   @moduledoc """
-  This module runs as a separate process which keeps google's oauth public keys
+  This module runs as a separate process which keeps google's oauth public certs
   current, as they change weekly.  This process inspects the expiration date
   (which google says should be correct) and updates at least by then, but does
   not wait longer than 1 day.
   """
+
   require Logger
   use GenServer
 
-  ##############################################################################
-  # Google Manager service logic
+  @certs_url ~c"https://www.googleapis.com/oauth2/v1/certs"
 
+  @request_timeout 500
+  @max_refresh_seconds 86_400
+  @min_refresh_seconds 300
+  @refresh_buffer_seconds 300
+  @retry_seconds 60
+
+  ##############################################################################
+  ### genserver stuff
+  def start_link(_opts),
+    do: GenServer.start_link(__MODULE__, :ok, name: :google_cert_manager)
+
+  @impl GenServer
+  def init(:ok), do: {:ok, %{certs: %{}}, {:continue, :refresh}}
+
+  @impl GenServer
+  def handle_continue(:refresh, state), do: refresh(state)
+
+  @impl GenServer
+  def handle_info(:refresh, state), do: refresh(state)
+
+  @impl GenServer
+  def handle_call(:get_certs, _from, %{certs: certs} = state), do: {:reply, certs, state}
+
+  ##############################################################################
   @doc """
-  External interface to request a current copy of the keys for google
+  External interface to request a current copy of the certs for google
 
   ```
-  iex> dict = Rivet.Auth.Signin.Google.KeyManager.get_keys()
+  iex> dict = Rivet.Auth.Signin.Google.KeyManager.get_certs()
   iex> is_map(dict)
   true
   ```
   """
-  def get_keys() do
-    GenServer.call(:google_key_manager, :get_keys)
-  end
+  def get_certs(), do: GenServer.call(:google_cert_manager, :get_certs)
 
-  # Internal method that handles calling Google to get current keys, based on
-  # an interval derived from the google request expires header (this is their
-  # recommendation)
-  defp run_interval(state) do
+  ##############################################################################
+  defp refresh(state) do
     Logger.info("Refreshing Google Auth Certificates")
-    result = Rivet.Auth.Signin.Google.AuthKeys.get!("certs")
-    now_t = System.os_time(:second)
 
-    exp_t =
-      case Enum.find(result.headers, fn {k, _} -> String.downcase(k) == "expires" end) do
-        {_, expires} ->
-          case Rfc1123DateTime.parse(expires) do
-            {:ok, datetime} ->
-              DateTime.to_unix(datetime)
+    # its always {:ok,..} because this converts {:error,..} to a log
+    {:ok, wait_seconds, certs} = refresh_certs_and_requeue(state.certs)
 
-            _ ->
-              Logger.error("Response Headers: #{inspect(result.headers)}")
-              # giving a 1-min expiration will force a recheck in 1 min
-              now_t + 60
-          end
+    Process.send_after(self(), :refresh, wait_seconds * 1_000)
 
-        nil ->
-          Logger.error("Unexpected: google auth did not respond with an expires")
-          Logger.error("Response Headers: #{inspect(result.headers)}")
-          # giving a 1-min expiration will force a recheck in 1 min
-          now_t + 60
-      end
-
-    # give ourselves a buffer, with some imperative assertions...
-    diff_t = exp_t - now_t
-    # greater than a day?  Just refresh it in a day
-    interval =
-      if diff_t > 86400 do
-        86400
-      else
-        # wow, it expires today! worst case, refresh in five mins, unless that is too far?
-        if diff_t - 300 <= 0 do
-          300
-        else
-          # trim off 5 mins
-          diff_t - 300
-        end
-      end
-
-    # update the interval
-    state = Map.put(state, :interval, interval * 1000)
-
-    # update the key set
-    Map.put(state, :keys, result.body |> decode_keys)
+    {:noreply, %{state | certs: certs}}
   end
 
-  # NOTE: try using JOSE's JWK instead of the PEM one
-  # Internal method to convert the keys from PEM format into what we are using.
-  #
-  # Google also provides a JSON format other than this PEM, but we are having
-  # problems getting it to work w/JOSE.  The PEM works.
-  defp decode_keys(keys) do
-    Enum.reduce(keys, %{}, fn {k, v}, acc ->
-      Map.put(acc, k, JOSE.JWK.from_pem(v))
+  defp refresh_certs_and_requeue(old_certs) do
+    with {:error, msg} <- fetch_certificates!() do
+      Logger.error("Refreshing Google Auth Certificates Failure: #{msg}")
+      {:ok, @retry_seconds, old_certs}
+    end
+  end
+
+  defp fetch_certificates!() do
+    # doing it with clunky erlang :httpc avoids a dependency on hackney
+    :httpc.request(:get, {@certs_url, []}, [timeout: @request_timeout], body_format: :binary)
+    |> case do
+      {:ok, {{_version, 200, _reason}, headers, body}} ->
+        # possibly we could verify application/json in headers but eh -BJG
+        {:ok, next_refresh!(headers), decode_certs!(body)}
+
+      {:ok, _result} ->
+        # IO.inspect(result, label: "Invalid result from google certs query")
+        {:error, "Invalid HTTP result from google certs query"}
+
+      {:error, _} = pass ->
+        pass
+    end
+  end
+
+  defp decode_certs!(raw_json) do
+    Jason.decode!(raw_json)
+    |> Map.new(fn {cert_id, pem} -> {cert_id, JOSE.JWK.from_pem(pem)} end)
+  end
+
+  defp get_header(headers, wanted_name) do
+    #
+    # :httpc returns
+    #
+    #   field :: charlist()
+    #   value :: binary() | iolist()
+    #
+    Enum.find_value(headers, fn {field, value} ->
+      if String.downcase(List.to_string(field)) == wanted_name,
+        do: {:ok, IO.iodata_to_binary(value)}
     end)
   end
 
-  ##############################################################################
-  # general GenServer things after this
+  # Refresh timing
+  defp next_refresh!(headers) do
+    with {:ok, expires} <- get_header(headers, "expires"),
+         {:ok, expires_at} <- parse_rfc1123_datetime(expires) do
+      expires_in = DateTime.to_unix(expires_at) - System.system_time(:second)
 
-  # standard way for us to request a future interval callback
-  defp queue_interval(interval) do
-    Process.send_after(:google_key_manager, :interval, interval)
+      if expires_in > @max_refresh_seconds do
+        @max_refresh_seconds
+      else
+        max(
+          expires_in - @refresh_buffer_seconds,
+          @min_refresh_seconds
+        )
+      end
+    else
+      _ ->
+        Logger.error("Google certificate response has no valid Expires header")
+        Logger.error("Response headers: #{inspect(headers)}")
+
+        @retry_seconds
+    end
   end
 
-  def start_link(state) do
-    GenServer.start_link(__MODULE__, state, name: :google_key_manager)
-  end
-
-  def init(state) do
-    Map.merge(state, %{interval: 60_000, keys: %{}})
-    queue_interval(0)
-    {:ok, state}
-  end
-
-  def handle_info(:interval, state = %{interval: _interval}) do
-    state = %{interval: interval} = run_interval(state)
-    queue_interval(interval)
-    {:noreply, state}
-  end
-
-  def handle_call(:get_keys, _from, state = %{keys: keys}) do
-    {:reply, keys, state}
+  def parse_rfc1123_datetime(value) do
+    with erl_date when erl_date != :bad_date <-
+           :httpd_util.convert_request_date(String.to_charlist(value)),
+         {:ok, naive} <- NaiveDateTime.from_erl(erl_date),
+         {:ok, datetime} <- DateTime.from_naive(naive, "Etc/UTC") do
+      {:ok, datetime}
+    else
+      _ -> :error
+    end
   end
 end
