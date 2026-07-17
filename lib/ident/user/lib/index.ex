@@ -54,8 +54,7 @@ defmodule Rivet.Ident.User.Lib do
   def user_seen(%Ident.User{} = user) do
     now = DateTime.utc_now()
 
-    if is_nil(user.last_seen) or
-         DateTime.diff(now, user.last_seen, :second) > @update_min_seconds do
+    if is_nil(user.last_seen) or DateTime.diff(now, user.last_seen, :second) > @update_min_seconds do
       with {:ok, user} <- Ident.User.update(user, %{last_seen: now}) do
         Ident.Factor.Cache.update_user(user)
         user
