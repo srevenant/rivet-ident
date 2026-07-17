@@ -68,6 +68,7 @@ defmodule RivetIdent.MixProject do
       {:ex_machina, "~> 2.7", only: :test},
       {:excoveralls, "~> 0.18", only: :test},
       {:faker, "~> 0.18", only: :test},
+      {:hackney, "~> 4.6"},
       {:jason, "~> 1.4"},
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
