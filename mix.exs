@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.6.2",
+      version: "4.0.0",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -39,10 +39,9 @@ defmodule RivetIdent.MixProject do
           models_dir: "ident"
         ]
       ],
-      extra_applications: [
-        :logger,
-        {:ex_unit, :optional}
-      ]
+      # NOTE: :inets is required for :httpd_util.convert_request_date to not
+      # throw a warning in static compile verification from OTP
+      extra_applications: [:logger, {:ex_unit, :optional}, :inets]
     ]
   end
 
@@ -68,7 +67,6 @@ defmodule RivetIdent.MixProject do
       {:ex_machina, "~> 2.7", only: :test},
       {:excoveralls, "~> 0.18", only: :test},
       {:faker, "~> 0.18", only: :test},
-      {:hackney, "~> 4.6"},
       {:jason, "~> 1.4"},
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
@@ -79,9 +77,6 @@ defmodule RivetIdent.MixProject do
       {:random_password, "~> 1.2"},
       {:rivet, "~> 2.7"},
       {:rivet_email, "~> 4.0"},
-      # https://rfc1123-datetime.hexdocs.pm/api-reference.html
-      # https://github.com/dkuku/rfc1123_datetime
-      {:rfc1123_datetime, "~> 0.1.2"},
       {:transmogrify, "~> 2.0.2"},
       {:typed_ecto_schema, "~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}

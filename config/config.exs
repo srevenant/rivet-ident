@@ -79,4 +79,6 @@ config :rivet, Rivet.Ident, table_prefix: "ident_"
 # first_user_admin: false,
 # reset_code_expire_mins: 1440,
 
+config :swoosh, api_client: false
+
 import_config "#{config_env()}.exs"

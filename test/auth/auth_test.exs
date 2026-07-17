@@ -1,4 +1,4 @@
-defmodule Rivet.IdentTest do
+defmodule Rivet.AuthTest do
   use Rivet.Ident.Case, async: true
   alias Rivet.Auth
   alias Auth.Domain
@@ -61,23 +61,6 @@ defmodule Rivet.IdentTest do
           IO.inspect(error, label: "error")
           assert false
       end
-    end
-
-    test "Rfc1123DateTime" do
-      # example from https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Expires
-      assert {:ok, ~U[2015-10-21 07:28:00Z]} =
-               Rfc1123DateTime.parse("Wed, 21 Oct 2015 07:28:00 GMT")
-
-      # examples from https://timex.hexdocs.pm/parsing.html#supported-standards-and-common-formats
-      assert {:ok, ~U[2013-03-05 23:25:19Z]} =
-               Rfc1123DateTime.parse("Tue, 05 Mar 2013 23:25:19 GMT")
-
-      assert {:ok, ~U[2013-03-06 01:25:19Z]} =
-               Rfc1123DateTime.parse("Tue, 06 Mar 2013 01:25:19 GMT")
-
-      # example from logs in our system
-      assert {:ok, ~U[2026-07-17 03:45:48Z]} =
-               Rfc1123DateTime.parse("Fri, 17 Jul 2026 03:45:48 GMT")
     end
   end
 end
