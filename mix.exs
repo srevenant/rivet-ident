@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "3.6.1",
+      version: "4.0.0",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
@@ -39,10 +39,9 @@ defmodule RivetIdent.MixProject do
           models_dir: "ident"
         ]
       ],
-      extra_applications: [
-        :logger,
-        {:ex_unit, :optional}
-      ]
+      # NOTE: :inets is required for :httpd_util.convert_request_date to not
+      # throw a warning in static compile verification from OTP
+      extra_applications: [:logger, {:ex_unit, :optional}, :inets]
     ]
   end
 
@@ -77,8 +76,7 @@ defmodule RivetIdent.MixProject do
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
       {:rivet, "~> 2.7"},
-      {:rivet_email, "~> 2.5"},
-      {:timex, "~> 3.7"},
+      {:rivet_email, "~> 4.0"},
       {:transmogrify, "~> 2.0.2"},
       {:typed_ecto_schema, "~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}

@@ -38,7 +38,7 @@ defmodule Rivet.Auth.Signin.Google do
         # from the unverified header we pull the google key, and index that against
         # the keys we have from google, to get the pubkey (jwk) that will check the
         # signature of this jwt
-        google_keys = Auth.Signin.Google.KeyManager.get_keys()
+        google_keys = Auth.Signin.Google.KeyManager.get_certs()
         jwk = Map.get(google_keys, header["kid"])
         auth = %Auth.Domain{token: token}
 

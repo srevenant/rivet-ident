@@ -1,4 +1,4 @@
-defmodule Rivet.IdentTest do
+defmodule Rivet.AuthTest do
   use Rivet.Ident.Case, async: true
   alias Rivet.Auth
   alias Auth.Domain

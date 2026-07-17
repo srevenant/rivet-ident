@@ -26,7 +26,7 @@ defmodule Rivet.Ident.UserCode.Lib do
                code: code,
                type: type,
                meta: meta,
-               expires: Timex.now() |> Timex.shift(minutes: expiration_minutes)
+               expires: DateTime.utc_now() |> DateTime.shift(minute: expiration_minutes)
              }) do
           {:ok, code} ->
             {:ok, code}
@@ -40,7 +40,7 @@ defmodule Rivet.Ident.UserCode.Lib do
 
   def get_valid(code) do
     with {:ok, code} <- UserCode.one(code: code) do
-      if Timex.diff(Timex.now(), code.expires) < 0 do
+      if DateTime.before?(DateTime.utc_now(), code.expires) do
         {:ok, code}
       else
         {:error, "Code Expired"}
@@ -50,7 +50,7 @@ defmodule Rivet.Ident.UserCode.Lib do
 
   # housekeeper
   def clear_expired_codes() do
-    now = Timex.now()
+    now = DateTime.utc_now()
 
     from(c in UserCode, where: c.expires < ^now)
     |> Ident.UserCode.delete_all()
