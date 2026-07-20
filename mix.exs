@@ -60,7 +60,8 @@ defmodule RivetIdent.MixProject do
 
   defp deps do
     [
-      {:absinthe, "~> 1.7.11"},
+      # only dev/test so outer projects can set it to what they want
+      {:absinthe, ">= 1.7.0 and < 2.0.0", only: [:dev, :test], optional: true},
       {:bcrypt_elixir, "~> 3.3"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
