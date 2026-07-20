@@ -5,7 +5,7 @@ defmodule RivetIdent.MixProject do
   def project do
     [
       app: :rivet_ident,
-      version: "4.0.0",
+      version: "4.0.1",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
       package: package(),
