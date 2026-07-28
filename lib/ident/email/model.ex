@@ -28,5 +28,6 @@ defmodule Rivet.Ident.Email do
       message: "needs to be a valid email address"
     )
     |> unique_constraint(:address, message: "is already registered")
+    |> update_change(:address, &String.downcase/1)
   end
 end

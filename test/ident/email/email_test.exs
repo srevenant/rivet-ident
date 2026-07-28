@@ -30,8 +30,9 @@ defmodule Rivet.Ident.Test.EmailTest do
   describe "create/1" do
     test "inserts a valid record" do
       attrs = params_with_assocs(:ident_email)
-      assert {:ok, model} = Rivet.Ident.Email.create(attrs)
-      assert model.id != nil
+      down = String.downcase(attrs.address)
+      attrs = %{attrs | address: String.upcase(down)}
+      assert {:ok, %Rivet.Ident.Email{address: ^down}} = Rivet.Ident.Email.create(attrs)
     end
   end
 
