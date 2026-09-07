@@ -11,7 +11,7 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
 
   @certs_url ~c"https://www.googleapis.com/oauth2/v1/certs"
 
-  @request_timeout 500
+  @request_timeout 2000
   @max_refresh_seconds 86_400
   @min_refresh_seconds 300
   @refresh_buffer_seconds 300

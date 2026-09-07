@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Email.Migrations.Bounce do
+defmodule Rivet.Ident.Email.Migrations.V01Bounce do
   @moduledoc false
   use Ecto.Migration
   # use Rivet.Ident.Config
