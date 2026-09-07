@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.RoleMap.Migrations.Base do
+defmodule Rivet.Ident.Role.Map.Migrations.Base do
   @moduledoc false
   use Ecto.Migration
 
@@ -10,6 +10,7 @@ defmodule Rivet.Ident.RoleMap.Migrations.Base do
 
     create(
       unique_index(:ident_role_maps, [:role_id, :action_id],
+        # ... why
         name: :role_maps_role_id_action_id_index
       )
     )

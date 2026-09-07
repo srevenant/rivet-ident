@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.UserIdent.Migrations.Base do
+defmodule Rivet.Ident.User.Ident.Migrations.Base do
   @moduledoc false
   use Ecto.Migration
 

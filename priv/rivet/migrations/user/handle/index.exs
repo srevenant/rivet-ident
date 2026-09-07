@@ -1,4 +1,4 @@
-alias Rivet.Ident.Action.Migrations, as: M
+alias Rivet.Ident.User.Handle.Migrations, as: M
 
 [
   [base: true, version: 0, module: M.Base]

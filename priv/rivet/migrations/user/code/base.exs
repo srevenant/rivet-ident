@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.UserCode.Migrations.Base do
+defmodule Rivet.Ident.User.Code.Migrations.Base do
   @moduledoc false
   use Ecto.Migration
 
@@ -6,7 +6,7 @@ defmodule Rivet.Ident.UserCode.Migrations.Base do
     ############################################################################
     create table(:user_codes) do
       add(:user_id, references(:users, on_delete: :delete_all, type: :uuid))
-      add(:type, :integer)
+      add(:type, :smallint)
       add(:code, :citext)
       add(:meta, :map)
       add(:expires, :utc_datetime)

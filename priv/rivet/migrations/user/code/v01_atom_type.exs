@@ -1,9 +1,9 @@
-defmodule Rivet.Ident.UserCode.Migrations.AtomType do
+defmodule Rivet.Ident.User.Code.Migrations.V01AtomType do
   @moduledoc false
   use Ecto.Migration
 
   def change do
-    drop index(:user_codes, [:user_id, :type, :code])
+    drop(index(:user_codes, [:user_id, :type, :code]))
 
     alter table(:user_codes) do
       add(:atom_type, :string)

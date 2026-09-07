@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Access.Migrations.ChangeDomain do
+defmodule Rivet.Ident.Access.Migrations.V10ChangeDomain do
   @moduledoc false
   use Ecto.Migration
 
