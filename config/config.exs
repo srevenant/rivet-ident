@@ -57,13 +57,13 @@ config :rivet_email,
 config :rivet_ident,
   ecto_repos: [Rivet.Auth.Repo]
 
-# this is where you define common things used in templates
-config :rivet_ident, :email,
-  link_front: "http://localhost:3000",
-  link_back: "http://localhost:4000",
-  org: "Example Org",
-  email_from: "noreply@example.com",
-  email_sig: "Example Org"
+# # this is where you define common things used in templates
+# config :rivet_ident, :email,
+#   link_front: "http://localhost:3000",
+#   link_back: "http://localhost:4000",
+#   org: "Example Org",
+#   email_from: "noreply@example.com",
+#   email_sig: "Example Org"
 
 config :rivet_ident, Rivet.Auth.Repo,
   migration_repo: Rivet.Auth.Repo,
@@ -75,10 +75,10 @@ config :rivet_ident, Rivet.Auth.Repo,
   log: false,
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :rivet, Rivet.Ident, table_prefix: "ident_"
+# config :rivet, Rivet.Ident, table_prefix: "ident_"
 # first_user_admin: false,
 # reset_code_expire_mins: 1440,
 
-config :swoosh, api_client: false
+# config :swoosh, api_client: false
 
 import_config "#{config_env()}.exs"
