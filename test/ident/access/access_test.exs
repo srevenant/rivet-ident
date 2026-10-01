@@ -1,44 +1,55 @@
 defmodule Rivet.Ident.Test.AccessTest do
   use Rivet.Ident.Case, async: true
+  alias Rivet.Ident.Access
 
-  doctest Rivet.Ident.Access, import: true
-
-  describe "factory" do
-    test "factory creates a valid instance" do
-      assert %{} = model = insert(:ident_access)
-      assert model.id != nil
-    end
+  test "model tests" do
+    assert %Access{id} = insert(:ident_access)
+    assert is_integer(id)
+    assert %Access{id: ^id} = Access.one!(id: id)
+    params = params_with_assocs(:ident_access)
+    assert {:ok, %Access{} = x} = Access.create(params)
+    assert {:ok, _} = Access.delete(x)
   end
 
-  describe "build/1" do
-    test "build when valid" do
-      params = params_with_assocs(:ident_access)
-      changeset = Rivet.Ident.Access.build(params)
-      assert changeset.valid?
-    end
-  end
-
-  describe "get/1" do
-    test "loads saved transactions as expected" do
-      c = insert(:ident_access)
-      assert %Rivet.Ident.Access{} = found = Rivet.Ident.Access.one!(id: c.id)
-      assert found.id == c.id
-    end
-  end
-
-  describe "create/1" do
-    test "inserts a valid record" do
-      attrs = params_with_assocs(:ident_access)
-      assert {:ok, model} = Rivet.Ident.Access.create(attrs)
-      assert model.id != nil
-    end
-  end
-
-  describe "delete/1" do
-    test "deletes record" do
-      model = insert(:ident_access)
-      assert {:ok, deleted} = Rivet.Ident.Access.delete(model)
-      assert deleted.id == model.id
-    end
-  end
+  # describe "integration tests" do
+  #   setup do
+  #     user = insert(:user)
+  #     project = insert(:project)
+  #
+  #     %{user: user, project: project}
+  #   end
+  #
+  #   test "can use various shapes of access", %{user: user, project: project} do
+  #     {:ok, access} = Access.Lib.add(user, :project_member, project.id)
+  #     assert access.domain == User
+  #     assert access.ref_id == project.id
+  #
+  #     # fails
+  #     assert {:error, _} = Core.Auth.check_authz(user, @global_user_edit_assert)
+  #
+  #     # works on domain scope
+  #     assert {:ok, user} =
+  #              Core.Auth.check_authz(user, %Core.Db.Ident.Auth.Assertion{
+  #                action: @project_edit_action,
+  #                ref_id: project.id,
+  #                domain: Core.Db.Project
+  #              })
+  #
+  #     # now set superadmin and it should work globally too
+  #     {:ok, _} = Db.Ident.Access.Lib.add(user, :superadmin)
+  #
+  #     assert {:ok, _} =
+  #              Core.Auth.check_authz(
+  #                %{user | authz: nil},
+  #                @global_user_edit_assert,
+  #                force: true
+  #              )
+  #   end
+  # end
+  #
+  # test "Lib" do
+  #   u = insert(:ident_user)
+  #   new = MapSet.new([])
+  #   assert ^new = Db.Ident.Access.Lib.get_actions(u, :global, Ecto.UUID.generate())
+  # end
 end

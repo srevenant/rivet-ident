@@ -11,10 +11,10 @@ config :rivet,
   mailer_templates: %{
     critical_fail: Rivet.Mailer.CriticalFail,
     system_error: Rivet.Mailer.SystemError,
-    password_changed: Rivet.Ident.Test.NotifyTemplate,
-    password_reset: Rivet.Ident.Test.NotifyTemplate,
-    user_failed_change: Rivet.Ident.Test.NotifyTemplate,
-    user_verification: Rivet.Ident.Test.NotifyTemplate
+    password_changed: Rivet.Ident.Test.NullTemplate,
+    password_reset: Rivet.Ident.Test.NullTemplate,
+    user_failed_change: Rivet.Ident.Test.NullTemplate,
+    user_verification: Rivet.Ident.Test.NullTemplate
   }
 
 config :rivet_ident,

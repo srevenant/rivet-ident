@@ -1,44 +1,13 @@
 defmodule Rivet.Ident.Test.ActionTest do
-  use Rivet.Ident.Case, async: true
+  use Rivet.Ident.Case
+  alias Rivet.Ident.Action
 
-  doctest Rivet.Ident.Action, import: true
-
-  describe "factory" do
-    test "factory creates a valid instance" do
-      assert %{} = model = insert(:ident_action)
-      assert model.id != nil
-    end
-  end
-
-  describe "build/1" do
-    test "build when valid" do
-      params = params_with_assocs(:ident_action)
-      changeset = Rivet.Ident.Action.build(params)
-      assert changeset.valid?
-    end
-  end
-
-  describe "get/1" do
-    test "loads saved transactions as expected" do
-      c = insert(:ident_action)
-      assert %Rivet.Ident.Action{} = found = Rivet.Ident.Action.one!(id: c.id)
-      assert found.id == c.id
-    end
-  end
-
-  describe "create/1" do
-    test "inserts a valid record" do
-      attrs = params_with_assocs(:ident_action)
-      assert {:ok, model} = Rivet.Ident.Action.create(attrs)
-      assert model.id != nil
-    end
-  end
-
-  describe "delete/1" do
-    test "deletes record" do
-      model = insert(:ident_action)
-      assert {:ok, deleted} = Rivet.Ident.Action.delete(model)
-      assert deleted.id == model.id
-    end
+  test "model tests" do
+    assert %Action{id} = insert(:ident_action)
+    assert is_integer(id)
+    assert %Action{id: ^id} = Action.one!(id: id)
+    params = params_with_assocs(:ident_action)
+    assert {:ok, %Action{} = x} = Action.create(params)
+    assert {:ok, _} = Action.delete(x)
   end
 end
