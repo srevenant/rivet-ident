@@ -25,7 +25,8 @@ defmodule RivetIdent.MixProject do
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
       xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
-      aliases: aliases()
+      aliases: aliases(),
+      compilers: [:es6_maps | Mix.compilers()]
     ]
   end
 
@@ -63,6 +64,7 @@ defmodule RivetIdent.MixProject do
       {:absinthe, ">= 1.7.0 and < 2.0.0"},
       {:bcrypt_elixir, "~> 3.3"},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:es6_maps, "~> 1.0.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_machina, "~> 2.7", only: :test},
       {:excoveralls, "~> 0.18", only: :test},
@@ -75,7 +77,8 @@ defmodule RivetIdent.MixProject do
       {:postgrex, "~> 0.22.4"},
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
-      {:rivet, "~> 2.7"},
+      # {:rivet, "~> 2.7"},
+      {:rivet, git: "https://github.com/srevenant/rivet/", branch: "mailer-updates"},
       {:transmogrify, "~> 2.0.2"},
       {:typed_ecto_schema, "~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}

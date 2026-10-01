@@ -10,7 +10,3 @@ config :rivet_ident,
   jwt_api_secrets: [
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
   ]
-
-config :rivet_email,
-  enabled: false,
-  sender: Rivet.Email.Test.Mailer

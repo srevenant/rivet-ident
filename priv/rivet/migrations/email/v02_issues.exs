@@ -4,7 +4,6 @@ defmodule Rivet.Ident.Email.Migrations.V02Issues do
   def change do
     alter table(:user_emails) do
       remove(:bounce)
-      # add(:log, {:array, :map}, null: false, default: [])
       add(:status, :smallint, default: 0, null: false)
     end
 

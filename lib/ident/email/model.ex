@@ -1,17 +1,21 @@
 defmodule Rivet.Ident.Email do
-  @moduledoc """
-  Schema for representing and working with a Ident.Email.
-  """
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  alias Rivet.Ident
+  import DefEnum
+  use Rivet.Ident
+
+  defenum(Status, pending: 0, verified: 1, bouncing: 2, complaint: 3, rejected: 4)
+
+  def sendable?(status) when status in [:pending, :verified], do: true
+  def sendable?(_), do: false
 
   typed_schema "user_emails" do
-    belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
+    belongs_to(:user, User, type: :binary_id, foreign_key: :user_id)
+    has_many(:issues, Email.Issue)
     field(:address, :string)
     field(:primary, :boolean, default: false)
     field(:verified, :boolean, default: false)
-    field(:bounce, {:array, :map})
+    field(:status, Status, default: :pending)
     timestamps()
   end
 
@@ -19,7 +23,7 @@ defmodule Rivet.Ident.Email do
   use Rivet.Ecto.Collection,
     not_found: :atom,
     required: @required_fields,
-    update: [:address, :primary, :verified, :bounce]
+    update: [:address, :primary, :verified, :status]
 
   def validate(chgset) do
     chgset

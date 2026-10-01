@@ -11,6 +11,8 @@ defmodule Rivet.Ident.Case do
       alias Rivet.Auth.Repo
       alias Rivet.Ident
       alias Ecto.Changeset
+
+      use Rivet.Ident
     end
   end
 

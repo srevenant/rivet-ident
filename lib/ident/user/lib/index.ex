@@ -137,7 +137,7 @@ defmodule Rivet.Ident.User.Lib do
       {:ok, %Ident.Email{} = email} ->
         Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
 
-        Rivet.Ident.cfg(:notify_user_failed_change).queue(
+        Rivet.Ident.mailer_template(:user_failed_change).queue(
           email,
           "add this email address to a different account"
         )
@@ -156,7 +156,7 @@ defmodule Rivet.Ident.User.Lib do
              }) do
           {:ok, %Ident.Email{} = email} ->
             email = %Ident.Email{email | user: user}
-            Rivet.Ident.cfg(:notify_user_verification).queue(email)
+            Rivet.Ident.mailer_template(:user_verification).queue(email)
 
             {:ok, email}
 

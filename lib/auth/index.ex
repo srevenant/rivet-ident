@@ -48,7 +48,7 @@ defmodule Rivet.Auth do
   defp set_password(%Ident.User{} = user, new) do
     case Ident.Factor.Lib.set_password(user, new) do
       {:ok, %Ident.Factor{}} ->
-        Rivet.Ident.cfg(:notify_password_changed).queue(user)
+        Rivet.Ident.mailer_template(:password_changed).queue(user)
         true
 
       error ->
