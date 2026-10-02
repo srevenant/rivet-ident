@@ -6,7 +6,11 @@ config :ex_unit, capture_log: true
 config :rivet,
   app: :rivet_ident,
   repo: Rivet.Auth.Repo,
+  user_model: Rivet.Ident.User,
+  user_code_model: Rivet.Ident.UserCode,
+  email_model: Rivet.Ident.Email,
   org_model: Rivet.Org,
+  handle_model: Rivet.Ident.Handle,
   test: true,
   mailer_templates: %{
     critical_fail: Rivet.Ident.Test.NullTemplate,
