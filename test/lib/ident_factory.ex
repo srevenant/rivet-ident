@@ -1,6 +1,7 @@
 defmodule Rivet.Ident.Test.AuthFactory do
   defmacro __using__(_) do
     quote location: :keep do
+      use Rivet.Ident
       alias Rivet.Ident
 
       ################################################################################
@@ -8,14 +9,6 @@ defmodule Rivet.Ident.Test.AuthFactory do
         %Ident.Action{
           name: Transmogrify.As.as_atom!(sequence("action") <> "_edit"),
           description: Faker.Cat.name()
-        }
-      end
-
-      ################################################################################
-      def ident_role_factory do
-        %Ident.Role{
-          name: Transmogrify.As.as_atom!("#{sequence("role")}"),
-          description: "#{sequence("role")} #{Faker.Cat.name()}"
         }
       end
 
@@ -28,6 +21,14 @@ defmodule Rivet.Ident.Test.AuthFactory do
           user: user,
           role: role,
           domain: :global
+        }
+      end
+
+      ################################################################################
+      def ident_role_factory do
+        %Ident.Role{
+          name: Transmogrify.As.as_atom!("#{sequence("role")}"),
+          description: "#{sequence("role")} #{Faker.Cat.name()}"
         }
       end
 
@@ -51,10 +52,30 @@ defmodule Rivet.Ident.Test.AuthFactory do
         }
       end
 
+      def ident_user_ident_factory do
+        %Ident.UserIdent{
+          origin: Faker.Internet.domain_name(),
+          ident: sequence("user_ident"),
+          user: build(:ident_user)
+        }
+      end
+
+      def verify_email_code_factory do
+        %{id, user} = insert(:ident_email, verified: false)
+
+        %Ident.UserCode{
+          user: user,
+          type: :email_verify,
+          code: sequence(Ecto.UUID.generate() |> String.slice(0, 7)),
+          meta: %{"email_id" => id},
+          expires: DateTime.utc_now() |> DateTime.shift(day: 1)
+        }
+      end
+
       def ident_handle_factory do
         %Ident.Handle{
           user: build(:ident_user),
-          handle: sequence("user-handle-")
+          handle: String.slice(sequence("h") <> Ecto.UUID.generate(), 0..29)
         }
       end
 
@@ -80,13 +101,11 @@ defmodule Rivet.Ident.Test.AuthFactory do
         }
       end
 
-      def ident_user_ident_factory do
-        user = build(:ident_user)
-
-        %Ident.UserIdent{
-          ident: sequence("ident"),
-          origin: Faker.Internet.domain_name(),
-          user: user
+      def ident_email_issue_factory do
+        %Ident.Email.Issue{
+          email: build(:ident_email),
+          type: :bouncing,
+          issue: %{"message" => "ugly"}
         }
       end
 

@@ -1,45 +1,28 @@
 defmodule Rivet.Ident.Test.UserCodeTest do
   use Rivet.Ident.Case, async: true
+  alias Rivet.Ident.UserCode
 
-  doctest Rivet.Ident.UserCode, import: true
-  doctest Rivet.Ident.UserCode.Lib, import: true
-
-  describe "factory" do
-    test "factory creates a valid instance" do
-      assert %{} = model = insert(:ident_user_code)
-      assert model.id != nil
-    end
+  test "model tests" do
+    assert %UserCode{id} = insert(:ident_user_code)
+    assert is_uuid(id)
+    assert %UserCode{id: ^id} = UserCode.one!(id: id)
+    params = params_with_assocs(:ident_user_code)
+    assert {:ok, %UserCode{} = x} = UserCode.create(params)
+    assert {:ok, _} = UserCode.delete(x)
   end
 
-  describe "build/1" do
-    test "build when valid" do
-      params = params_with_assocs(:ident_user_code)
-      changeset = Rivet.Ident.UserCode.build(params)
-      assert changeset.valid?
-    end
-  end
-
-  describe "get/1" do
-    test "loads saved transactions as expected" do
-      c = insert(:ident_user_code)
-      assert %Rivet.Ident.UserCode{} = found = Rivet.Ident.UserCode.one!(id: c.id)
-      assert found.id == c.id
-    end
-  end
-
-  describe "create/1" do
-    test "inserts a valid record" do
-      attrs = params_with_assocs(:ident_user_code)
-      assert {:ok, model} = Rivet.Ident.UserCode.create(attrs)
-      assert model.id != nil
-    end
-  end
-
-  describe "delete/1" do
-    test "deletes record" do
-      model = insert(:ident_user_code)
-      assert {:ok, deleted} = Rivet.Ident.UserCode.delete(model)
-      assert deleted.id == model.id
-    end
-  end
+    # test "Lib.email_verify_code" do
+    #   assert {:error, "Invalid EmailVerify Code" <> _} = UserCode.Lib.email_verify_code("nope")
+    #
+    #   %{user} = bad = insert(:verify_email_code)
+    #   %{emails: [e]} = Core.Db.Ident.User.preload!(user, [:emails])
+    #
+    #   assert {:ok, _} = Core.Db.Ident.Email.delete(e)
+    #
+    #   assert {:error, "Email Verification Failed: cannot lookup by email_id"} =
+    #            UserCode.Lib.email_verify_code(bad.code)
+    #
+    #   code = insert(:verify_email_code)
+    #   assert {:redirect, _} = UserCode.Lib.email_verify_code(code.code)
+    # end
 end

@@ -64,4 +64,39 @@ defmodule Rivet.Ident.UserCode.Lib do
     )
     |> Ident.UserCode.delete_all()
   end
+
+  # ##############################################################################
+  # def email_verify_code(code) when not_empty_str(code) do
+  #   case UserCode.one(code: code) do
+  #     {:ok, %{type: :email_verify, meta: %{"email_id" => eid}} = code} when is_uuid(eid) ->
+  #       UserCode.delete(code)
+  #
+  #       url = Rivet.Mailer.Utils.Constants.frontend("/")
+  #
+  #       case Db.Ident.Email.one([id: eid], user: [:handle]) do
+  #         {:ok, %{user} = email} ->
+  #           uid = Rivet.Mailer.Utils.Constants.get_user_ref!(user)
+  #           Db.Ident.Email.update(email, %{verified: true, status: :verified})
+  #
+  #           # if only identified redirect to password reset
+  #           Logger.info("Email Verified", code: code.code, user: code.user_id)
+  #
+  #           Core.Mailer.Template.User.Verified.queue(user)
+  #
+  #           # the redirect isn't currently used; and may go away
+  #           # if user.type == :authed do
+  #           {:redirect, external: "#{url}/u/#{uid}/contact"}
+  #
+  #         # else
+  #         #   {:redirect, external: "#{url}/u/#{uid}/password"}
+  #         # end
+  #
+  #         _ ->
+  #           {:error, "Email Verification Failed: cannot lookup by email_id"}
+  #       end
+  #
+  #     _bad ->
+  #       {:error, "Invalid EmailVerify Code code=#{code}"}
+  #   end
+  # end
 end
