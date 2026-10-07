@@ -5,7 +5,7 @@ defmodule Rivet.Ident.Factor do
   use TypedEctoSchema
   alias Rivet.Ident
   use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details]
-  import EctoEnum
+  import Rivet.DefEnum
 
   defenum(Types,
     unknown: 0,

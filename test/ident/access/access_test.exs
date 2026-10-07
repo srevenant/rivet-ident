@@ -25,21 +25,21 @@ defmodule Rivet.Ident.Test.AccessTest do
   #     assert access.ref_id == project.id
   #
   #     # fails
-  #     assert {:error, _} = Core.Auth.check_authz(user, @global_user_edit_assert)
+  #     assert {:error, _} = Rivet.Auth.check_authz(user, @global_user_edit_assert)
   #
   #     # works on domain scope
   #     assert {:ok, user} =
-  #              Core.Auth.check_authz(user, %Core.Db.Ident.Auth.Assertion{
+  #              Rivet.Auth.check_authz(user, %Rivet.Db.Ident.Auth.Assertion{
   #                action: @project_edit_action,
   #                ref_id: project.id,
-  #                domain: Core.Db.Project
+  #                domain: Rivet.Db.Project
   #              })
   #
   #     # now set superadmin and it should work globally too
   #     {:ok, _} = Db.Ident.Access.Lib.add(user, :superadmin)
   #
   #     assert {:ok, _} =
-  #              Core.Auth.check_authz(
+  #              Rivet.Auth.check_authz(
   #                %{user | authz: nil},
   #                @global_user_edit_assert,
   #                force: true

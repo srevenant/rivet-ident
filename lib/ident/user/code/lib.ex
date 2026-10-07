@@ -81,7 +81,7 @@ defmodule Rivet.Ident.UserCode.Lib do
   #           # if only identified redirect to password reset
   #           Logger.info("Email Verified", code: code.code, user: code.user_id)
   #
-  #           Core.Mailer.Template.User.Verified.queue(user)
+  #           Rivet.Mailer.Template.User.Verified.queue(user)
   #
   #           # the redirect isn't currently used; and may go away
   #           # if user.type == :authed do

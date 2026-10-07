@@ -1,6 +1,6 @@
 defmodule Rivet.Ident.Test.User.SearchTest do
   use Rivet.Ident.Case, async: true
-  alias Core.Db.Ident.User.Search
+  alias Rivet.Ident.User.Search
 
   doctest Search.Admin, import: true
   doctest Search.LegacyPublic, import: true

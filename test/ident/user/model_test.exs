@@ -11,9 +11,9 @@ defmodule Rivet.Ident.Test.UserTest do
     assert {:ok, %{id: user_id} = user} = User.create(attrs)
     assert %User{id: ^user_id} = User.one!(id: user.id)
     # first is for the cache miss
-    assert {:ok, _} = Core.Auth.Cache.get_authz(user)
+    assert {:ok, _} = Rivet.Auth.Cache.get_authz(user)
     # second is for the cache hit
-    assert {:ok, _} = Core.Auth.Cache.get_authz(user)
+    assert {:ok, _} = Rivet.Auth.Cache.get_authz(user)
     assert {:ok, %{id: ^user_id}} = User.delete(user)
   end
 end

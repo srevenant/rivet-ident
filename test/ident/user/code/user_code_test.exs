@@ -15,9 +15,9 @@ defmodule Rivet.Ident.Test.UserCodeTest do
     #   assert {:error, "Invalid EmailVerify Code" <> _} = UserCode.Lib.email_verify_code("nope")
     #
     #   %{user} = bad = insert(:verify_email_code)
-    #   %{emails: [e]} = Core.Db.Ident.User.preload!(user, [:emails])
+    #   %{emails: [e]} = Rivet.Ident.User.preload!(user, [:emails])
     #
-    #   assert {:ok, _} = Core.Db.Ident.Email.delete(e)
+    #   assert {:ok, _} = Rivet.Ident.Email.delete(e)
     #
     #   assert {:error, "Email Verification Failed: cannot lookup by email_id"} =
     #            UserCode.Lib.email_verify_code(bad.code)

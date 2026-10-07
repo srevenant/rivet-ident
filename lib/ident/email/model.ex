@@ -1,7 +1,7 @@
 defmodule Rivet.Ident.Email do
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  import DefEnum
+  import Rivet.DefEnum
   use Rivet.Ident
 
   defenum(Status, pending: 0, verified: 1, bouncing: 2, complaint: 3, rejected: 4)

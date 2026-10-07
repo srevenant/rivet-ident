@@ -1,6 +1,6 @@
-defmodule Test.Core.Db.Ident.UserUpdateTest do
+defmodule Test.Rivet.Ident.UserUpdateTest do
   use Test.Support.Core.Case, async: true
-  use Core.ContextClient
+  # use Core.ContextClient
   alias Db.Ident.User
   import Db.Ident.User.Update
 
