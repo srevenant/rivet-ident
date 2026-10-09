@@ -1,7 +1,7 @@
 defmodule Rivet.Ident.Role do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
-  import Rivet.DefEnum
+  import Rivet.Ecto.DefEnum
 
   defenum(Type, global: 0, domain: 1, mixed: 2)
 

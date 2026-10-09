@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Test.Support.IdentFactory do
+defmodule Rivet.Ident.Test.IdentFactory do
   defmacro __using__(_) do
     quote location: :keep do
       use Rivet.Ident

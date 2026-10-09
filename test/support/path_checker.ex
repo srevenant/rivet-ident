@@ -1,9 +1,9 @@
-defmodule Rivet.Ident.Test.Support.PathChecker do
+defmodule Rivet.Ident.Test.PathChecker do
   @moduledoc """
 
-  Rivet.Ident.Test.Support.PathChecker.check("test")
-  Rivet.Ident.Test.Support.PathChecker.check("lib", no_exs: true, rules: :lib)
-  Rivet.Ident.Test.Support.PathChecker.fix("test")
+  Rivet.Ident.Test.PathChecker.check("test")
+  Rivet.Ident.Test.PathChecker.check("lib", no_exs: true, rules: :lib)
+  Rivet.Ident.Test.PathChecker.fix("test")
 
   """
 

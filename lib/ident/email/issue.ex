@@ -5,8 +5,8 @@ defmodule Rivet.Ident.Email.Issue do
   import Rivet.Guards
 
   typed_schema "user_email_issues" do
-    belongs_to(:email, Email, type: :binary_id)
-    field(:type, Email.Status)
+    belongs_to(:email, Rivet.Ident.Email, type: :binary_id)
+    field(:type, Rivet.Ident.Email.Status)
     field(:issue, :map)
     timestamps()
   end

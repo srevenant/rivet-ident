@@ -3,7 +3,7 @@ defmodule Rivet.Ident.User do
   Schema for representing and working with a Ident.User.
   """
   use TypedEctoSchema
-  import Rivet.DefEnum
+  import Rivet.Ecto.DefEnum
   alias Rivet.Ident
   use Rivet.Ecto.Model
 
