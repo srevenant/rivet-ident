@@ -33,7 +33,7 @@ defmodule Rivet.Ident.Factor do
     field(:name, :string)
     field(:expires_at, :integer)
     field(:value, :string)
-    field(:details, Rivet.Utils.Ecto.AtomKeymap)
+    field(:details, Rivet.Ecto.AtomKeymap)
     # we put these back as passwords
     field(:password, :string, virtual: true)
     # we don't store these again

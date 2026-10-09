@@ -1,6 +1,6 @@
-defmodule Rivet.Ident.UserCode do
+defmodule Rivet.Ident.User.Code do
   @moduledoc """
-  Schema for representing and working with a Ident.UserCode.
+  Schema for representing and working with a Ident.User.Code.
   """
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
@@ -8,7 +8,7 @@ defmodule Rivet.Ident.UserCode do
 
   typed_schema "user_codes" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
-    field(:type, Rivet.Utils.Ecto.Atom)
+    field(:type, Rivet.Ecto.Atom)
     field(:code, :string)
     field(:meta, :map, default: %{})
     field(:expires, :utc_datetime)

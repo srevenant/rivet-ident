@@ -30,8 +30,8 @@ defmodule Rivet.Auth do
 
   def check_authz(_, _), do: {:error, nil}
 
-  @spec change_password(Ident.UserCode.t(), String.t()) :: boolean()
-  def change_password(%Ident.UserCode{} = code, new), do: set_password(code.user, new)
+  @spec change_password(Ident.User.Code.t(), String.t()) :: boolean()
+  def change_password(%Ident.User.Code{} = code, new), do: set_password(code.user, new)
 
   @spec change_password(Ident.User.t(), String.t(), String.t()) :: boolean()
   def change_password(%Ident.User{} = user, current, new) do

@@ -86,7 +86,7 @@ defmodule Rivet.Auth.Signin.Google do
 
   ###############################################################################
   defp find_user(%{"sub" => ident} = params, hostname, type) do
-    case Ident.UserIdent.Lib.get("google", ident) do
+    case Ident.User.ExtId.Lib.get("google", ident) do
       {:ok, user_ident} -> Ident.User.one(id: user_ident.user_id) |> check_user_allowed(hostname)
       _ -> find_user_by_email(params, hostname, type)
     end
@@ -159,7 +159,7 @@ defmodule Rivet.Auth.Signin.Google do
 
   # ##############################################################################
   defp add_ident({:ok, %Auth.Domain{user: %Ident.User{} = u}} = pass, ident) do
-    with {:ok, _} <- Ident.UserIdent.Lib.put(u, "google", ident) do
+    with {:ok, _} <- Ident.User.ExtId.Lib.put(u, "google", ident) do
       pass
     end
   end

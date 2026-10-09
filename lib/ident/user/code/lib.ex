@@ -1,7 +1,6 @@
-defmodule Rivet.Ident.UserCode.Lib do
-  alias Rivet.Ident
-  alias Ident.UserCode
-  use Rivet.Ecto.Collection.Context, model: UserCode
+defmodule Rivet.Ident.User.Code.Lib do
+  use Rivet.Ident
+  use Rivet.Ecto.Collection.Context, model: User.Code
 
   def reset_generate(for_user_id, type, meta \\ %{}) do
     clear_all_codes(for_user_id, type)
@@ -16,12 +15,12 @@ defmodule Rivet.Ident.UserCode.Lib do
       |> String.slice(1..8)
       |> String.upcase()
 
-    case UserCode.one(code: code) do
+    case User.Code.one(code: code) do
       {:ok, _} ->
         generate_code(for_user_id, type, expiration_minutes)
 
       {:error, _} ->
-        case UserCode.create(%{
+        case User.Code.create(%{
                user_id: for_user_id,
                code: code,
                type: type,
@@ -39,7 +38,7 @@ defmodule Rivet.Ident.UserCode.Lib do
   end
 
   def get_valid(code) do
-    with {:ok, code} <- UserCode.one(code: code) do
+    with {:ok, code} <- User.Code.one(code: code) do
       if DateTime.before?(DateTime.utc_now(), code.expires) do
         {:ok, code}
       else
@@ -52,24 +51,24 @@ defmodule Rivet.Ident.UserCode.Lib do
   def clear_expired_codes() do
     now = DateTime.utc_now()
 
-    from(c in UserCode, where: c.expires < ^now)
-    |> Ident.UserCode.delete_all()
+    from(c in User.Code, where: c.expires < ^now)
+    |> User.Code.delete_all()
   end
 
   def clear_all_codes(for_user_id, type) do
-    from(c in UserCode,
+    from(c in User.Code,
       where:
         c.user_id == ^for_user_id and
           c.type == ^type
     )
-    |> Ident.UserCode.delete_all()
+    |> User.Code.delete_all()
   end
 
   # ##############################################################################
   # def email_verify_code(code) when not_empty_str(code) do
-  #   case UserCode.one(code: code) do
+  #   case User.Code.one(code: code) do
   #     {:ok, %{type: :email_verify, meta: %{"email_id" => eid}} = code} when is_uuid(eid) ->
-  #       UserCode.delete(code)
+  #       User.Code.delete(code)
   #
   #       url = Rivet.Mailer.Utils.Constants.frontend("/")
   #

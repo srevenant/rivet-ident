@@ -14,7 +14,7 @@ defmodule Rivet.Ident.Access do
     # rows in a table (such as different accesses for different groups in the db),
     # where :global is ... global and not tied to another data type, and for others
     # they enum key should be the module atom: :"Elixir.Module.Name"
-    field(:domain, Rivet.Utils.Ecto.Atom, default: :global)
+    field(:domain, Rivet.Ecto.Atom, default: :global)
     field(:ref_id, :binary_id)
   end
 

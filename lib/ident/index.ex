@@ -1,5 +1,4 @@
 defmodule Rivet.Ident do
-
   # runtime so we avoid circular dependencies
   def mailer_template(key), do: Application.get_env(:rivet, :mailer_templates)[key]
 
@@ -14,7 +13,7 @@ defmodule Rivet.Ident do
     repo = Application.compile_env!(__CALLER__, :rivet, :repo)
 
     quote location: :keep do
-      alias Rivet.Ident.{User, UserCode, Email}
+      alias Rivet.Ident.{User, Handle, Email}
       alias unquote(org_model), as: Org
       alias unquote(repo), as: Repo
 

@@ -23,7 +23,8 @@ defmodule Rivet.Ident.Email.Issue do
 
     attrs = %{email_id, type, issue}
 
-    case create(attrs) |> critical_report_if_error("Failed to add Email.Issue", Map.to_list(attrs)) do
+    case create(attrs)
+         |> critical_report_if_error("Failed to add Email.Issue", Map.to_list(attrs)) do
       {:ok, %{id: issue_id}} -> {:ok, %{issue_id}}
       {:error, _db_error_} -> {:ok, %{value: issue}}
     end

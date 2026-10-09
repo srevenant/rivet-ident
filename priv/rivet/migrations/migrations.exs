@@ -11,5 +11,5 @@
   [include: "role", prefix: 180],
   [include: "role/map", prefix: 190],
   [include: "access", prefix: 200],
-  [include: "user/ident", prefix: 210]
+  [include: "user/extid", prefix: 210]
 ]

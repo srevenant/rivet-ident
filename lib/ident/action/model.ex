@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Action do
   use Rivet.Ecto.Model, id_type: :intid
 
   typed_schema "ident_actions" do
-    field(:name, Rivet.Utils.Ecto.Atom)
+    field(:name, Rivet.Ecto.Atom)
     field(:description, :string)
   end
 

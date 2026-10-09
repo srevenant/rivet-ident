@@ -182,15 +182,15 @@ defmodule Rivet.Ident.User.Lib.Update do
   def update(%{data: data, action: :upsert} = args, admin, %Ident.User{} = user) do
     case data do
       %{id: id} ->
-        with {:ok, current} <- Ident.UserData.one(id: id, user_id: user.id) do
-          Ident.UserData.update(current, %{value: data.value})
+        with {:ok, current} <- Ident.User.Data.one(id: id, user_id: user.id) do
+          Ident.User.Data.update(current, %{value: data.value})
         end
 
       _new ->
-        Ident.UserData.create(%{user_id: user.id, type: data.type, value: data.value})
+        Ident.User.Data.create(%{user_id: user.id, type: data.type, value: data.value})
     end
     |> case do
-      {:ok, %Ident.UserData{}} ->
+      {:ok, %Ident.User.Data{}} ->
         finish_update(args, :data, admin, refresh(user, :data))
 
       {:error, %Ecto.Changeset{}} = err ->

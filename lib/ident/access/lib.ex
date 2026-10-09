@@ -9,7 +9,7 @@ defmodule Rivet.Ident.Access.Lib do
   def get_actions(%Ident.User{id: u_id}) do
     Ident.Access.all!(
       from(acc in Ident.Access,
-        join: map in Ident.RoleMap,
+        join: map in Ident.Role.Map,
         on: map.role_id == acc.role_id,
         join: act in Ident.Action,
         on: map.action_id == act.id,
@@ -27,7 +27,7 @@ defmodule Rivet.Ident.Access.Lib do
   def get_actions(%Ident.User{id: u_id}, domain, ref_id) do
     Ident.Access.all!(
       from(acc in Ident.Access,
-        join: map in Ident.RoleMap,
+        join: map in Ident.Role.Map,
         on: map.role_id == acc.role_id,
         join: act in Ident.Action,
         on: map.action_id == act.id,
@@ -46,7 +46,7 @@ defmodule Rivet.Ident.Access.Lib do
   #     Enum.reduce(accesses, [], fn access, acc ->
   #       case Ident.Access.preload(access, [:role]) do
   #         {:ok, %Ident.Access{role: %Ident.Role{subscription: true}}} ->
-  #           acc ++ Ident.RoleMap.Lib.get_actions(access.role_id)
+  #           acc ++ Ident.Role.Map.Lib.get_actions(access.role_id)
   #
   #         {:ok, _} ->
   #           acc

@@ -94,7 +94,7 @@ defmodule Rivet.Ident.User.Lib do
   end
 
   # ##############################################################################
-  # def send_password_reset(%Ident.User{} = user, %Ident.Email{} = email, %Ident.UserCode{} = code) do
+  # def send_password_reset(%Ident.User{} = user, %Ident.Email{} = email, %Ident.User.Code{} = code) do
   #   # let all emails on the account know
   #   with {:ok, user} <- Ident.User.preload(user, [:emails]) do
   #     sendmail(user.emails, &templates.password_reset/2, [email, code])
@@ -161,7 +161,7 @@ defmodule Rivet.Ident.User.Lib do
             {:ok, email}
 
           {:error, chgset} ->
-            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
+            {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
         end
     end
   end
@@ -201,7 +201,7 @@ defmodule Rivet.Ident.User.Lib do
             {:ok, phone}
 
           {:error, chgset} ->
-            {:error, Rivet.Utils.Ecto.Errors.convert_error_changeset(chgset)}
+            {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
         end
     end
   end
