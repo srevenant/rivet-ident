@@ -3,7 +3,7 @@ defmodule Rivet.Ident.User.ExtId.Migrations.V01Rename do
   use Ecto.Migration
 
   def change do
-    drop index(:user_idents, [:origin, :ident])
+    drop(index(:user_idents, [:origin, :ident]))
 
     flush()
 

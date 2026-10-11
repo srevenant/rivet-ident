@@ -1,30 +1,22 @@
 defmodule Rivet.Ident.User.Search do
-  use Core.Context
-  alias Core.Search.{Tools, Filter, Results}
-  alias __MODULE__, as: Self
+  use Rivet.Ident
+  alias Rivet.Search.{Tools, Filter, Results}
 
-  @col_spec %{
-    name: %{type: :glob, join: &Self.join_to_handle/3, order: &Self.order_name/4},
-    services: %{type: :uuid, list: :in, order: false}
-    # allows: %{type: :string, list: :in, order: false}
-  }
+  @schema [
+    name: [type: :glob, join: &__MODULE__.join_to_handle/3, order: &__MODULE__.order_name/4],
+    services: [type: :uuid, list: :in, order: false]
+    # allows: [type: :string, list: :in, order: false]
+  ]
 
-  @default []
+  use Rivet.Search, schema: @schema
 
-  def search(%{filter: filter} = args) do
-    case build_search_query(filter) do
-      {:ok, query} -> Tools.query_with_substatus(query, args)
-      error -> Results.substatus_results(error)
-    end
-  end
-
-  def build_search_query(filters, default_filter \\ @default) do
-    from(u in Db.Ident.User,
+  @impl Rivet.Search
+  def base_query(opts) do
+    from(u in User,
       as: :user,
       where: fragment("jsonb_exists(?, 'LIB')", u.sites),
       order_by: [desc: u.last_seen]
     )
-    |> Filter.enrich_search_query(&filter_expr/1, @col_spec, filters, default_filter)
   end
 
   ##############################################################################
@@ -34,13 +26,14 @@ defmodule Rivet.Ident.User.Search do
     do: [{:name, {ord, :user, :name}} | state.order]
 
   ##############################################################################
-  defp filter_expr({:name, %{v, x: :is}}) when not_empty_str(v),
+  @impl Rivet.Search
+  def filter_expr({:name, %{v, x: :is}}) when not_empty_str(v),
     do: {:ok, dynamic([user: u, handle: h], ilike(u.name, ^v) or ilike(h.handle, ^v))}
 
-  # defp filter_expr({:allows, %{x: :is, v: ["libmail"]}}),
+  # def filter_expr({:allows, %{x: :is, v: ["libmail"]}}),
   #   do: {:ok, dynamic([user: u], fragment("jsonb_exists(?, 'LIB')", u.sites))}
 
-  defp filter_expr({:services, %{x: :is, v: [_ | _] = ids}}) do
+  def filter_expr({:services, %{x: :is, v: [_ | _] = ids}}) do
     tag_count = length(ids)
 
     subfilter =
@@ -56,5 +49,5 @@ defmodule Rivet.Ident.User.Search do
     {:ok, dynamic([], exists(subfilter))}
   end
 
-  defp filter_expr(_), do: {:error, "Unrecognized filter"}
+  def filter_expr(_), do: {:error, "Unrecognized filter"}
 end
