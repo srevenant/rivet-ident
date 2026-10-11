@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.Email.ModelTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
 
   # doctest Rivet.Ident.Email, import: true
   # doctest Rivet.Ident.Email.Lib, import: true

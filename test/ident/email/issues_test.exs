@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.Email.IssuesTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
   use Rivet.Ident
   alias Ident.Email.Issue
 

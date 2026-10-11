@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.Action.ModelTest do
-  use Rivet.Ident.Test.Support.Case
+  use Rivet.Ident.Test.Case
   alias Rivet.Ident.Action
 
   test "model tests" do

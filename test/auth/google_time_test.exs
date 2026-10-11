@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Auth.GoogleTimeTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
   import Rivet.Auth.Signin.Google.KeyManager, only: [parse_rfc1123_datetime: 1]
 
   test "parse_rfc1123_datetime" do

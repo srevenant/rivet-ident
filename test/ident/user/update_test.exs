@@ -1,9 +1,9 @@
 defmodule Rivet.Ident.Test.Ident.User.UpdateTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
   use Rivet.Ident
   # use Core.ContextClient
   # alias Db.Ident.User
-  # import Db.Ident.User.Update
+  import Ident.User.Update
 
   test "asdf" do
     u = insert(:user)

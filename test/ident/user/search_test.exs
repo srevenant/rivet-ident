@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.User.SearchTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
   alias Rivet.Ident.User.Search
 
   doctest Search.Admin, import: true
@@ -9,7 +9,6 @@ defmodule Rivet.Ident.Test.Ident.User.SearchTest do
     cols = [
       %{n: "name", v: ["bob"]},
       %{n: "services", v: [Ecto.UUID.generate()]}
-      # %{n: "allows", v: ["libmail"]}
     ]
 
     assert {:ok,

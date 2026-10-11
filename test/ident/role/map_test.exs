@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.Role.MapTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
   alias Rivet.Ident.Role
 
   test "model tests" do

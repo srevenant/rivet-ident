@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.User.LibTest do
-  use Rivet.Ident.Test.Support.Case, async: true
+  use Rivet.Ident.Test.Case, async: true
   use Rivet.Ident
   alias Rivet.Ident
 

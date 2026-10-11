@@ -9,7 +9,7 @@ defmodule Rivet.Ident.Test.Case do
       import Rivet.Ident.Test.Case
 
       use ExMachina.Ecto, repo: Rivet.Auth.Repo
-      use Rivet.Ident.Test.Support.IdentFactory
+      use Rivet.Ident.Test.IdentFactory
 
       alias Rivet.Auth.Repo
       alias Rivet.Ident
