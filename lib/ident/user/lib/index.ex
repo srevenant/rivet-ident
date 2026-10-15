@@ -23,7 +23,9 @@ defmodule Rivet.Ident.User.Lib do
 
   Only load once, if authz is nil
   """
+
   @spec get_authz(user :: Ident.User.t()) :: Ident.User.t()
+
   def get_authz(%Ident.User{authz: authz} = user) when is_nil(authz) do
     {:ok, user} = Ident.User.preload(user, [:accesses])
     %Ident.User{user | authz: Rivet.Ident.Access.Lib.get_actions(user)}
@@ -169,15 +171,14 @@ defmodule Rivet.Ident.User.Lib do
   def check_user_status({:ok, %Auth.Domain{user: %Ident.User{type: :disabled}}}),
     do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
-  def check_user_status(%Ident.User{type: :disabled}) do
-    {:error, %Auth.Domain{error: "sorry, account is disabled"}}
-  end
+  def check_user_status(%Ident.User{type: :disabled}),
+    do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
   def check_user_status(%Ident.User{} = user), do: {:ok, user}
+  def check_user_status(pass), do: pass
 
-  def check_user_status(pass) do
-    pass
-  end
+  def user_enabled?(%User{type: :disabled}), do: false
+  def user_enabled?(%User{}), do: true
 
   ##############################################################################
   def add_phone(user, phone) do

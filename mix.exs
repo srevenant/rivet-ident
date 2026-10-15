@@ -1,4 +1,4 @@
-defmodule RivetIdent.MixProject do
+defmodule Rivet.Ident.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/srevenant/rivet-ident"
@@ -6,12 +6,12 @@ defmodule RivetIdent.MixProject do
     [
       app: :rivet_ident,
       version: "5.1.0",
+      elixir: "~> 1.18",
       description: "Authentication and Authorization add-on for Rivets Framework",
       source_url: @source_url,
+      docs: docs(),
       package: package(),
-      elixir: "~> 1.18",
-      elixirc_paths: elixirc_paths(Mix.env()),
-      start_permanent: Mix.env() == :prod,
+      deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -19,12 +19,12 @@ defmodule RivetIdent.MixProject do
         "coveralls.html": :test,
         dialyzer: :test
       ],
-      deps: deps(),
       dialyzer: [
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
-      xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
+      elixirc_paths: elixirc_paths(Mix.env()),
+      # xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
       aliases: aliases(),
       compilers: [:es6_maps | Mix.compilers()]
     ]
@@ -33,21 +33,24 @@ defmodule RivetIdent.MixProject do
   def application do
     [
       mod: {Rivet.Ident.Application, []},
-      env: [
-        rivet: [
-          app: :rivet_ident,
-          base: Rivet.Ident,
-          models_dir: "ident"
-        ]
-      ],
+      env: [rivet: [app: :rivet_ident, base: Rivet.Ident, models_dir: "ident"]],
       # NOTE: :inets is required for :httpd_util.convert_request_date to not
       # throw a warning in static compile verification from OTP
       extra_applications: [:logger, {:ex_unit, :optional}, :inets]
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  #
+  # defp rivet_env(:test),
+  #   do: [
+  #     lib_dir: "deps/rivet/test/fixtures/rivet/lib",
+  #     priv_dir: "deps/rivet/test/fixtures/rivet/priv"
+  #   ]
+  #
+  # defp rivet_env(_), do: []
+
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/fixtures"]
+  defp elixirc_paths(_), do: []
 
   defp aliases do
     [
@@ -87,10 +90,12 @@ defmodule RivetIdent.MixProject do
 
   defp package() do
     [
-      files: ~w(lib .formatter.exs mix.exs priv/rivet README* LICENSE* test/lib),
+      files: ~w(lib .formatter.exs mix.exs README* LICENSE* priv/rivet test/fixtures),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url},
       source_url: @source_url
     ]
   end
+
+  defp docs(), do: [main: "Rivet.Ident", extras: ["README.md"]]
 end

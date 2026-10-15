@@ -25,9 +25,9 @@ config :rivet_ident,
   ecto_repos: [Rivet.Auth.Repo],
   federated: %{google: true},
   initial_password_expiration_days: 7,
-  jwt_acc_secrets: [""],
-  jwt_val_secrets: [""],
-  jwt_api_secrets: [""],
+  jwt_acc_secrets: ["none"],
+  jwt_val_secrets: ["none"],
+  jwt_api_secrets: ["none"],
   auth_expire_limits: %{
     val: %{
       acc: 60 * 60 * 24 * 30,

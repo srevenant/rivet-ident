@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Test.Ident.User.ModelTest do
   doctest Rivet.Ident.User.Cache, import: true
 
   test "Model" do
-    attrs = params_with_assocs(:user)
+    attrs = params_with_assocs(:ident_user)
     assert %{valid?: true} = User.build(attrs)
     assert {:ok, %{id: user_id} = user} = User.create(attrs)
     assert %User{id: ^user_id} = User.one!(id: user.id)

@@ -17,29 +17,31 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
 
   test "signup" do
     assert {:error, %{error: "Sign up Failed"}} =
-             User.Signup.signup(%Rivet.Auth.Domain{}, :authed)
+             User.Lib.Signup.signup(%Rivet.Auth.Domain{}, :authed)
 
-    site = insert(:site)
-    auth1 = build(:auth_domain_signin, site: site)
-    assert {:ok, %Rivet.Auth.Domain{}} = User.Signup.signup(auth1, :authed)
-    assert {:ok, %Rivet.Auth.Domain{}} = User.Signup.signup_only_identity(auth1)
+    # site = insert(:site)
+    # , site: site)
+    auth1 = build(:auth_domain_signin)
+    assert {:ok, %Rivet.Auth.Domain{}} = User.Lib.Signup.signup(auth1, :authed)
+    assert {:ok, %Rivet.Auth.Domain{}} = User.Lib.Signup.signup_only_identity(auth1)
 
     assert {:ok, %Email{}} =
-             User.Signup.signup_create_with_email(
+             User.Lib.Signup.signup_create_with_email(
                auth1.site.domain,
                auth1.input.email.address
              )
 
-    auth2 = build(:auth_domain_signin, site: site)
+    # , site: site)
+    auth2 = build(:auth_domain_signin)
 
     assert {:ok, %Email{}} =
-             User.Signup.rest_signup_user_email(
+             User.Lib.Signup.rest_signup_user_email(
                auth2.site.domain,
                auth2.input.email.address
              )
 
     assert {:ok, %Rivet.Auth.Domain{}} =
-             User.Signup.signup(
+             User.Lib.Signup.signup(
                build(:auth_domain_signin, handle: Ecto.UUID.generate() |> String.slice(0, 25)),
                :authed
              )
@@ -50,8 +52,8 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert [] = User.Lib.search_name!(uuid)
     assert [] = User.Lib.all_since(DateTime.utc_now())
 
-    disabled = build(:user, type: :disabled)
-    assert true == User.Lib.user_enabled?(build(:user))
+    disabled = build(:ident_user, type: :disabled)
+    assert true == User.Lib.user_enabled?(build(:ident_user))
     assert false == User.Lib.user_enabled?(disabled)
     errmsg = "sorry, account is disabled"
 
@@ -59,13 +61,15 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
              User.Lib.check_user_status({:ok, %Rivet.Auth.Domain{user: disabled}})
 
     assert {:error, %{error: ^errmsg}} = User.Lib.check_user_status(disabled)
-    assert {:ok, _} = User.Lib.check_user_status(build(:user))
+    assert {:ok, _} = User.Lib.check_user_status(build(:ident_user))
   end
 
   test "seen" do
-    user = insert(:user)
+    user = insert(:ident_user)
     user_id = user.id
-    assert %{id: ^user_id} = user = User.Lib.user_seen(user, build(:site))
-    assert %{id: ^user_id} = User.Lib.user_seen(user, build(:site))
+    # , build(:site))
+    assert %{id: ^user_id} = user = User.Lib.user_seen(user)
+    # , build(:site))
+    assert %{id: ^user_id} = User.Lib.user_seen(user)
   end
 end

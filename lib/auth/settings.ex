@@ -41,7 +41,7 @@ defmodule Rivet.Auth.Settings do
 
       _ ->
         raise ArgumentError,
-              "Missing configuration as array: `:rivet_ident, jwt_acc_secrets: []`?"
+              "Configuration `:rivet_ident, jwt_#{token_type}_secrets_decoded: [...]` has no keys? Is :rivet_ident application started?"
     end
   end
 
