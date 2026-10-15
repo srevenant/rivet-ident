@@ -109,6 +109,23 @@ defmodule Rivet.Ident.Test.IdentFactory do
         }
       end
 
+      def auth_domain_signin_factory(args) do
+        input = %{
+          email: %{address: Faker.Internet.email()},
+          secret: "BigPassword98!?"
+        }
+
+        %Rivet.Auth.Domain{
+          input:
+            if Map.has_key?(args, :handle) do
+              Map.put(input, :handle, args.handle)
+            else
+              input
+            end
+        }
+        |> merge_attributes(args)
+      end
+
       ################################################################################
       def ident_factor_factory do
         %Ident.Factor{
@@ -136,6 +153,16 @@ defmodule Rivet.Ident.Test.IdentFactory do
         }
       end
 
+      def ident_user_data_factory do
+        user = build(:ident_user)
+
+        %Ident.User.Data{
+          user: user,
+          type: :license,
+          value: %{}
+        }
+      end
+
       def ident_user_code_factory do
         code =
           Ecto.UUID.generate()
@@ -147,17 +174,8 @@ defmodule Rivet.Ident.Test.IdentFactory do
           user: build(:ident_user),
           type: :password_reset,
           code: code,
-          expires: DateTime.from_unix!(Rivet.Utils.Time.epoch_time(:second) + 900)
-        }
-      end
-
-      def ident_user_data_factory do
-        user = build(:ident_user)
-
-        %Ident.User.Data{
-          user: user,
-          type: :available,
-          value: %{}
+          expires: DateTime.utc_now() |> DateTime.shift(minute: 10)
+          # expires: DateTime.from_unix!(Rivet.Utils.Time.epoch_time(:second) + 900)
         }
       end
     end

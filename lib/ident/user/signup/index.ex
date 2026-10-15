@@ -1,5 +1,5 @@
-defmodule Rivet.Ident.User.Lib.Signup do
-  alias Rivet.Ident
+defmodule Rivet.Ident.User.Signup do
+  use Rivet.Ident
   alias Rivet.Auth
   require Logger
 
@@ -44,10 +44,10 @@ defmodule Rivet.Ident.User.Lib.Signup do
 
   # result is any as we ignore it
   @spec signup_abort_create(Auth.Domain.t()) ::
-          {:ok, Ident.User.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   defp signup_abort_create(auth) do
     if not is_nil(auth.user) do
-      Ident.User.delete(auth.user)
+      User.delete(auth.user)
     end
   end
 
@@ -68,7 +68,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
     name = Map.get(input, :name, "")
     settings = Map.get(input, :settings, %{})
 
-    case Ident.User.create(%{
+    case User.create(%{
            name: name,
            settings: settings,
            type: type
@@ -87,7 +87,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
   defp signup_add_factor(
          {:ok,
           auth = %Auth.Domain{
-            user: %Ident.User{} = user,
+            user: %User{} = user,
             input: %{secret: secret}
           }}
        ) do
@@ -108,7 +108,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
   defp signup_add_factor(
          {:ok,
           auth = %Auth.Domain{
-            user: %Ident.User{} = user,
+            user: %User{} = user,
             input: %{fedid: %Ident.Factor.FedId{} = fedid}
           }}
        ) do
@@ -127,7 +127,7 @@ defmodule Rivet.Ident.User.Lib.Signup do
   defp signup_associate_handle(
          {:ok,
           auth = %Auth.Domain{
-            user: %Ident.User{} = user,
+            user: %User{} = user,
             input: %{handle: handle}
           }}
        ) do
@@ -147,12 +147,12 @@ defmodule Rivet.Ident.User.Lib.Signup do
   defp signup_associate_email(
          {:ok,
           auth = %Auth.Domain{
-            user: %Ident.User{} = user,
+            user: %User{} = user,
             input: %{email: %{address: eaddr, verified: status}}
           }}
        )
        when is_binary(eaddr) do
-    case Ident.User.Lib.add_email(user, eaddr, status) do
+    case User.Lib.add_email(user, eaddr, status) do
       {:ok, email} ->
         {:ok, %Auth.Domain{auth | email: email}}
 
@@ -164,18 +164,8 @@ defmodule Rivet.Ident.User.Lib.Signup do
 
   # after success, create a new struct so we don't carry around unecessary or
   # insecure baggage
-  defp mainline({:ok, auth = %Auth.Domain{}}) do
-    {:ok,
-     %Auth.Domain{
-       hostname: auth.hostname,
-       user: auth.user,
-       handle: auth.handle,
-       created: auth.created,
-       status: auth.status
-     }}
-  end
+  defp mainline({:ok, auth = %Auth.Domain{site, hostname, user, handle, created, status}}),
+    do: {:ok, %Auth.Domain{site, hostname, user, handle, created, status}}
 
-  defp mainline({:error, _auth, {inner, outer}}) do
-    {:error, %Auth.Domain{log: inner, error: outer}}
-  end
+  defp mainline({:error, _auth, {log, error}}), do: {:error, %Auth.Domain{log, error}}
 end

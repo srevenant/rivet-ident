@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.User.Lib.Update do
+defmodule Rivet.Ident.User.Update do
   @moduledoc """
   Making changes to a user (administratively or as the user).
 

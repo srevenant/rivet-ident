@@ -18,7 +18,8 @@ defmodule Rivet.Auth.Domain do
             log: nil,
             error: nil,
             input: nil,
-            expires: 0
+            expires: 0,
+            site: nil
 
   @type t :: %__MODULE__{
           type: atom,
@@ -37,7 +38,8 @@ defmodule Rivet.Auth.Domain do
           # error is what we send users (default: Signin Failed)
           error: nil | String.t(),
           input: nil | map,
-          expires: integer
+          expires: integer,
+          site: nil | term()
         }
 
   @type result :: {:ok | :error, t()}

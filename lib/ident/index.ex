@@ -13,6 +13,7 @@ defmodule Rivet.Ident do
     repo = Application.compile_env!(__CALLER__, :rivet, :repo)
 
     quote location: :keep do
+      alias Rivet.Ident
       alias Rivet.Ident.{User, Handle, Email}
       alias unquote(org_model), as: Org
       alias unquote(repo), as: Repo

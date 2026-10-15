@@ -15,7 +15,7 @@ defmodule Rivet.Auth.Signin do
   # DRY
   def create_user(<<handle::binary>>, <<eaddr::binary>>, <<hostname::binary>>, type, input \\ %{})
       when is_atom(type) do
-    User.Lib.Signup.signup(
+    User.Signup.signup(
       %Auth.Domain{
         hostname: hostname,
         input:

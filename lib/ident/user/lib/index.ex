@@ -1,21 +1,21 @@
 defmodule Rivet.Ident.User.Lib do
-  alias Rivet.Ident
-  use Rivet.Ecto.Collection.Context, model: Ident.User
+  use Rivet.Ident
+  use Rivet.Ecto.Collection.Context, model: User
   alias Rivet.Auth
   require Logger
 
   def search(%{matching: match}, args) do
     match = "%#{String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))}%"
 
-    from(u in Ident.User,
-      join: e in Ident.Email,
+    from(u in User,
+      join: e in Email,
       on: e.user_id == u.id,
-      join: h in Ident.Handle,
+      join: h in Handle,
       on: h.user_id == u.id,
       where: ilike(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
     )
     |> Rivet.Ecto.Collection.enrich_query_args(args)
-    |> Rivet.Ident.User.all()
+    |> User.all()
   end
 
   @doc """
@@ -24,20 +24,20 @@ defmodule Rivet.Ident.User.Lib do
   Only load once, if authz is nil
   """
 
-  @spec get_authz(user :: Ident.User.t()) :: Ident.User.t()
+  @spec get_authz(user :: User.t()) :: User.t()
 
-  def get_authz(%Ident.User{authz: authz} = user) when is_nil(authz) do
-    {:ok, user} = Ident.User.preload(user, [:accesses])
-    %Ident.User{user | authz: Rivet.Ident.Access.Lib.get_actions(user)}
+  def get_authz(%User{authz: authz} = user) when is_nil(authz) do
+    {:ok, user} = User.preload(user, [:accesses])
+    %User{user | authz: Rivet.Ident.Access.Lib.get_actions(user)}
   end
 
-  def get_authz(%Ident.User{} = user), do: user
+  def get_authz(%User{} = user), do: user
 
-  @spec check_authz(user :: Ident.User.t(), Auth.Assertion.t()) ::
-          {:ok | :error, Ident.User.t()}
+  @spec check_authz(user :: User.t(), Auth.Assertion.t()) ::
+          {:ok | :error, User.t()}
   def check_authz(user, %Auth.Assertion{} = assertion) do
     key = {assertion.action, assertion.domain, assertion.ref_id}
-    user = Ident.User.Lib.get_authz(user)
+    user = User.Lib.get_authz(user)
 
     if MapSet.member?(user.authz, key) do
       {:ok, user}
@@ -53,12 +53,12 @@ defmodule Rivet.Ident.User.Lib do
   ##############################################################################
   # only periodically update last seen, to avoid severe performance hit
   @update_min_seconds 60
-  def user_seen(%Ident.User{} = user, _ \\ []) do
+  def user_seen(%User{} = user, _ \\ []) do
     now = DateTime.utc_now()
 
     if is_nil(user.last_seen) or DateTime.diff(now, user.last_seen, :second) > @update_min_seconds do
-      with {:ok, user} <- Ident.User.update(user, %{last_seen: now}) do
-        Ident.Factor.Cache.update_user(user)
+      with {:ok, user} <- User.update(user, %{last_seen: now}) do
+        Rivet.Ident.Factor.Cache.update_user(user)
         user
       else
         err ->
@@ -71,7 +71,7 @@ defmodule Rivet.Ident.User.Lib do
   end
 
   def search_name!(pattern),
-    do: Ident.User.all!(from(u in Ident.User, where: like(u.name, ^pattern)))
+    do: User.all!(from(u in User, where: like(u.name, ^pattern)))
 
   ##############################################################################
   @doc """
@@ -79,44 +79,44 @@ defmodule Rivet.Ident.User.Lib do
   function with the user model loaded including any preloads.  Send preloads
   as [] if none are desired.
   """
-  def with_user(%Ident.User{} = user, preloads, func) do
-    with {:ok, user} <- Ident.User.preload(user, preloads) do
+  def with_user(%User{} = user, preloads, func) do
+    with {:ok, user} <- User.preload(user, preloads) do
       func.(user)
     end
   end
 
   def with_user(user_id, preloads, func) when is_binary(user_id) do
-    case Ident.User.one(user_id, preloads) do
+    case User.one(user_id, preloads) do
       {:error, _} = pass ->
         pass
 
-      {:ok, %Ident.User{} = user} ->
+      {:ok, %User{} = user} ->
         func.(user)
     end
   end
 
   # ##############################################################################
-  # def send_password_reset(%Ident.User{} = user, %Ident.Email{} = email, %Ident.User.Code{} = code) do
+  # def send_password_reset(%User{} = user, %Email{} = email, %User.Code{} = code) do
   #   # let all emails on the account know
-  #   with {:ok, user} <- Ident.User.preload(user, [:emails]) do
+  #   with {:ok, user} <- User.preload(user, [:emails]) do
   #     sendmail(user.emails, &templates.password_reset/2, [email, code])
   #   end
   # end
   #
   # ##############################################################################
-  # def send_failed_change(%Ident.Email{} = email, message) do
+  # def send_failed_change(%Email{} = email, message) do
   #   sendmail(email, &templates.failed_change/2, message)
   # end
   #
   # ##############################################################################
-  # def send_password_changed(%Ident.User{} = user) do
-  #   with {:ok, user} <- Ident.User.preload(user, [:emails]) do
+  # def send_password_changed(%User{} = user) do
+  #   with {:ok, user} <- User.preload(user, [:emails]) do
   #     sendmail(user.emails, &templates.password_changed/2)
   #   end
   # end
 
   ##############################################################################
-  def all_since(time), do: Ident.User.all!(from(u in Ident.User, where: u.last_seen > ^time))
+  def all_since(time), do: User.all!(from(u in User, where: u.last_seen > ^time))
 
   ##############################################################################
   @doc """
@@ -135,8 +135,8 @@ defmodule Rivet.Ident.User.Lib do
     eaddr = clean_email(eaddr)
 
     # basic
-    case Ident.Email.one(address: eaddr) do
-      {:ok, %Ident.Email{} = email} ->
+    case Email.one(address: eaddr) do
+      {:ok, %Email{} = email} ->
         Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
 
         Rivet.Ident.mailer_template(:user_failed_change).queue(
@@ -147,17 +147,17 @@ defmodule Rivet.Ident.User.Lib do
         {:error, "Sorry, that email address is associated with a different account."}
 
       {:error, _} ->
-        has_email? = Ident.Email.exists?(user_id: user.id)
+        has_email? = Email.exists?(user_id: user.id)
 
         # add it
-        case Ident.Email.create(%{
+        case Email.create(%{
                user_id: user.id,
                verified: verified,
                primary: not has_email?,
                address: eaddr
              }) do
-          {:ok, %Ident.Email{} = email} ->
-            email = %Ident.Email{email | user: user}
+          {:ok, %Email{} = email} ->
+            email = %Email{email | user: user}
             Rivet.Ident.mailer_template(:user_verification).queue(email)
 
             {:ok, email}
@@ -168,13 +168,13 @@ defmodule Rivet.Ident.User.Lib do
     end
   end
 
-  def check_user_status({:ok, %Auth.Domain{user: %Ident.User{type: :disabled}}}),
+  def check_user_status({:ok, %Auth.Domain{user: %User{type: :disabled}}}),
     do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
-  def check_user_status(%Ident.User{type: :disabled}),
+  def check_user_status(%User{type: :disabled}),
     do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
-  def check_user_status(%Ident.User{} = user), do: {:ok, user}
+  def check_user_status(%User{} = user), do: {:ok, user}
   def check_user_status(pass), do: pass
 
   def user_enabled?(%User{type: :disabled}), do: false
@@ -208,11 +208,11 @@ defmodule Rivet.Ident.User.Lib do
   end
 
   ##############################################################################
-  @spec has_other_admin?(Ident.Role.t(), Ident.User.t()) :: boolean() | {:error, String.t()}
-  def has_other_admin?(%Ident.Role{name: :system_admin, id: r_id}, %Ident.User{id: user_id}) do
+  @spec has_other_admin?(Ident.Role.t(), User.t()) :: boolean() | {:error, String.t()}
+  def has_other_admin?(%Ident.Role{name: :system_admin, id: r_id}, %User{id: user_id}) do
     query = from(a in Ident.Access, where: a.role_id == ^r_id and a.user_id != ^user_id)
 
-    if Ident.User.aggregate(query, :count) > 0 do
+    if User.aggregate(query, :count) > 0 do
       true
     else
       {:error, "Cannot remove last system_admin"}
@@ -244,7 +244,7 @@ defmodule Rivet.Ident.User.Lib do
   def get_user(id, preload \\ [])
 
   def get_user(id, preload) when is_binary(id) and byte_size(id) == 36 do
-    with {:error, _} <- Ident.User.one([id: id], preload) do
+    with {:error, _} <- User.one([id: id], preload) do
       get_user_by_handle(id, preload)
     end
   end
@@ -252,7 +252,7 @@ defmodule Rivet.Ident.User.Lib do
   def get_user(id, preload), do: get_user_by_handle(id, preload)
 
   def get_user_by_handle(id, preload \\ []) do
-    case Ident.Handle.one([handle: id], user: preload) do
+    case Handle.one([handle: id], user: preload) do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, _} -> {:error, :not_found}
     end

@@ -17,16 +17,16 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
 
   test "signup" do
     assert {:error, %{error: "Sign up Failed"}} =
-             User.Lib.Signup.signup(%Rivet.Auth.Domain{}, :authed)
+             User.Signup.signup(%Rivet.Auth.Domain{}, :authed)
 
     # site = insert(:site)
     # , site: site)
     auth1 = build(:auth_domain_signin)
-    assert {:ok, %Rivet.Auth.Domain{}} = User.Lib.Signup.signup(auth1, :authed)
-    assert {:ok, %Rivet.Auth.Domain{}} = User.Lib.Signup.signup_only_identity(auth1)
+    assert {:ok, %Rivet.Auth.Domain{}} = User.Signup.signup(auth1, :authed)
+    assert {:ok, %Rivet.Auth.Domain{}} = User.Signup.signup_only_identity(auth1)
 
     assert {:ok, %Email{}} =
-             User.Lib.Signup.signup_create_with_email(
+             User.Signup.signup_create_with_email(
                auth1.site.domain,
                auth1.input.email.address
              )
@@ -35,13 +35,13 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     auth2 = build(:auth_domain_signin)
 
     assert {:ok, %Email{}} =
-             User.Lib.Signup.rest_signup_user_email(
+             User.Signup.rest_signup_user_email(
                auth2.site.domain,
                auth2.input.email.address
              )
 
     assert {:ok, %Rivet.Auth.Domain{}} =
-             User.Lib.Signup.signup(
+             User.Signup.signup(
                build(:auth_domain_signin, handle: Ecto.UUID.generate() |> String.slice(0, 25)),
                :authed
              )
