@@ -3,7 +3,7 @@ defmodule Rivet.Ident.User.ExtId do
   use Rivet.Ecto.Model, id_type: :none
   alias Rivet.Ident
 
-  typed_schema "user_extid" do
+  typed_schema "user_extids" do
     field(:extid, :string)
     field(:origin, :string)
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

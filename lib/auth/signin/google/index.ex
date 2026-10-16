@@ -190,7 +190,7 @@ defmodule Rivet.Auth.Signin.Google do
     # could update locale if we have it here in settings
     %Ident.Factor.FedId{
       name: payload["name"],
-      handle: Ident.Handle.Lib.gen_good_handle(payload["email"]),
+      handle: Ident.Handle.Lib.gen_good_handle!(payload["email"]),
       email: %Ident.Factor.FedId.Email{
         address: payload["email"],
         verified: true

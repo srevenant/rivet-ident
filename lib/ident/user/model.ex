@@ -33,6 +33,7 @@ defmodule Rivet.Ident.User do
     has_many(:factors, Ident.Factor, on_delete: :delete_all)
     has_many(:accesses, Ident.Access, on_delete: :delete_all)
     # has_many(:tags, Ident.TagUser, on_delete: :delete_all)
+    has_many(:ext_ids, Ident.User.ExtId, on_delete: :delete_all)
 
     field(:type, Types, default: :unknown)
     field(:authz, Rivet.Ecto.MapSet, default: nil, virtual: true)

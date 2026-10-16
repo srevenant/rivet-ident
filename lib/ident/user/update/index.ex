@@ -160,7 +160,7 @@ defmodule Rivet.Ident.User.Update do
   end
 
   def update(%{email: %{email: email}, action: :upsert} = args, admin, %Ident.User{} = user) do
-    with {:ok, _email} <- Ident.User.Lib.add_email(user, email) do
+    with {:ok, _email} <- Ident.User.Lib.add_email(user, email, %{}) do
       finish_update(args, :email, admin, refresh(user, :emails))
     end
   end
@@ -285,7 +285,7 @@ defmodule Rivet.Ident.User.Update do
     case get_in(args, [:handle, :handle]) do
       # if unspecified, auto-create a handle
       nil ->
-        {:ok, Map.put(args, :handle, %{handle: Ident.Handle.Lib.gen_good_handle(addr)})}
+        {:ok, Map.put(args, :handle, %{handle: Ident.Handle.Lib.gen_good_handle!(addr)})}
 
       # or check the one they provide
       handle ->

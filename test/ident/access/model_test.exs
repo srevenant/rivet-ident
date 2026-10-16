@@ -13,7 +13,7 @@ defmodule Rivet.Ident.Test.Ident.Access.ModelTest do
 
   # describe "integration tests" do
   #   setup do
-  #     user = insert(:user)
+  #     user = insert(:ident_user)
   #     project = insert(:project)
   #
   #     %{user: user, project: project}

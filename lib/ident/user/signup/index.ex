@@ -1,171 +1,164 @@
 defmodule Rivet.Ident.User.Signup do
   use Rivet.Ident
+  use Rivet.Ecto.Collection.Context, model: User
+  import Rivet.Ecto.Errors, only: [convert_error_changeset: 1]
   alias Rivet.Auth
   require Logger
 
-  ################################################################################
-  @doc """
-  SignUp pipeline
-  """
-  def signup(auth, type \\ :authed)
+  @spec signup(Auth.Domain.t(), type :: :authed | :identity) ::
+          {:ok, Auth.Domain.t()} | {:error, Auth.Domain.t()}
 
-  def signup(%Auth.Domain{hostname: h} = auth, type) when is_binary(h) do
-    {:ok, auth}
-    |> signup_check_handle
-    |> signup_create_user(type)
-    # |> signup_add_password
-    # TODO: be intelligent
-    |> signup_add_factor
-    |> signup_associate_handle
-    |> signup_associate_email
-    |> mainline
+  def signup(auth, type, opts \\ %{})
 
-    # TODO: this should actually shift to a welcome new user dialog, which can ask for other account attributes
+  def signup(%Auth.Domain{} = auth, :authed, opts) do
+    @repo.transact(fn _ ->
+      with :ok <- good_password(auth),
+           {:ok, %Auth.Domain{} = auth} <- new_user(auth, :authed, opts),
+           {:ok, %Auth.Domain{} = auth} <- add_factor(auth),
+           do: sanitize_errors(auth)
+    end)
   end
 
-  # WAS: signup(tenant, input)
-  def signup(input, _) do
-    {:error,
-     %Auth.Domain{
-       log: "No match for signup with args:\n#{inspect(input)}",
-       error: "Sign up Failed"
-     }}
+  def signup(%Auth.Domain{} = auth, :identity, opts) do
+    @repo.transact(fn ->
+      with {:ok, %Auth.Domain{} = auth} <- new_user(auth, :identity, opts),
+           do: sanitize_errors(auth)
+    end)
   end
 
-  # variant with less restrictions
-  def only_identity(%Auth.Domain{} = auth) do
-    {:ok, auth}
-    |> signup_create_user(:identity)
-    |> signup_associate_email
-    |> mainline
+  # def signup_from_email(address, opts \\ []) do
+  #   preload = Keyword.get(opts, :preload, [:user])
+  #
+  #   with {:error, _} <- Email.one([address: address], preload),
+  #        do: signup_create_with_email(address, opts)
+  # end
 
-    # TODO: this should actually shift to a welcome new user dialog, which can ask for other account attributes
+  ##############################################################################
+  defp good_password(%Auth.Domain{input} = auth) do
+    with {:error, error} <- Ident.Factor.Lib.strong_password(input[:secret]),
+         do: {:error, %{auth | error}}
   end
 
-  # result is any as we ignore it
-  @spec signup_abort_create(Auth.Domain.t()) ::
-          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  defp signup_abort_create(auth) do
-    if not is_nil(auth.user) do
-      User.delete(auth.user)
-    end
+  ##############################################################################
+  defp new_user(%Auth.Domain{} = auth, type, opts) do
+    with {:ok, %Auth.Domain{} = auth} <- create_user(auth, type),
+         {:ok, %Auth.Domain{} = auth} <- associate_email(auth, opts),
+         do: add_handle(auth)
   end
 
-  defp signup_check_handle(pass = {:ok, auth = %Auth.Domain{input: %{handle: handle}}}) do
-    case Ident.Handle.Lib.available(handle) do
-      {:ok, _available_msg} ->
-        pass
-
-      {:error, private, public} ->
-        {:error, auth, {private, public}}
-    end
-  end
-
-  defp signup_create_user(
-         {:ok, auth = %Auth.Domain{input: input}},
-         type
-       ) do
-    name = Map.get(input, :name, "")
+  defp create_user(%Auth.Domain{input} = auth, type) do
+    name = Map.get(input, :name, get_default_name(auth))
     settings = Map.get(input, :settings, %{})
 
-    case User.create(%{
-           name: name,
-           settings: settings,
-           type: type
-         }) do
+    case User.create(%{name, settings, type, last_seen: DateTime.utc_now()}) do
       {:ok, user} ->
-        {:ok, %Auth.Domain{auth | status: type, user: user, created: true}}
+        {:ok, %Auth.Domain{auth | user, status: type, created: true}}
 
       {:error, err} ->
-        signup_abort_create(auth)
-        {:error, auth, {"Failed to create user=#{inspect(err)}", "Unable to signup at this time"}}
+        log = "Failed to create user=#{inspect(err)}"
+        error = "Unable to signup at this time"
+        {:error, %{auth | log, error}}
     end
   end
 
-  defp signup_add_factor({:error, _auth, _reason} = pass), do: pass
+  #####
+  defp get_default_name(%{input: %{handle}}) when not_empty_str(handle), do: handle
 
-  defp signup_add_factor(
-         {:ok,
-          auth = %Auth.Domain{
-            user: %User{} = user,
-            input: %{secret: secret}
-          }}
-       ) do
-    case Ident.Factor.Lib.set_password(user, secret) do
-      {:ok, %Ident.Factor{}} ->
-        {:ok, auth}
+  defp get_default_name(%{input: %{email: %{address}}}) when not_empty_str(address),
+    do: String.split(address, "@") |> List.first()
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        signup_abort_create(auth)
-        {:error, auth, {"", Rivet.Ecto.Errors.convert_error_changeset(changeset)}}
+  defp get_default_name(_), do: "no name"
 
-      {:error, reason} ->
-        signup_abort_create(auth)
-        {:error, auth, {"", reason}}
+  ##############################################################################
+  defp add_handle(%Auth.Domain{} = auth) do
+    case Handle.Lib.add_handle(auth) do
+      {:ok, handle} -> {:ok, %Auth.Domain{auth | handle}}
+      {:error, e} -> error(auth, e)
     end
   end
 
-  defp signup_add_factor(
-         {:ok,
-          auth = %Auth.Domain{
-            user: %User{} = user,
-            input: %{fedid: %Ident.Factor.FedId{} = fedid}
-          }}
-       ) do
-    case Ident.Factor.Lib.set_factor(user, fedid) do
-      {:ok, %Ident.Factor{} = factor} ->
-        {:ok, %Auth.Domain{auth | factor: factor}}
+  ##############################################################################
+  # def get_site_(uuid) when is_uuid(uuid) do
+  #   with {:error, :not_found} <- Core.Db.Site.one(id: uuid),
+  #        do: Core.Db.Site.one(domain: uuid)
+  # end
+  #
+  # def get_site_(domain), do: Core.Db.Site.one(domain: domain)
+  #
+  # def signup_create_with_email(site_ref, eaddr, opts \\ %{}) do
+  #   case get_site_(site_ref) do
+  #     {:ok, %Core.Db.Site{} = site} ->
+  #       %Auth.Domain{
+  #         hostname: site.domain,
+  #         input: %{
+  #           email: %{address: eaddr, verified: false}
+  #         },
+  #         site: site
+  #       }
+  #       |> new_user(:identity, opts)
+  #       |> case do
+  #         {:ok, %{email: %Db.Ident.Email{} = email}} -> {:ok, email}
+  #         {:error, _, {inner, outer}} -> {:error, inner, outer}
+  #       end
+  #
+  #     {:error, _} ->
+  #       {:error, "Unable to find site matching: `#{site_ref}`"}
+  #   end
+  # end
+  # when eaddr does not exist
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        signup_abort_create(auth)
-        {:error, auth, {"", Rivet.Ecto.Errors.convert_error_changeset(changeset)}}
+  def signup_create_with_email(address, site, opts \\ %{}) do
+    auth = %Auth.Domain{site, hostname: site.domain, input: %{email: %{address, verified: false}}}
+    signup(auth, :identity, opts)
+  end
+
+  # ##############################################################################
+  # # result is any as we ignore it
+  # ### todo: flip to transaction
+  # @spec signup_abort_create(Auth.Domain.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  # defp signup_abort_create(auth) do
+  #   if not is_nil(auth.user) do
+  #     User.delete(auth.user)
+  #   end
+  # end
+
+  ##############################################################################
+  # set password
+  defp add_factor(%Auth.Domain{user: %User{}, input: %{secret}} = auth) do
+    case Ident.Factor.Lib.set_password(auth.user, secret) do
+      {:ok, %Ident.Factor{}} -> {:ok, auth}
+      {:error, e} -> error(auth, e)
     end
   end
 
-  defp signup_associate_handle({:error, _auth, _reason} = pass), do: pass
+  # set fedid
+  alias Ident.Factor.FedId
 
-  defp signup_associate_handle(
-         {:ok,
-          auth = %Auth.Domain{
-            user: %User{} = user,
-            input: %{handle: handle}
-          }}
-       ) do
-    case Ident.Handle.create(%{handle: handle, user_id: user.id}) do
-      {:ok, handle} ->
-        {:ok, %Auth.Domain{auth | handle: handle}}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        signup_abort_create(auth)
-
-        {:error, auth, {"", Rivet.Ecto.Errors.convert_error_changeset(changeset)}}
+  defp add_factor(%Auth.Domain{user: %User{}, input: %{fedid: %FedId{} = fedid}} = auth) do
+    case Ident.Factor.Lib.set_factor(auth.user, fedid) do
+      {:ok, %Ident.Factor{} = factor} -> {:ok, %Auth.Domain{auth | factor}}
+      {:error, e} -> error(auth, e)
     end
   end
 
-  defp signup_associate_email({:error, _auth, _reason} = pass), do: pass
+  defp error(auth, %Ecto.Changeset{} = chg),
+    do: {:error, %{auth | error: convert_error_changeset(chg)}}
 
-  defp signup_associate_email(
-         {:ok,
-          auth = %Auth.Domain{
-            user: %User{} = user,
-            input: %{email: %{address: eaddr, verified: status}}
-          }}
-       )
-       when is_binary(eaddr) do
-    case User.Lib.add_email(user, eaddr, status) do
-      {:ok, email} ->
-        {:ok, %Auth.Domain{auth | email: email}}
+  defp error(auth, error), do: {:error, %{auth | error}}
 
-      {:error, msg} ->
-        signup_abort_create(auth)
-        {:error, auth, {"", msg}}
+  ##############################################################################
+  defp associate_email(%Auth.Domain{user: %User{}, input: %{email: %{address}}} = auth, opts)
+       when is_binary(address) do
+    verified = auth.input[:verified] || false
+    case User.Lib.add_email(auth.user, address, %{verified}, opts) do
+      {:ok, email} -> {:ok, %Auth.Domain{auth | email}}
+      {:error, msg} -> error(auth, msg)
     end
   end
 
+  ##############################################################################
   # after success, create a new struct so we don't carry around unecessary or
   # insecure baggage
-  defp mainline({:ok, auth = %Auth.Domain{site, hostname, user, handle, created, status}}),
+  defp sanitize_errors(%Auth.Domain{site, hostname, user, handle, created, status}),
     do: {:ok, %Auth.Domain{site, hostname, user, handle, created, status}}
-
-  defp mainline({:error, _auth, {log, error}}), do: {:error, %Auth.Domain{log, error}}
 end

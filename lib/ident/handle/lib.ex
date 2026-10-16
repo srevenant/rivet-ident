@@ -1,5 +1,6 @@
 defmodule Rivet.Ident.Handle.Lib do
-  alias Rivet.Ident
+  use Rivet.Ident
+  alias Rivet.Auth
   use Rivet.Ecto.Collection.Context, model: Ident.Handle
 
   @doc """
@@ -17,7 +18,7 @@ defmodule Rivet.Ident.Handle.Lib do
           {:ok, :available}
 
         {:ok, _} ->
-          {:error, "existing handle not by user", "Sorry, that handle isn't available"}
+          {:error, "existing handle", "Sorry, that handle isn't available"}
 
         {:error, err} ->
           {:error, "unexpected error=#{inspect(err)}", "Sorry, that handle isn't available"}
@@ -25,7 +26,7 @@ defmodule Rivet.Ident.Handle.Lib do
     end
   end
 
-  defp clean_handle(handle) when is_binary(handle) do
+  defp clean_handle!(handle) when is_binary(handle) do
     String.split(handle, "@", parts: 2)
     |> Enum.at(0)
     |> String.downcase()
@@ -34,18 +35,56 @@ defmodule Rivet.Ident.Handle.Lib do
     |> String.replace(~r/(^-|-$)/, "")
   end
 
+  defp clean_handle!(_), do: ""
+
+  def clean_handle(handle) do
+    case clean_handle!(handle) do
+      handle when not_empty_str(handle) -> {:ok, handle}
+      _ -> :error
+    end
+  end
+
   @chars String.graphemes("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
   defp randchar(), do: Enum.random(@chars)
 
-  def gen_good_handle(handle) do
-    handle = clean_handle(handle)
+  ##############################################################################
+  def add_handle(%Auth.Domain{user: %{id: user_id}} = auth) when is_uuid(user_id) do
+    with {:ok, handle} <- derive_handle(auth), do: Handle.create(%{handle, user_id})
+  end
+
+  ##############################################################################
+  def gen_good_handle!(handle) do
+    handle = clean_handle!(handle)
 
     case Ident.Handle.Lib.available(handle) do
       {:error, _, _} ->
-        gen_good_handle(handle <> randchar() <> randchar())
+        gen_good_handle!(handle <> randchar() <> randchar())
 
       {:ok, _available_msg} ->
         handle
     end
   end
+
+  ##############################################################################
+  def derive_handle(%Auth.Domain{} = auth),
+    do: derive_handle_(auth, [&get_from_input/1, &get_from_email/1, &get_from_name/1])
+
+  defp derive_handle_(auth, [next | rest]) do
+    case next.(auth) do
+      {:ok, handle} -> {:ok, gen_good_handle!(handle)}
+      :error -> derive_handle_(auth, rest)
+    end
+  end
+
+  defp derive_handle_(_, []),
+    do: {:ok, gen_good_handle!(randchar() <> randchar() <> randchar() <> randchar())}
+
+  defp get_from_input(%Auth.Domain{input: %{handle}}), do: {:ok, handle}
+  defp get_from_input(_), do: :error
+
+  defp get_from_email(%Auth.Domain{input: %{email: %{address}}}), do: {:ok, address}
+  defp get_from_email(_), do: :error
+
+  defp get_from_name(%Auth.Domain{user: %{name}}), do: {:ok, name}
+  defp get_from_name(_), do: :error
 end

@@ -3,11 +3,11 @@ defmodule Rivet.Ident.Test.Ident.User.Data.ModelTest do
   alias Rivet.Ident.User.Data
 
   test "model tests" do
-    assert %User.Data{id} = insert(:ident_user_data)
+    assert %Data{id} = insert(:ident_user_data)
     assert is_uuid(id)
-    assert %User.Data{id: ^id} = User.Data.one!(id: id)
+    assert %Data{id: ^id} = Data.one!(id: id)
     params = params_with_assocs(:ident_user_data)
-    assert {:ok, %User.Data{} = x} = User.Data.create(params)
-    assert {:ok, _} = User.Data.delete(x)
+    assert {:ok, %Data{} = x} = Data.create(params)
+    assert {:ok, _} = Data.delete(x)
   end
 end

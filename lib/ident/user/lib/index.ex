@@ -4,6 +4,7 @@ defmodule Rivet.Ident.User.Lib do
   alias Rivet.Auth
   require Logger
 
+  #### TODO: replace with Rivet.Search
   def search(%{matching: match}, args) do
     match = "%#{String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))}%"
 
@@ -53,7 +54,7 @@ defmodule Rivet.Ident.User.Lib do
   ##############################################################################
   # only periodically update last seen, to avoid severe performance hit
   @update_min_seconds 60
-  def user_seen(%User{} = user, _ \\ []) do
+  def user_seen(%User{} = user, _opts \\ []) do
     now = DateTime.utc_now()
 
     if is_nil(user.last_seen) or DateTime.diff(now, user.last_seen, :second) > @update_min_seconds do
@@ -119,32 +120,24 @@ defmodule Rivet.Ident.User.Lib do
   def all_since(time), do: User.all!(from(u in User, where: u.last_seen > ^time))
 
   ##############################################################################
-  @doc """
-  ```
-  iex> clean_email(" narf@narf.com.")
-  "narf@narf.com"
-  ```
-  """
-  def clean_email(eaddr) do
-    eaddr
-    |> String.trim()
-    |> String.replace(~r/\.$/, "")
-  end
-
-  def add_email(user, eaddr, verified \\ false) do
-    eaddr = clean_email(eaddr)
+  def add_email(user, eaddr, meta, opts \\ %{}) do
+    eaddr = Email.Lib.clean_email(eaddr)
 
     # basic
-    case Email.one(address: eaddr) do
-      {:ok, %Email{} = email} ->
-        Logger.warning("failed adding email", user_id: user.id, eaddr: eaddr)
+    case Email.one([address: eaddr], [:user]) do
+      {:ok, %Email{user_id} = email} ->
+        if user_id != user.id do
+          Logger.warning("Cannot add existing email to different user", user_id: user.id, eaddr: eaddr)
 
-        Rivet.Ident.mailer_template(:user_failed_change).queue(
-          email,
-          "add this email address to a different account"
-        )
+          Rivet.Ident.mailer_template(:user_failed_change).queue(
+            email,
+            "add email #{eaddr} to a different account"
+          )
 
-        {:error, "Sorry, that email address is associated with a different account."}
+          {:error, "Sorry, that email address is associated with a different account."}
+        else
+          {:ok, email}
+        end
 
       {:error, _} ->
         has_email? = Email.exists?(user_id: user.id)
@@ -152,13 +145,13 @@ defmodule Rivet.Ident.User.Lib do
         # add it
         case Email.create(%{
                user_id: user.id,
-               verified: verified,
+               verified: Map.get(meta, :verified, false),
                primary: not has_email?,
                address: eaddr
              }) do
           {:ok, %Email{} = email} ->
-            email = %Email{email | user: user}
-            Rivet.Ident.mailer_template(:user_verification).queue(email)
+            if opts[:no_send] != true,
+              do: send_verify_email(%Email{email | user: user})
 
             {:ok, email}
 
@@ -168,15 +161,20 @@ defmodule Rivet.Ident.User.Lib do
     end
   end
 
-  def check_user_status({:ok, %Auth.Domain{user: %User{type: :disabled}}}),
-    do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
+  def send_verify_email(%Email{address: eaddr} = email, _ \\ nil) do
+    Logger.info("verify email", user_id: email.user_id, eaddr: eaddr)
+    Rivet.Ident.mailer_template(:user_verification).queue(email)
+  end
 
+  ##############################################################################
   def check_user_status(%User{type: :disabled}),
     do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
   def check_user_status(%User{} = user), do: {:ok, user}
+  def check_user_status({:ok, %Auth.Domain{user: %User{} = user}}), do: check_user_status(user)
   def check_user_status(pass), do: pass
 
+  ##############################################################################
   def user_enabled?(%User{type: :disabled}), do: false
   def user_enabled?(%User{}), do: true
 
@@ -222,6 +220,63 @@ defmodule Rivet.Ident.User.Lib do
   def has_other_admin?(_, _), do: true
 
   ##############################################################################
+  def delete_each([nil | rest], mod), do: delete_each(rest, mod)
+
+  def delete_each([x | rest], mod) do
+    with {:ok, _} <- mod.delete(x), do: delete_each(rest, mod)
+  end
+
+  def delete_each([], _), do: :ok
+
+  @doc """
+
+  We don't actually delete the base account, so we have to do the related things
+  by hand, where we do want to sanitize them.
+
+  iex> u = insert(:ident_user)
+  iex> {:ok, _} = delete_account(u)
+
+  """
+  # , :mailer_subs]
+  @preloads [:emails, :factors, :handle, :ext_ids, :phones]
+  def delete_account(%User{} = u) do
+    with {:ok, u} <- User.preload(u, @preloads),
+         {:ok, u} <- User.update(u, %{name: "DELETED", type: :disabled}),
+         :ok <- delete_each(u.emails, Email),
+         # :ok <- delete_each(u.mailer_subs, Rivet.Mailer.Subs),
+         :ok <- delete_each([u.handle], Ident.Handle),
+         :ok <- delete_each(u.phones, Ident.Phone),
+         :ok <- delete_each(u.factors, Ident.Factor) do
+      # different primary key
+      u_id = u.id
+
+      Enum.each(u.ext_ids, fn %{origin: o} ->
+        from(i in Ident.User.ExtId, where: i.origin == ^o and i.user_id == ^u_id)
+        |> Repo.delete_all()
+      end)
+
+      {:ok, u}
+    end
+  end
+
+  def delete_account(%User{} = user, code) when is_binary(code) do
+    expires = Application.get_env(:core, :user_code_expires)[:delete_request]
+
+    case User.Code.one(code: code, user_id: user.id) do
+      {:ok, code} ->
+        if DateTime.diff(DateTime.utc_now(), code.inserted_at, :minute) > expires do
+          {:error, "Unable to continue"}
+        else
+          # TODO: verify code isn't expired
+          delete_account(user)
+        end
+
+      _ ->
+        {:error, "Unable to continue"}
+    end
+  end
+
+  ##############################################################################
   @doc """
   ```
   iex> get_user("asdf")
@@ -252,9 +307,8 @@ defmodule Rivet.Ident.User.Lib do
   def get_user(id, preload), do: get_user_by_handle(id, preload)
 
   def get_user_by_handle(id, preload \\ []) do
-    case Handle.one([handle: id], user: preload) do
-      {:ok, %{user: user}} -> {:ok, user}
-      {:error, _} -> {:error, :not_found}
+    with {:ok, %{user} = handle} <- Handle.one([handle: id], [:user]) do
+      User.preload(%User{user | handle}, preload)
     end
   end
 end

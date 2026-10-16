@@ -158,7 +158,7 @@ defmodule Rivet.Ident.Test.IdentFactory do
 
         %Ident.User.Data{
           user: user,
-          type: :license,
+          type: :address,
           value: %{}
         }
       end

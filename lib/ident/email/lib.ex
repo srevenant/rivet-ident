@@ -16,4 +16,16 @@ defmodule Rivet.Ident.Email.Lib do
     from(e in Email, where: e.user_id == ^id and e.verified)
     |> Repo.exists?()
   end
+
+  @doc """
+  ```
+  iex> clean_email(" narf@narf.com.")
+  "narf@narf.com"
+  ```
+  """
+  def clean_email(eaddr) do
+    eaddr
+    |> String.trim()
+    |> String.replace(~r/\.$/, "")
+  end
 end

@@ -14,10 +14,13 @@ defmodule Rivet.Auth.Identify do
 
       _other ->
         # create new user profile with identity info only
-        Ident.User.Signup.only_identity(%Auth.Domain{
-          hostname: hostname,
-          input: %{email: %{address: eaddr, verified: false}, settings: %{}}
-        })
+        Ident.User.Signup.signup(
+          %Auth.Domain{
+            hostname: hostname,
+            input: %{email: %{address: eaddr, verified: false}, settings: %{}}
+          },
+          :identify
+        )
     end
   end
 

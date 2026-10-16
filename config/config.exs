@@ -1,5 +1,9 @@
 import Config
 
+config :logger, :console,
+  format: {Rivet.Utils.UniformLogFormat, :format},
+  metadata: :all
+
 config :logger, level: :info
 config :ex_unit, capture_log: true
 

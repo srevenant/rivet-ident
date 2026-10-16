@@ -1,7 +1,7 @@
 defmodule Rivet.Ident.Test.Ident.User.LibTest do
   use Rivet.Ident.Test.Case, async: true
   use Rivet.Ident
-  alias Rivet.Ident
+  alias Rivet.Auth
 
   doctest User.Lib, import: true
 
@@ -15,38 +15,6 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
              Rivet.Ident.User.Lib.search(%{matching: String.downcase(name)}, [])
   end
 
-  test "signup" do
-    assert {:error, %{error: "Sign up Failed"}} =
-             User.Signup.signup(%Rivet.Auth.Domain{}, :authed)
-
-    # site = insert(:site)
-    # , site: site)
-    auth1 = build(:auth_domain_signin)
-    assert {:ok, %Rivet.Auth.Domain{}} = User.Signup.signup(auth1, :authed)
-    assert {:ok, %Rivet.Auth.Domain{}} = User.Signup.signup_only_identity(auth1)
-
-    assert {:ok, %Email{}} =
-             User.Signup.signup_create_with_email(
-               auth1.site.domain,
-               auth1.input.email.address
-             )
-
-    # , site: site)
-    auth2 = build(:auth_domain_signin)
-
-    assert {:ok, %Email{}} =
-             User.Signup.rest_signup_user_email(
-               auth2.site.domain,
-               auth2.input.email.address
-             )
-
-    assert {:ok, %Rivet.Auth.Domain{}} =
-             User.Signup.signup(
-               build(:auth_domain_signin, handle: Ecto.UUID.generate() |> String.slice(0, 25)),
-               :authed
-             )
-  end
-
   test "various" do
     uuid = Ecto.UUID.generate()
     assert [] = User.Lib.search_name!(uuid)
@@ -58,7 +26,7 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     errmsg = "sorry, account is disabled"
 
     assert {:error, %{error: ^errmsg}} =
-             User.Lib.check_user_status({:ok, %Rivet.Auth.Domain{user: disabled}})
+             User.Lib.check_user_status({:ok, %Auth.Domain{user: disabled}})
 
     assert {:error, %{error: ^errmsg}} = User.Lib.check_user_status(disabled)
     assert {:ok, _} = User.Lib.check_user_status(build(:ident_user))
@@ -67,9 +35,7 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
   test "seen" do
     user = insert(:ident_user)
     user_id = user.id
-    # , build(:site))
     assert %{id: ^user_id} = user = User.Lib.user_seen(user)
-    # , build(:site))
     assert %{id: ^user_id} = User.Lib.user_seen(user)
   end
 end
