@@ -5,6 +5,7 @@ defmodule Rivet.Auth.Refresh do
   TODO: Extract from Phoenix/WebSvc better, abstract so conn isn't needed
         This will require a module that is imported into WebSvc -BJG
   """
+  use Rivet.Ident
   alias Rivet.Auth
 
   @doc """
@@ -35,7 +36,7 @@ defmodule Rivet.Auth.Refresh do
   ##############################################################################
   @doc ~S"""
   ```
-  iex> {:error, %Auth.Domain{log: "Invalid authorization"}} = extract_validation_token({:ok, %{sub: "cas2:asdf"}}, %Auth.Domain{})
+  iex> {:error, %Auth.Domain{log: "Cannot find matching key for authorization type :val"}} = extract_validation_token({:ok, %{sub: "cas2:asdf"}}, %Auth.Domain{})
   iex> {:error, %Auth.Domain{log: "Unable to match validation token subject: \"wut\""}} = extract_validation_token({:ok, "wut"}, %Auth.Domain{})
   iex> {:error, %Auth.Domain{log: "narf!"}} = extract_validation_token({:error, "narf!"}, %Auth.Domain{})
   ```
@@ -82,10 +83,10 @@ defmodule Rivet.Auth.Refresh do
   """
   def check_refresh_token(
         {:ok, %Auth.Domain{token: %{ref: token}} = refauth,
-         %Auth.Domain{factor: %Rivet.Ident.Factor{value: secret}} = valauth}
+         %Auth.Domain{factor: %Ident.Factor{value: secret}} = valauth}
       )
       when not is_nil(secret) do
-    case Auth.Token.Verify.jwt(token, [secret]) do
+    case Auth.Token.Verify.jwt(token, refauth.type, [secret]) do
       {:ok, _} ->
         {:ok, %Auth.Domain{refauth | status: :authed}, valauth}
 

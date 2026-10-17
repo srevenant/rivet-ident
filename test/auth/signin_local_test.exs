@@ -1,6 +1,10 @@
 defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
   @moduledoc """
+
+  NOTE NOTE NOTE NOTE
+
   This is a slow test because of all the password hash checking.
+
   """
   use Rivet.Ident.Test.Case, async: true
   alias Rivet.Auth

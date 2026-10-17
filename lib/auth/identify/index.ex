@@ -7,18 +7,15 @@ defmodule Rivet.Auth.Identify do
   @doc """
   """
   @spec identify(String.t(), map()) :: {:ok | :error, Auth.Domain.t()} | {:exists, %Ident.Email{}}
-  def identify(hostname, %{email: eaddr}) do
-    case Ident.Email.all!(address: eaddr) do
+  def identify(hostname, %{email: address}) do
+    case Ident.Email.all!(address: address) do
       [%Ident.Email{} = email] ->
         {:exists, email}
 
       _other ->
         # create new user profile with identity info only
         Ident.User.Signup.signup(
-          %Auth.Domain{
-            hostname: hostname,
-            input: %{email: %{address: eaddr, verified: false}, settings: %{}}
-          },
+          %Auth.Domain{hostname, input: %{email: %{address, verified: false}, settings: %{}}},
           :identify
         )
     end

@@ -1,12 +1,5 @@
 defmodule Rivet.Auth.Access do
-  @moduledoc """
-  Validation of tokens for accessing site (after refresh)
-
-  Note: this is the start of the next iteration, and it will replace
-  Rivet.Auth.Token
-  """
-  alias Rivet.Auth
-  alias Rivet.Ident
+  use Rivet.Ident
 
   @doc """
   ```
@@ -26,9 +19,6 @@ defmodule Rivet.Auth.Access do
 
   @spec check(auth_header :: list(String.t()), Auth.Domain.t()) ::
           {:ok | :missing | :error, Auth.Domain.t()}
-  # | def(check([], %Auth.Domain{} = auth),
-  #     do: {:missing, %Auth.Domain{auth | log: "Missing authorization header"}}
-  #   )
   def check([""], %Auth.Domain{} = auth),
     do: {:missing, %Auth.Domain{auth | log: "Missing authorization header value"}}
 
@@ -61,7 +51,7 @@ defmodule Rivet.Auth.Access do
         # this checks the validation token embedded within the refresh token
         with {:ok, %Auth.Domain{} = auth} <- Auth.Token.Check.jwt(auth) do
           case Ident.User.Lib.check_user_status(auth) do
-            {:ok, %Ident.User{}} -> {:ok, auth}
+            {:ok, %Ident.User{} = user} -> {:ok, %{auth | user}}
             # we passed signature, but the claims weren't right
             {:error, %Auth.Domain{} = auth} -> {:error, %Auth.Domain{auth | status: :unknown}}
           end
