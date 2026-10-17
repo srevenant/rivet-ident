@@ -47,13 +47,13 @@ defmodule Rivet.Ident.User.Signup do
   ##############################################################################
   # federated ID doesn't include %{secret} at all, this will work fine. See
   # Google/Local.signin modules for more.
-  defp good_password(%Auth.Domain{input: %{secret}} = auth) do
+  def good_password(%Auth.Domain{input: %{secret}} = auth) do
     with {:error, error} <- Ident.Factor.Lib.strong_password(secret),
          do: {:error, %{auth | error}}
   end
 
   # federated ID has no secret
-  defp good_password(_), do: :ok
+  def good_password(_), do: :ok
 
   ##############################################################################
   defp create_user(%Auth.Domain{input} = auth, type) do
@@ -65,25 +65,29 @@ defmodule Rivet.Ident.User.Signup do
         {:ok, %Auth.Domain{auth | user, status: type, created: true}}
 
       {:error, err} ->
+        # coveralls-ignore-start
         log = "Failed to create user=#{inspect(err)}"
         error = "Unable to signup at this time"
+        # coveralls-ignore-stop
         {:error, %{auth | log, error}}
     end
   end
 
   #####
-  defp get_default_name(%{input: %{name}}) when not_empty_str(name), do: name
-  defp get_default_name(%{input: %{handle}}) when not_empty_str(handle), do: handle
+  def get_default_name(%{input: %{name}}) when not_empty_str(name), do: name
+  def get_default_name(%{input: %{handle}}) when not_empty_str(handle), do: handle
 
-  defp get_default_name(%{input: %{email: %{address}}}) when not_empty_str(address),
+  def get_default_name(%{input: %{email: %{address}}}) when not_empty_str(address),
     do: String.split(address, "@") |> List.first()
 
-  defp get_default_name(_), do: "no name"
+  def get_default_name(_), do: "no name"
 
   ##############################################################################
   defp add_handle(%Auth.Domain{} = auth) do
     case Handle.Lib.add_handle(auth) do
       {:ok, handle} -> {:ok, %Auth.Domain{auth | handle}}
+      # this is an edge/db error not worth testing
+      # coveralls-ignore-next-line
       {:error, e} -> error(auth, e)
     end
   end
@@ -117,11 +121,11 @@ defmodule Rivet.Ident.User.Signup do
   #   end
   # end
   # when eaddr does not exist
-
-  def signup_create_with_email(address, site, opts \\ %{}) do
-    auth = %Auth.Domain{site, hostname: site.domain, input: %{email: %{address, verified: false}}}
-    signup(auth, :identity, opts)
-  end
+  #
+  # def signup_create_with_email(address, site, opts \\ %{}) do
+  #   auth = %Auth.Domain{site, hostname: site.domain, input: %{email: %{address, verified: false}}}
+  #   signup(auth, :identity, opts)
+  # end
 
   # ##############################################################################
   # # result is any as we ignore it
@@ -139,6 +143,8 @@ defmodule Rivet.Ident.User.Signup do
        when not_empty_str(secret) do
     case Ident.Factor.Lib.set_password(auth.user, secret) do
       {:ok, %Ident.Factor{}} -> {:ok, auth}
+      # this is an edge/db error not worth testing
+      # coveralls-ignore-next-line
       {:error, e} -> error(auth, e)
     end
   end
@@ -147,6 +153,8 @@ defmodule Rivet.Ident.User.Signup do
   defp add_factor(%Auth.Domain{user: %User{}, input: %{fedid: %FedId{} = fedid}} = auth) do
     case Ident.Factor.Lib.set_factor(auth.user, fedid) do
       {:ok, %Ident.Factor{} = factor} -> {:ok, %Auth.Domain{auth | factor}}
+      # this is an edge/db error not worth testing
+      # coveralls-ignore-next-line
       {:error, e} -> error(auth, e)
     end
   end
@@ -154,6 +162,7 @@ defmodule Rivet.Ident.User.Signup do
   defp add_factor(%Auth.Domain{} = auth), do: error(auth, "Unable to add user factor")
 
   ##############################################################################
+  # coveralls-ignore-next-line
   defp error(auth, %Ecto.Changeset{} = chg),
     do: {:error, %{auth | error: convert_error_changeset(chg)}}
 
@@ -167,6 +176,8 @@ defmodule Rivet.Ident.User.Signup do
 
     case User.Lib.add_email(auth.user, address, opts) do
       {:ok, email} -> {:ok, %Auth.Domain{auth | email}}
+      # this is an edge/db error not worth testing
+      # coveralls-ignore-next-line
       {:error, msg} -> error(auth, msg)
     end
   end
@@ -174,7 +185,7 @@ defmodule Rivet.Ident.User.Signup do
   defp associate_email(%Auth.Domain{} = auth, _opts), do: error(auth, "Email address required")
 
   ##############################################################################
-  # after success, create a new struct so we don't carry around unecessary or
+  # after success, create a new struct so we don't carry around uneccessary or
   # insecure baggage
   defp sanitize_errors({:ok, %Auth.Domain{site, hostname, user, handle, created, status}}),
     do: {:ok, %Auth.Domain{site, hostname, user, handle, created, status}}

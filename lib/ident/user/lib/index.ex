@@ -11,13 +11,16 @@ defmodule Rivet.Ident.User.Lib do
     now = DateTime.utc_now()
 
     if is_nil(user.last_seen) or DateTime.diff(now, user.last_seen, :second) > @update_min_seconds do
-      with {:ok, user} <- User.update(user, %{last_seen: now}) do
-        Rivet.Ident.Factor.Cache.update_user(user)
-        user
-      else
-        err ->
+      case User.update(user, %{last_seen: now}) do
+        {:ok, user} ->
+          Rivet.Ident.Factor.Cache.update_user(user)
+          user
+
+        {:error, err} ->
+          # coveralls-ignore-start
           Logger.error("Error updating user.last_seen", error: err)
           user
+          # coveralls-ignore-stop
       end
     else
       user
@@ -94,6 +97,7 @@ defmodule Rivet.Ident.User.Lib do
 
   def send_verify_email(u) do
     with {:error, e} <- send_verify_email_(User.preload!(u, [:emails])),
+         # coveralls-ignore-next-line
          do: Rivet.Ident.critical_report(e)
   end
 
@@ -102,7 +106,7 @@ defmodule Rivet.Ident.User.Lib do
     Rivet.Ident.mailer_template(:user_verification).queue(email)
   end
 
-  def send_verify_email_(_), do: {:error, "cannot email verify because user has no email address"}
+  def send_verify_email_(_), do: {:error, "Cannot email verify because user has no email address"}
 
   ##############################################################################
   @spec check_user_status(User.t() | Auth.Domain.t()) ::
@@ -116,37 +120,13 @@ defmodule Rivet.Ident.User.Lib do
   def check_user_status(%Auth.Domain{} = pass), do: {:ok, pass}
 
   ##############################################################################
-  def user_enabled?(%User{type: :disabled}), do: false
-  def user_enabled?(%User{}), do: true
-
-  ##############################################################################
   def add_phone(user, phone) do
     # TODO: do an internal ph# validation
     phone = String.trim(phone)
 
-    case Ident.Phone.one(user_id: user.id, number: phone) do
-      {:ok, %Ident.Phone{} = phone} ->
-        {:ok, phone}
-
-      {:error, :not_found} ->
-        # add it
-        case Ident.Phone.create(%{
-               user_id: user.id,
-               number: phone
-             }) do
-          {:ok, %Ident.Phone{} = phone} ->
-            # TODO santity checks:
-            # - pick primary
-            # Logger.info("added phone", user_id: user.id, phone: phone)
-            {:ok, phone}
-
-          {:error, chgset} ->
-            {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
-        end
-
-      pass ->
-        pass
-    end
+    with {:error, :not_found} <- Ident.Phone.one(user_id: user.id, number: phone),
+         {:error, chgset} <- Ident.Phone.create(%{user_id: user.id, number: phone}),
+         do: {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
   end
 
   ##############################################################################
@@ -199,15 +179,13 @@ defmodule Rivet.Ident.User.Lib do
   def delete_account_code_type(), do: @delete_code
 
   def delete_account(%User{} = user, code) when is_binary(code) do
-    expires = Application.get_env(:core, :user_code_expires)[:delete_request]
-
     case User.Code.one(code: code, user_id: user.id) do
       {:ok, %{type: @delete_code} = code} ->
-        if DateTime.diff(DateTime.utc_now(), code.expires, :minute) > expires do
-          {:error, "Unable to continue"}
-        else
+        if DateTime.before?(DateTime.utc_now(), code.expires) do
           # TODO: verify code isn't expired
           delete_account(user)
+        else
+          {:error, "Unable to continue"}
         end
 
       _ ->

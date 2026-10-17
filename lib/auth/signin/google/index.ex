@@ -198,7 +198,7 @@ defmodule Rivet.Auth.Signin.Google do
       handle: Ident.Handle.Lib.gen_good_handle!(payload["email"]),
       email: %Ident.Factor.FedId.Email{
         address: payload["email"],
-        verified: true
+        verified: false
       },
       phone: nil,
       provider: %Ident.Factor.FedId.Provider{

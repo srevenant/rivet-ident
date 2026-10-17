@@ -72,11 +72,10 @@ defmodule Rivet.Ident.Test.IdentFactory do
         }
       end
 
+      defp gen_handle(), do: String.slice(sequence("h") <> Ecto.UUID.generate(), 0..29)
+
       def ident_handle_factory do
-        %Ident.Handle{
-          user: build(:ident_user),
-          handle: String.slice(sequence("h") <> Ecto.UUID.generate(), 0..29)
-        }
+        %Ident.Handle{user: build(:ident_user), handle: gen_handle()}
       end
 
       def ident_phone_factory do
@@ -110,18 +109,20 @@ defmodule Rivet.Ident.Test.IdentFactory do
       end
 
       def auth_domain_signin_factory(args) do
-        input = %{
-          email: %{address: Faker.Internet.email()},
-          secret: "BigPassword98!?"
-        }
+        handle =
+          case args do
+            %{handle} when not_empty_str(handle) -> handle
+            _ -> gen_handle()
+          end
+
+        args = Map.delete(args, :handle)
 
         %Rivet.Auth.Domain{
-          input:
-            if Map.has_key?(args, :handle) do
-              Map.put(input, :handle, args.handle)
-            else
-              input
-            end
+          input: %{
+            handle,
+            email: %{address: Faker.Internet.email()},
+            secret: "BigPassword98!?"
+          }
         }
         |> merge_attributes(args)
       end
@@ -132,6 +133,28 @@ defmodule Rivet.Ident.Test.IdentFactory do
           user: build(:ident_user),
           type: :unknown,
           expires_at: Rivet.Utils.Time.epoch_time(:second) + 900
+        }
+      end
+
+      def ident_factor_fedid_factory do
+        %Ident.Factor.FedId{
+          name: "fedid" <> Ecto.UUID.generate(),
+          handle: gen_handle(),
+          email: %Ident.Factor.FedId.Email{
+            address: Ecto.UUID.generate() <> Faker.Internet.email(),
+            verified: false
+          },
+          provider: %Ident.Factor.FedId.Provider{
+            type: :google
+            # sub: payload["sub"],
+            # jti: payload["jti"],
+            # iss: payload["iss"],
+            # iat: payload["iat"],
+            # exp: payload["exp"],
+            # azp: payload["azp"],
+            # aud: payload["aud"],
+            # token: payload["token"]
+          }
         }
       end
 

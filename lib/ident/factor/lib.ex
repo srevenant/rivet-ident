@@ -122,13 +122,9 @@ defmodule Rivet.Ident.Factor.Lib do
         }
         |> Map.merge(overrides)
 
-      case Ident.Factor.create(params) do
-        {:error, _} = pass ->
-          pass
-
-        {:ok, factor} ->
-          clean_password_history(user.id, factor.id)
-          {:ok, factor}
+      with {:ok, factor} <- Ident.Factor.create(params) do
+        clean_password_history(user.id, factor.id)
+        {:ok, factor}
       end
     end
   end

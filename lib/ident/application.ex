@@ -4,7 +4,11 @@ defmodule Rivet.Ident.Application do
   def start(_type, _args) do
     Rivet.Auth.Settings.start()
 
-    children = [Rivet.Ident.Factor.Cache, Rivet.Auth.Cache]
+    children = [
+      Rivet.Auth.Cache,
+      Rivet.Ident.Factor.Cache,
+      Rivet.Ident.User.Cache
+    ]
 
     children =
       case Application.get_env(:rivet_ident, :federated) do
