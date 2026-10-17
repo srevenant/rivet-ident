@@ -36,21 +36,12 @@ defmodule Rivet.Ident.MixProject do
       env: [rivet: [app: :rivet_ident, base: Rivet.Ident, models_dir: "ident"]],
       # NOTE: :inets is required for :httpd_util.convert_request_date to not
       # throw a warning in static compile verification from OTP
-      extra_applications: [:logger, {:ex_unit, :optional}, :inets]
+      extra_applications: [:logger, :inets]
     ]
   end
 
-  #
-  # defp rivet_env(:test),
-  #   do: [
-  #     lib_dir: "deps/rivet/test/fixtures/rivet/lib",
-  #     priv_dir: "deps/rivet/test/fixtures/rivet/priv"
-  #   ]
-  #
-  # defp rivet_env(_), do: []
-
   defp elixirc_paths(:test), do: ["lib", "test/support", "test/fixtures"]
-  defp elixirc_paths(_), do: []
+  defp elixirc_paths(_), do: ["lib"]
 
   defp aliases do
     [
@@ -66,24 +57,23 @@ defmodule Rivet.Ident.MixProject do
     [
       {:absinthe, ">= 1.7.0 and < 2.0.0"},
       {:bcrypt_elixir, "~> 3.3"},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:es6_maps, "~> 1.0.2"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:ex_machina, "~> 2.7", only: :test},
       {:excoveralls, "~> 0.18", only: :test},
-      {:faker, "~> 0.18", only: :test},
+      {:faker, "~> 0.18", only: [:dev, :test]},
       {:jason, "~> 1.4"},
       {:joken, "~> 2.6"},
       {:jose, "~> 1.11"},
-      {:junit_formatter, "~> 3.1", only: [:test]},
-      {:mix_test_watch, "~> 1.0", only: [:test, :dev], runtime: false},
-      {:postgrex, "~> 0.22.4"},
+      {:mix_test_watch, "~> 1.4", only: [:dev, :test], runtime: false},
       {:puid, "~> 2.3"},
       {:random_password, "~> 1.2"},
       # {:rivet, "~> 2.7"},
       {:rivet, git: "https://github.com/srevenant/rivet/", branch: "mailer-updates"},
       {:transmogrify, "~> 2.0.2"},
-      {:typed_ecto_schema, "~> 0.4.1"},
+      # {:typed_ecto_schema, "~> 0.4.1"},
       {:yaml_elixir, "~> 2.8"}
     ]
   end
@@ -92,8 +82,7 @@ defmodule Rivet.Ident.MixProject do
     [
       files: ~w(lib .formatter.exs mix.exs README* LICENSE* priv/rivet test/fixtures),
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => @source_url},
-      source_url: @source_url
+      links: %{"GitHub" => @source_url}
     ]
   end
 
