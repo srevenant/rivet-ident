@@ -127,8 +127,6 @@ defmodule Rivet.Auth.Signin.Local do
   def valid_user_factor(auth = %Auth.Domain{}, _),
     do: {:error, %Auth.Domain{auth | log: "No password factor exists for user"}}
 
-  def valid_user_factor(pass = %Auth.Domain{}, _), do: pass
-
   # ##############################################################################
   # @spec post_signin(Auth.Domain.result()) :: Auth.Domain.result()
   # def post_signin({:ok, auth = %Auth.Domain{status: :authed, user: %User{}}}) do
