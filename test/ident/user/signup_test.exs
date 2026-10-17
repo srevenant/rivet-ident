@@ -4,7 +4,8 @@ defmodule Rivet.Ident.Test.Ident.User.SignupTest do
   alias Rivet.Auth
 
   test "signup" do
-    assert {:error, %{error: "No password given"}} = User.Signup.signup(%Auth.Domain{}, :authed)
+    assert {:error, %{error: "No password given"}} =
+             User.Signup.signup(%Auth.Domain{input: %{secret: ""}}, :authed)
 
     auth1 = build(:auth_domain_signin)
 

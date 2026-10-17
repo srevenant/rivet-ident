@@ -3,28 +3,39 @@ defmodule Rivet.Ident.User.Signup do
   use Rivet.Ecto.Collection.Context, model: User
   import Rivet.Ecto.Errors, only: [convert_error_changeset: 1]
   alias Rivet.Auth
-  require Logger
+  alias Ident.Factor.FedId
 
-  @spec signup(Auth.Domain.t(), type :: :authed | :identity) ::
+  @spec signup(Auth.Domain.t(), type :: :authed | :identity, keyword() | map()) ::
           {:ok, Auth.Domain.t()} | {:error, Auth.Domain.t()}
 
   def signup(auth, type, opts \\ %{})
 
-  def signup(%Auth.Domain{} = auth, :authed, opts) do
+  def signup(%Auth.Domain{input} = auth, :authed, opts) when is_map(input) do
     @repo.transact(fn _ ->
       with :ok <- good_password(auth),
            {:ok, %Auth.Domain{} = auth} <- new_user(auth, :authed, opts),
-           {:ok, %Auth.Domain{} = auth} <- add_factor(auth),
-           do: sanitize_errors(auth)
+           do: add_factor(auth)
     end)
+    |> tap(&dispatch_email(&1, opts[:no_send] || false))
+    |> sanitize_errors()
   end
 
-  def signup(%Auth.Domain{} = auth, :identity, opts) do
-    @repo.transact(fn ->
-      with {:ok, %Auth.Domain{} = auth} <- new_user(auth, :identity, opts),
-           do: sanitize_errors(auth)
-    end)
+  def signup(%Auth.Domain{input} = auth, :identity, opts) when is_map(input) do
+    @repo.transact(fn -> new_user(auth, :identity, opts) end)
+    |> tap(&dispatch_email(&1, opts[:no_send] || false))
+    |> sanitize_errors()
   end
+
+  # DRYing out some things
+  defp new_user(%Auth.Domain{} = auth, type, opts) do
+    with {:ok, %Auth.Domain{} = auth} <- create_user(auth, type),
+         {:ok, %Auth.Domain{} = auth} <- associate_email(auth, opts),
+         do: add_handle(auth)
+  end
+
+  # bringing the dispatch outside the transaction; note: email queuing is async
+  defp dispatch_email({:ok, %Auth.Domain{user}}, false), do: User.Lib.send_verify_email(user)
+  defp dispatch_email(_, _), do: :ok
 
   # def signup_from_email(address, opts \\ []) do
   #   preload = Keyword.get(opts, :preload, [:user])
@@ -34,20 +45,19 @@ defmodule Rivet.Ident.User.Signup do
   # end
 
   ##############################################################################
-  defp good_password(%Auth.Domain{input} = auth) do
-    with {:error, error} <- Ident.Factor.Lib.strong_password(input[:secret]),
+  # federated ID doesn't include %{secret} at all, this will work fine. See
+  # Google/Local.signin modules for more.
+  defp good_password(%Auth.Domain{input: %{secret}} = auth) do
+    with {:error, error} <- Ident.Factor.Lib.strong_password(secret),
          do: {:error, %{auth | error}}
   end
 
-  ##############################################################################
-  defp new_user(%Auth.Domain{} = auth, type, opts) do
-    with {:ok, %Auth.Domain{} = auth} <- create_user(auth, type),
-         {:ok, %Auth.Domain{} = auth} <- associate_email(auth, opts),
-         do: add_handle(auth)
-  end
+  # federated ID has no secret
+  defp good_password(_), do: :ok
 
+  ##############################################################################
   defp create_user(%Auth.Domain{input} = auth, type) do
-    name = Map.get(input, :name, get_default_name(auth))
+    name = get_default_name(auth)
     settings = Map.get(input, :settings, %{})
 
     case User.create(%{name, settings, type, last_seen: DateTime.utc_now()}) do
@@ -62,6 +72,7 @@ defmodule Rivet.Ident.User.Signup do
   end
 
   #####
+  defp get_default_name(%{input: %{name}}) when not_empty_str(name), do: name
   defp get_default_name(%{input: %{handle}}) when not_empty_str(handle), do: handle
 
   defp get_default_name(%{input: %{email: %{address}}}) when not_empty_str(address),
@@ -124,7 +135,8 @@ defmodule Rivet.Ident.User.Signup do
 
   ##############################################################################
   # set password
-  defp add_factor(%Auth.Domain{user: %User{}, input: %{secret}} = auth) do
+  defp add_factor(%Auth.Domain{user: %User{}, input: %{secret}} = auth)
+       when not_empty_str(secret) do
     case Ident.Factor.Lib.set_password(auth.user, secret) do
       {:ok, %Ident.Factor{}} -> {:ok, auth}
       {:error, e} -> error(auth, e)
@@ -132,8 +144,6 @@ defmodule Rivet.Ident.User.Signup do
   end
 
   # set fedid
-  alias Ident.Factor.FedId
-
   defp add_factor(%Auth.Domain{user: %User{}, input: %{fedid: %FedId{} = fedid}} = auth) do
     case Ident.Factor.Lib.set_factor(auth.user, fedid) do
       {:ok, %Ident.Factor{} = factor} -> {:ok, %Auth.Domain{auth | factor}}
@@ -141,6 +151,9 @@ defmodule Rivet.Ident.User.Signup do
     end
   end
 
+  defp add_factor(%Auth.Domain{} = auth), do: error(auth, "Unable to add user factor")
+
+  ##############################################################################
   defp error(auth, %Ecto.Changeset{} = chg),
     do: {:error, %{auth | error: convert_error_changeset(chg)}}
 
@@ -149,7 +162,7 @@ defmodule Rivet.Ident.User.Signup do
   ##############################################################################
   defp associate_email(%Auth.Domain{user: %User{}, input: %{email: %{address}}} = auth, opts)
        when is_binary(address) do
-    verified = auth.input[:verified] || false
+    verified = auth.input.email[:verified] || false
     opts = Map.new(opts) |> Map.put(:verified, verified)
 
     case User.Lib.add_email(auth.user, address, opts) do
@@ -158,9 +171,13 @@ defmodule Rivet.Ident.User.Signup do
     end
   end
 
+  defp associate_email(%Auth.Domain{} = auth, _opts), do: error(auth, "Email address required")
+
   ##############################################################################
   # after success, create a new struct so we don't carry around unecessary or
   # insecure baggage
-  defp sanitize_errors(%Auth.Domain{site, hostname, user, handle, created, status}),
+  defp sanitize_errors({:ok, %Auth.Domain{site, hostname, user, handle, created, status}}),
     do: {:ok, %Auth.Domain{site, hostname, user, handle, created, status}}
+
+  defp sanitize_errors(pass), do: pass
 end

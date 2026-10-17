@@ -2,7 +2,7 @@ defmodule Rivet.Auth.Signin.Google do
   @moduledoc """
   Google login scheme
   """
-  alias Rivet.Ident
+  use Rivet.Ident
   alias Rivet.Auth
 
   # TODO:
@@ -148,12 +148,17 @@ defmodule Rivet.Auth.Signin.Google do
   ##############################################################################
   defp create_user(params, hostname, type) do
     fedid = payload_to_fedid(params)
+    email = %{address: fedid.email.address, verified: false}
 
-    Rivet.Auth.Signin.create_user(fedid.handle, fedid.email.address, hostname, type, %{
-      fedid: fedid,
+    input = %{
+      fedid,
+      email,
+      handle: fedid.handle,
       name: params["name"],
       settings: %{"authAllowed" => %{"google" => true}}
-    })
+    }
+
+    User.Signup.signup(%Auth.Domain{hostname, input}, type)
     |> add_ident(params["sub"])
   end
 

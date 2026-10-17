@@ -1,9 +1,20 @@
 defmodule Rivet.Ident.Test.NullTemplate do
-  # use Rivet.Email.Template
+  require Logger
 
   def queue(_), do: :ok
   def queue(_, _), do: :ok
-  def report(a, _), do: {:error, a}
-  def report_if_error({:error, _}, b, _), do: {:error, b}
+
+  def report(msg, opts) do
+    Logger.error(msg, opts)
+    {:error, msg}
+  end
+
+  def report_if_error({:error, e}, msg, opts) do
+    report(msg, opts ++ [error: e])
+    {:error, msg}
+  end
+
   def report_if_error({:ok, _} = pass, _, _), do: pass
+
+  def unattended_task(func), do: func.()
 end

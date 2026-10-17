@@ -17,7 +17,7 @@ defmodule Rivet.Ident.User.Code.Lib do
 
     case User.Code.one(code: code) do
       {:ok, _} ->
-        generate_code(for_user_id, type, expiration_minutes)
+        generate_code(for_user_id, type, expiration_minutes, meta)
 
       {:error, _} ->
         case User.Code.create(%{

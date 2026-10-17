@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Test.Ident.User.ExtId.ModelTest do
+defmodule Rivet.Ident.Test.Ident.User.ExtIdTest do
   use Rivet.Ident.Test.Case, async: true
   alias Rivet.Ident.User.ExtId
 

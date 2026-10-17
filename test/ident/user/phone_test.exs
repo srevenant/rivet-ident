@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Test.Ident.User.Phone.ModelTest do
+defmodule Rivet.Ident.Test.Ident.User.PhoneTest do
   use Rivet.Ident.Test.Case, async: true
   alias Rivet.Ident.Phone
 

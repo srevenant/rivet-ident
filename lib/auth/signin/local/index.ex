@@ -11,18 +11,20 @@ defmodule Rivet.Auth.Signin.Local do
 
   def signup(
         hostname,
-        %{"handle" => handle, "password" => secret, "email" => eaddr},
+        %{"handle" => handle, "password" => secret, "email" => address},
         type
       )
       when is_binary(hostname) do
-    case Ident.Email.one([address: eaddr], [:user]) do
+    case Ident.Email.one([address: address], [:user]) do
       {:ok, %Ident.Email{}} ->
-        {:error, %Auth.Domain{error: "A signin already exists for `#{eaddr}`"}}
+        {:error, %Auth.Domain{error: "A signin already exists for `#{address}`"}}
 
       _ ->
         handle = Ident.Handle.Lib.gen_good_handle!(handle)
+        email = %{address, verified: false}
+        input = %{secret, handle, email}
 
-        Rivet.Auth.Signin.create_user(handle, eaddr, hostname, type, %{secret})
+        User.Signup.signup(%Auth.Domain{hostname, input}, type)
         |> Rivet.Auth.Signin.post_signin()
     end
   end

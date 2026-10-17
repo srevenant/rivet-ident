@@ -16,7 +16,7 @@ defmodule Rivet.Ident.User.Lib do
         user
       else
         err ->
-          IO.inspect(err, label: "Error updating user.last_seen")
+          Logger.error("Error updating user.last_seen", error: err)
           user
       end
     else
@@ -49,26 +49,6 @@ defmodule Rivet.Ident.User.Lib do
     end
   end
 
-  # ##############################################################################
-  # def send_password_reset(%User{} = user, %Email{} = email, %User.Code{} = code) do
-  #   # let all emails on the account know
-  #   with {:ok, user} <- User.preload(user, [:emails]) do
-  #     sendmail(user.emails, &templates.password_reset/2, [email, code])
-  #   end
-  # end
-  #
-  # ##############################################################################
-  # def send_failed_change(%Email{} = email, message) do
-  #   sendmail(email, &templates.failed_change/2, message)
-  # end
-  #
-  # ##############################################################################
-  # def send_password_changed(%User{} = user) do
-  #   with {:ok, user} <- User.preload(user, [:emails]) do
-  #     sendmail(user.emails, &templates.password_changed/2)
-  #   end
-  # end
-
   ##############################################################################
   def all_since(time), do: User.all!(from(u in User, where: u.last_seen > ^time))
 
@@ -99,35 +79,39 @@ defmodule Rivet.Ident.User.Lib do
         has_email? = Email.exists?(user_id: user.id)
         opts = Map.new(opts)
 
-        # add it
-        case Email.create(%{
-               address,
-               user_id: user.id,
-               verified: Map.get(opts, :verified, false),
-               primary: not has_email?
-             }) do
-          {:ok, %Email{} = email} ->
-            if opts[:no_send] != true,
-              do: send_verify_email(%Email{email | user: user})
+        attrs = %{
+          address,
+          user_id: user.id,
+          verified: Map.get(opts, :verified, false),
+          primary: not has_email?
+        }
 
-            {:ok, email}
-
-          {:error, chgset} ->
-            {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
-        end
+        # fix error shape
+        with {:error, chgset} <- Email.create(attrs),
+             do: {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
     end
   end
 
-  def send_verify_email(%Email{address: eaddr} = email, _ \\ nil) do
-    Logger.info("verify email", user_id: email.user_id, eaddr: eaddr)
+  def send_verify_email(u) do
+    with {:error, e} <- send_verify_email_(User.preload!(u, [:emails])),
+         do: Rivet.Ident.critical_report(e)
+  end
+
+  def send_verify_email_(%User{id, emails: [%Email{address} = email | _]}) do
+    Logger.info("verify email", user_id: id, eaddr: address)
     Rivet.Ident.mailer_template(:user_verification).queue(email)
   end
 
+  def send_verify_email_(_), do: {:error, "cannot email verify because user has no email address"}
+
   ##############################################################################
+  @spec check_user_status(User.t() | Auth.Domain.t()) ::
+          {:ok, User.t() | Auth.Domain.t()} | {:error, Auth.Domain.t()}
   def check_user_status(%User{type: :disabled}),
     do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
   def check_user_status(%User{} = user), do: {:ok, user}
+
   def check_user_status(%Auth.Domain{user: %User{} = user}), do: check_user_status(user)
   def check_user_status(%Auth.Domain{} = pass), do: {:ok, pass}
 
@@ -144,7 +128,7 @@ defmodule Rivet.Ident.User.Lib do
       {:ok, %Ident.Phone{} = phone} ->
         {:ok, phone}
 
-      {:error, _} ->
+      {:error, :not_found} ->
         # add it
         case Ident.Phone.create(%{
                user_id: user.id,
@@ -159,22 +143,11 @@ defmodule Rivet.Ident.User.Lib do
           {:error, chgset} ->
             {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
         end
+
+      pass ->
+        pass
     end
   end
-
-  ##############################################################################
-  @spec has_other_admin?(Ident.Role.t(), User.t()) :: boolean() | {:error, String.t()}
-  def has_other_admin?(%Ident.Role{name: :system_admin, id: r_id}, %User{id: user_id}) do
-    query = from(a in Ident.Access, where: a.role_id == ^r_id and a.user_id != ^user_id)
-
-    if User.aggregate(query, :count) > 0 do
-      true
-    else
-      {:error, "Cannot remove last system_admin"}
-    end
-  end
-
-  def has_other_admin?(_, _), do: true
 
   ##############################################################################
   def delete_each([nil | rest], mod), do: delete_each(rest, mod)
@@ -188,40 +161,49 @@ defmodule Rivet.Ident.User.Lib do
   @doc """
 
   We don't actually delete the base account, so we have to do the related things
-  by hand, where we do want to sanitize them.
+  by hand. Instead we sanitize ONLY PII/personal information.
 
   iex> u = insert(:ident_user)
   iex> {:ok, _} = delete_account(u)
 
   """
-  # , :mailer_subs]
   @preloads [:emails, :factors, :handle, :ext_ids, :phones]
   def delete_account(%User{} = u) do
-    with {:ok, u} <- User.preload(u, @preloads),
-         {:ok, u} <- User.update(u, %{name: "DELETED", type: :disabled}),
-         :ok <- delete_each(u.emails, Email),
-         # :ok <- delete_each(u.mailer_subs, Rivet.Mailer.Subs),
-         :ok <- delete_each([u.handle], Ident.Handle),
-         :ok <- delete_each(u.phones, Ident.Phone),
-         :ok <- delete_each(u.factors, Ident.Factor) do
-      # different primary key
-      u_id = u.id
+    @repo.transact(fn ->
+      with {:ok, u} <- User.preload(u, @preloads),
+           {:ok, u} <- User.update(u, %{name: "DELETED", type: :disabled}),
+           :ok <- delete_each(u.emails, Email),
+           # :ok <- delete_each(u.mailer_subs, Rivet.Mailer.Subs),
+           :ok <- delete_each([u.handle], Ident.Handle),
+           :ok <- delete_each(u.phones, Ident.Phone),
+           :ok <- delete_each(u.factors, Ident.Factor) do
+        # possibly add:
+        #  data (private info?)
+        #  accesses/roles?
+        #  settings?
+        # last_seen: NO, keep
+        # different primary key
+        u_id = u.id
 
-      Enum.each(u.ext_ids, fn %{origin: o} ->
-        from(i in Ident.User.ExtId, where: i.origin == ^o and i.user_id == ^u_id)
-        |> Repo.delete_all()
-      end)
+        Enum.each(u.ext_ids, fn %{origin: o} ->
+          from(i in Ident.User.ExtId, where: i.origin == ^o and i.user_id == ^u_id)
+          |> Repo.delete_all()
+        end)
 
-      {:ok, u}
-    end
+        {:ok, u}
+      end
+    end)
   end
+
+  @delete_code :delete_request
+  def delete_account_code_type(), do: @delete_code
 
   def delete_account(%User{} = user, code) when is_binary(code) do
     expires = Application.get_env(:core, :user_code_expires)[:delete_request]
 
     case User.Code.one(code: code, user_id: user.id) do
-      {:ok, code} ->
-        if DateTime.diff(DateTime.utc_now(), code.inserted_at, :minute) > expires do
+      {:ok, %{type: @delete_code} = code} ->
+        if DateTime.diff(DateTime.utc_now(), code.expires, :minute) > expires do
           {:error, "Unable to continue"}
         else
           # TODO: verify code isn't expired
@@ -256,7 +238,7 @@ defmodule Rivet.Ident.User.Lib do
   def get_user(id, preload \\ [])
 
   def get_user(id, preload) when is_binary(id) and byte_size(id) == 36 do
-    with {:error, _} <- User.one([id: id], preload) do
+    with {:error, :not_found} <- User.one([id: id], preload) do
       get_user_by_handle(id, preload)
     end
   end

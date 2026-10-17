@@ -38,10 +38,15 @@ defmodule Rivet.Ident.Test.Ident.User.UpdateTest do
       assert {:ok, %User{name: "Who"}} = upsert2.(:user, %{name: "Who"})
       assert {:error, "You must provide a name"} = upsert2.(:user, %{name: ""})
       # doesn't stick because :user
-      assert {:ok, %User{type: :authed}} = upsert3.(:user, %{disable: true}, auth: :user)
+      assert {:error, "Invalid user/disable change configuration"} =
+               upsert3.(:user, %{disable: true}, auth: :user)
+
       # does stick because :admin
       assert {:ok, %User{type: :disabled}} = upsert3.(:user, %{disable: true}, auth: :admin)
       assert {:ok, %User{type: :identity}} = upsert3.(:user, %{disable: false}, auth: :admin)
+
+      assert {:error, "Update of type is disallowed"} =
+               upsert3.(:user, %{type: :narf}, auth: :admin)
     end
 
     test ":phone", %{remove2, upsert2, user} do

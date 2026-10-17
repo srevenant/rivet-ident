@@ -3,7 +3,9 @@ defmodule Rivet.Ident.Factor.Cache do
 
   @persist_for 600_000
 
-  alias Rivet.Ident
+  use Rivet.Ident
+  alias Ident.Factor
+  import Ecto.Query
 
   @doc """
   Read-through cache for loading user factors from Ident.
@@ -18,19 +20,25 @@ defmodule Rivet.Ident.Factor.Cache do
     end
   end
 
-  def persist(%Ident.Factor{} = factor) do
+  def persist(%Factor{} = factor) do
     insert(factor.id, factor, @persist_for)
     {:ok, factor}
   end
 
   # used to update cache if user state changes
-  def update_user(%Ident.User{state: %{active_factor_id: id}} = user) do
+  def update_user(%User{state: %{active_factor_id: id}} = user) do
     with {:ok, factor} <- get_user_factor(id) do
-      persist(%Ident.Factor{factor | user: user})
+      persist(%Factor{factor | user: user})
     end
 
     :ok
   end
 
   def update_user(_), do: :ok
+
+  def invalidate_all_for(user_id) do
+    from(f in Factor, where: f.user_id == ^user_id, select: f.id)
+    |> Factor.all!()
+    |> Enum.each(&delete/1)
+  end
 end

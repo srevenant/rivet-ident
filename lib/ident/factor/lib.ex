@@ -73,7 +73,7 @@ defmodule Rivet.Ident.Factor.Lib do
   ```
   """
   @password_minlen 8
-  def strong_password(password) when is_binary(password) do
+  def strong_password(password) when not_empty_str(password) do
     cond do
       String.length(password) < @password_minlen ->
         {:error, "Password is not long enough (greater than #{@password_minlen})"}

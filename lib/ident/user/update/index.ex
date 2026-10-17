@@ -11,13 +11,8 @@ defmodule Rivet.Ident.User.Update do
   require Logger
   use Rivet.Ecto.Collection.Context, model: User
 
-  @spec update(
-          change_map :: map(),
-          target_user :: User.t() | nil,
-          opts :: keyword()
-        ) ::
-          {:ok, User.t()}
-          | {:error, reason :: String.t()}
+  @spec update(change_map :: map(), target_user :: User.t(), opts :: keyword()) ::
+          {:ok, User.t()} | {:error, reason :: String.t() | atom()}
 
   @changeable [:user, :email, :data, :handle, :phone, :role]
   def update(args, %User{} = target, opts \\ []),
@@ -40,22 +35,40 @@ defmodule Rivet.Ident.User.Update do
 
   ##############################################################################
   # upsert in this case is update, since we require an existing target
-  def update_user(:upsert, update, %User{} = target, opts) do
-    if empty_str(update[:name]) do
-      {:error, "You must provide a name"}
+  def update_user(:upsert, %{disable}, %User{} = u, opts) do
+    # only admin can enable/disable;
+    if opts[:auth] == :admin and is_boolean(disable) do
+      # on enable set to identity (next signin will fix)
+      disabled = if disable, do: :disabled, else: :identity
+
+      User.update(u, %{type: disabled})
+      |> tap(fn
+        {:ok, %{type: :disabled} = u} ->
+          # clear cache but don't disrupt this task
+          mailer_template(:critical_fail).unattended_task(fn ->
+            Rivet.Ident.Factor.Cache.invalidate_all_for(u.id)
+          end)
+
+        _ ->
+          :ok
+      end)
     else
-      disable = update[:disable]
-      update = Map.delete(update, :disable)
-      User.update(target, adjust_disabled(update, disable, opts[:auth]))
+      bad_args("user/disable")
+    end
+  end
+
+  def update_user(:upsert, update, %User{} = target, _opts) do
+    # note: empty_str(nil) is false, since nil is not a string and thus can't be empty
+    # its clunky to do this here, but for various reasons name is NOT required on
+    # the model, so this is an easier path to assert it for user changes.
+    case update do
+      %{name} when empty_str(name) -> {:error, "You must provide a name"}
+      %{type: _} -> {:error, "Update of type is disallowed"}
+      update -> User.update(target, update)
     end
   end
 
   def update_user(_, _, _, _), do: bad_args("user")
-
-  # only admin can enable/disable; on enable set to identity (next signin will fix)
-  defp adjust_disabled(updates, true, :admin), do: Map.put(updates, :type, :disabled)
-  defp adjust_disabled(updates, false, :admin), do: Map.put(updates, :type, :identity)
-  defp adjust_disabled(updates, _, _), do: updates
 
   ##############################################################################
   def update_phone(:upsert, %{number}, %User{} = target, _opts) do
@@ -114,7 +127,10 @@ defmodule Rivet.Ident.User.Update do
   end
 
   def update_email(:upsert, %{address}, %User{} = u, opts) when is_binary(address) do
-    with {:ok, _email} <- User.Lib.add_email(u, address, opts), do: refresh(u, :emails)
+    with {:ok, %Email{} = e} <- User.Lib.add_email(u, address, opts) do
+      User.Lib.send_verify_email(%{u | emails: [e]})
+      refresh(u, :emails)
+    end
   end
 
   def update_email(:remove, %{id: email_id}, %User{id: user_id} = u, _opts) do
@@ -145,7 +161,7 @@ defmodule Rivet.Ident.User.Update do
   def update_data(_, _, _, _), do: bad_args("data")
 
   ################################################################################
-  def update_role(action, %{id: role_id}, %User{} = u, opts) when is_number(role_id) do
+  def update_role(action, %{id: role_id}, %User{} = u, opts) when is_integer(role_id) do
     case opts[:auth] do
       :admin ->
         case Ident.Role.one(id: role_id) do
@@ -172,10 +188,8 @@ defmodule Rivet.Ident.User.Update do
     with {:ok, _} <- Ident.Access.upsert(%{role_id, user_id}), do: refresh(u, :accesses)
   end
 
-  defp update_role_(:remove, {:ok, access}, role, u) do
-    with true <- User.Lib.has_other_admin?(role, u),
-         {:ok, _} <- Ident.Access.delete(access),
-         do: refresh(u, :accesses)
+  defp update_role_(:remove, {:ok, access}, _, u) do
+    with {:ok, _} <- Ident.Access.delete(access), do: refresh(u, :accesses)
   end
 
   defp update_role_(_, _, _, _), do: bad_args("role/args")
