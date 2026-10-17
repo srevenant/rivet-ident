@@ -14,7 +14,8 @@ defmodule Rivet.Auth.Signin.Google do
   @spec check(String.t(), map()) :: Auth.Domain.result()
   def check(hostname, args, type \\ :authed)
 
-  def check(hostname, %{"data" => %{"auth" => token}}, type) when is_binary(hostname) do
+  def check(hostname, %{"data" => %{"auth" => token}}, type)
+      when not_empty_str(hostname) and not_empty_str(token) do
     verify_google_signature(token)
     |> find_or_create_user(hostname, type)
     |> Auth.Signin.post_signin()
@@ -25,7 +26,7 @@ defmodule Rivet.Auth.Signin.Google do
       {:error,
        %Auth.Domain{
          error: "Signup Failed",
-         log: "auth signup failed, invalid arguments from client"
+         log: "Auth signup failed, arguments don't match"
        }}
 
   ##############################################################################
@@ -73,7 +74,7 @@ defmodule Rivet.Auth.Signin.Google do
 
   ###############################################################################
   # defp update_user_avatar(
-  # {:ok, %Auth.Domain{status: :authed, user: %Ident.User{} = _}} = pass,
+  # {:ok, %Auth.Domain{status: :authed, user: %User{} = _}} = pass,
   # _picurl
   # ) do
   # IO.puts("Need to get avatar")
@@ -86,8 +87,8 @@ defmodule Rivet.Auth.Signin.Google do
 
   ###############################################################################
   defp find_user(%{"sub" => ident} = params, hostname, type) do
-    case Ident.User.ExtId.Lib.get("google", ident) do
-      {:ok, user_ident} -> Ident.User.one(id: user_ident.user_id) |> check_user_allowed(hostname)
+    case User.ExtId.Lib.get("google", ident) do
+      {:ok, user_ident} -> User.one(id: user_ident.user_id) |> check_user_allowed(hostname)
       _ -> find_user_by_email(params, hostname, type)
     end
   end
@@ -98,7 +99,7 @@ defmodule Rivet.Auth.Signin.Google do
   ###############################################################################
   defp find_user_by_email(%{"email" => email, "sub" => ident} = params, hostname, type) do
     case Ident.Email.one([address: email], [:user]) do
-      {:ok, %Ident.Email{user: %Ident.User{} = u}} ->
+      {:ok, %Ident.Email{user: %User{} = u}} ->
         {:ok, u}
         |> check_user_allowed(hostname)
         |> add_ident(ident)
@@ -118,7 +119,7 @@ defmodule Rivet.Auth.Signin.Google do
             _ -> Map.put(user.settings, "authAllowed", %{"google" => true})
           end
 
-        with {:error, err} <- Ident.User.update(user, %{settings: settings}) do
+        with {:error, err} <- User.update(user, %{settings: settings}) do
           IO.inspect(err, label: "Unexpected error updating user settings on signin")
         end
 
@@ -129,8 +130,8 @@ defmodule Rivet.Auth.Signin.Google do
     end
   end
 
-  defp check_user_allowed({:ok, %Ident.User{} = user}, hostname) do
-    if google_allowed?(user) and Ident.User.enabled?(user) do
+  defp check_user_allowed({:ok, %User{} = user}, hostname) do
+    if google_allowed?(user) and User.enabled?(user) do
       {:ok, %Auth.Domain{hostname: hostname, status: :authed, user: user}}
     else
       {:error,
@@ -158,13 +159,20 @@ defmodule Rivet.Auth.Signin.Google do
       settings: %{"authAllowed" => %{"google" => true}}
     }
 
-    User.Signup.signup(%Auth.Domain{hostname, input}, type)
+    User.Signup.signup(
+      %Auth.Domain{
+        hostname,
+        input,
+        status: :authed
+      },
+      type
+    )
     |> add_ident(params["sub"])
   end
 
   # ##############################################################################
-  defp add_ident({:ok, %Auth.Domain{user: %Ident.User{} = u}} = pass, ident) do
-    with {:ok, _} <- Ident.User.ExtId.Lib.put(u, "google", ident) do
+  defp add_ident({:ok, %Auth.Domain{user: %User{} = u}} = pass, ident) do
+    with {:ok, _} <- User.ExtId.Lib.put(u, "google", ident) do
       pass
     end
   end
@@ -172,7 +180,7 @@ defmodule Rivet.Auth.Signin.Google do
   defp add_ident(pass, _), do: pass
 
   ##############################################################################
-  #  defp link_factor({:ok, %Ident.User{} = user}) do
+  #  defp link_factor({:ok, %User{} = user}) do
   #
   #   {
   #   "iss": "https://accounts.google.com",
