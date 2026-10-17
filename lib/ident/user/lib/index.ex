@@ -4,53 +4,6 @@ defmodule Rivet.Ident.User.Lib do
   alias Rivet.Auth
   require Logger
 
-  #### TODO: replace with Rivet.Search
-  def search(%{matching: match}, args) do
-    match = "%#{String.downcase(Regex.replace(~r/[^a-z0-9]/i, match, ""))}%"
-
-    from(u in User,
-      join: e in Email,
-      on: e.user_id == u.id,
-      join: h in Handle,
-      on: h.user_id == u.id,
-      where: ilike(u.name, ^match) or like(h.handle, ^match) or like(e.address, ^match)
-    )
-    |> Rivet.Ecto.Collection.enrich_query_args(args)
-    |> User.all()
-  end
-
-  @doc """
-  Bring in the list of authorized actions onto the user object (into :authz)
-
-  Only load once, if authz is nil
-  """
-
-  @spec get_authz(user :: User.t()) :: User.t()
-
-  def get_authz(%User{authz: authz} = user) when is_nil(authz) do
-    {:ok, user} = User.preload(user, [:accesses])
-    %User{user | authz: Rivet.Ident.Access.Lib.get_actions(user)}
-  end
-
-  def get_authz(%User{} = user), do: user
-
-  @spec check_authz(user :: User.t(), Auth.Assertion.t()) ::
-          {:ok | :error, User.t()}
-  def check_authz(user, %Auth.Assertion{} = assertion) do
-    key = {assertion.action, assertion.domain, assertion.ref_id}
-    user = User.Lib.get_authz(user)
-
-    if MapSet.member?(user.authz, key) do
-      {:ok, user}
-    else
-      if assertion.fallback and MapSet.member?(user.authz, {assertion.action, :global, nil}) do
-        {:ok, user}
-      else
-        {:error, user}
-      end
-    end
-  end
-
   ##############################################################################
   # only periodically update last seen, to avoid severe performance hit
   @update_min_seconds 60
@@ -120,18 +73,21 @@ defmodule Rivet.Ident.User.Lib do
   def all_since(time), do: User.all!(from(u in User, where: u.last_seen > ^time))
 
   ##############################################################################
-  def add_email(user, eaddr, meta, opts \\ %{}) do
-    eaddr = Email.Lib.clean_email(eaddr)
+  def add_email(user, address, opts \\ %{}) do
+    address = Email.Lib.clean_email(address)
 
     # basic
-    case Email.one([address: eaddr], [:user]) do
+    case Email.one([address: address], [:user]) do
       {:ok, %Email{user_id} = email} ->
         if user_id != user.id do
-          Logger.warning("Cannot add existing email to different user", user_id: user.id, eaddr: eaddr)
+          Logger.warning("Cannot add existing email to different user",
+            user_id: user.id,
+            address: address
+          )
 
           Rivet.Ident.mailer_template(:user_failed_change).queue(
             email,
-            "add email #{eaddr} to a different account"
+            "add email #{address} to a different account"
           )
 
           {:error, "Sorry, that email address is associated with a different account."}
@@ -139,15 +95,16 @@ defmodule Rivet.Ident.User.Lib do
           {:ok, email}
         end
 
-      {:error, _} ->
+      {:error, :not_found} ->
         has_email? = Email.exists?(user_id: user.id)
+        opts = Map.new(opts)
 
         # add it
         case Email.create(%{
+               address,
                user_id: user.id,
-               verified: Map.get(meta, :verified, false),
-               primary: not has_email?,
-               address: eaddr
+               verified: Map.get(opts, :verified, false),
+               primary: not has_email?
              }) do
           {:ok, %Email{} = email} ->
             if opts[:no_send] != true,
@@ -171,8 +128,8 @@ defmodule Rivet.Ident.User.Lib do
     do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
 
   def check_user_status(%User{} = user), do: {:ok, user}
-  def check_user_status({:ok, %Auth.Domain{user: %User{} = user}}), do: check_user_status(user)
-  def check_user_status(pass), do: pass
+  def check_user_status(%Auth.Domain{user: %User{} = user}), do: check_user_status(user)
+  def check_user_status(%Auth.Domain{} = pass), do: {:ok, pass}
 
   ##############################################################################
   def user_enabled?(%User{type: :disabled}), do: false

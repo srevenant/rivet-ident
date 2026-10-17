@@ -3,8 +3,8 @@ defmodule Rivet.Auth.Signin.Local do
   Local login scheme
   """
   alias Rivet.Auth
-  alias Rivet.Ident
-  import Ident.User.Lib, only: [check_user_status: 1]
+  use Rivet.Ident
+  alias Rivet.Ident.Factor
 
   @spec signup(String.t(), params :: map()) :: Auth.Domain.result()
   def signup(host, args, type \\ :authed)
@@ -35,12 +35,11 @@ defmodule Rivet.Auth.Signin.Local do
   ##############################################################################
   @spec check(Auth.Domain.t() | String.t(), params :: map()) :: Auth.Domain.result()
   def check(%Auth.Domain{} = auth, %{"handle" => handle, "password" => password}) do
-    {:ok, auth}
-    |> load_user(handle)
-    |> check_user_status
-    |> load_password_factor
-    |> valid_user_factor(password)
-    |> Rivet.Auth.Signin.post_signin()
+    with {:ok, auth} <- load_user(auth, handle),
+         {:ok, user} <- User.Lib.check_user_status(auth.user),
+         {:ok, auth} <- load_password_factor(%{auth | user}),
+         {:ok, auth} <- valid_user_factor(auth, password),
+         do: Rivet.Auth.Signin.post_signin(auth)
   end
 
   def check(hostname, args = %{"handle" => _, "password" => _}) when is_binary(hostname),
@@ -48,19 +47,15 @@ defmodule Rivet.Auth.Signin.Local do
 
   ##############################################################################
   @auth_fail_msg "Unable to sign in. Did you want to sign up instead?"
-  @spec load_user(Auth.Domain.result(), handle :: String.t()) :: Auth.Domain.result()
-  def load_user({:ok, %Auth.Domain{} = auth}, handle) do
+  @spec load_user(Auth.Domain.t(), handle :: String.t()) :: Auth.Domain.result()
+  def load_user(%Auth.Domain{} = auth, handle) do
     if String.contains?(handle, "@") do
       case Ident.Email.one([address: handle], [:user]) do
         {:ok, email} ->
           {:ok, %Auth.Domain{auth | user: email.user}}
 
         _ ->
-          {:error,
-           %Auth.Domain{
-             log: "Cannot find email #{handle}",
-             error: @auth_fail_msg
-           }}
+          {:error, %Auth.Domain{log: "Cannot find email #{handle}", error: @auth_fail_msg}}
       end
     else
       case Ident.Handle.one([handle: handle], [:user]) do
@@ -68,24 +63,21 @@ defmodule Rivet.Auth.Signin.Local do
           {:ok, %Auth.Domain{auth | handle: handle, user: handle.user}}
 
         _ ->
-          {:error,
-           %Auth.Domain{
-             log: "Cannot find person ~#{handle}",
-             error: @auth_fail_msg
-           }}
+          {:error, %Auth.Domain{log: "Cannot find person ~#{handle}", error: @auth_fail_msg}}
       end
     end
   end
 
+  def load_user({:ok, %Auth.Domain{} = auth}, handle), do: load_user(auth, handle)
+
   ##############################################################################
-  @spec load_password_factor(Auth.Domain.result()) :: Auth.Domain.result()
-  def load_password_factor({:ok, auth = %Auth.Domain{user: user = %Ident.User{}}}) do
-    case Ident.Factor.Lib.preloaded_with(user, :password) do
-      %Ident.User{factors: []} = user ->
+  def load_password_factor(auth = %Auth.Domain{user: user = %User{}}) do
+    case Factor.Lib.preloaded_with(user, :password) do
+      %User{factors: []} = user ->
         Logger.metadata(uid: user.id)
         {:error, %Auth.Domain{auth | log: "No auth factor for user"}}
 
-      %Ident.User{factors: [factor | _]} = user ->
+      %User{factors: [factor | _]} = user ->
         Logger.metadata(uid: user.id)
         {:ok, %Auth.Domain{auth | factor: factor}}
 
@@ -95,13 +87,14 @@ defmodule Rivet.Auth.Signin.Local do
     end
   end
 
-  def load_password_factor(pass = {:error, %Auth.Domain{}}), do: pass
+  def load_password_factor({:ok, %Auth.Domain{} = auth}), do: load_password_factor(auth)
+
+  def load_password_factor(pass = %Auth.Domain{}), do: pass
 
   ##############################################################################
-  @spec check_password(hash :: String.t() | Ident.User.t(), password :: String.t()) :: boolean()
-  def check_password(%Ident.User{} = user, password) do
+  def check_password(%User{} = user, password) do
     case load_password_factor({:ok, %Auth.Domain{user: user}}) do
-      {:ok, %Auth.Domain{factor: %Ident.Factor{hash: hashed}}} ->
+      {:ok, %Auth.Domain{factor: %Factor{hash: hashed}}} ->
         check_password(hashed, password)
 
       _ ->
@@ -109,9 +102,8 @@ defmodule Rivet.Auth.Signin.Local do
     end
   end
 
-  def check_password(hash, password) when is_binary(hash) and not is_nil(hash) do
-    Bcrypt.verify_pass(password, hash)
-  end
+  def check_password(hash, password) when is_binary(hash) and not is_nil(hash),
+    do: Factor.Password.verify(password, hash)
 
   def check_password(_, _), do: false
 
@@ -119,7 +111,7 @@ defmodule Rivet.Auth.Signin.Local do
   """
   @spec valid_user_factor(Auth.Domain.result(), password :: String.t()) :: Auth.Domain.result()
   def valid_user_factor(
-        {:ok, auth = %Auth.Domain{user: %Ident.User{}, factor: %Ident.Factor{hash: hashed}}},
+        auth = %Auth.Domain{user: %User{}, factor: %Factor{hash: hashed}},
         password
       )
       when not is_nil(hashed) and hashed != "N/A" do
@@ -130,15 +122,14 @@ defmodule Rivet.Auth.Signin.Local do
     end
   end
 
-  def valid_user_factor({:ok, auth = %Auth.Domain{}}, _) do
-    {:error, %Auth.Domain{auth | log: "No password factor exists for user"}}
-  end
+  def valid_user_factor(auth = %Auth.Domain{}, _),
+    do: {:error, %Auth.Domain{auth | log: "No password factor exists for user"}}
 
-  def valid_user_factor(pass = {:error, %Auth.Domain{}}, _), do: pass
-  #
+  def valid_user_factor(pass = %Auth.Domain{}, _), do: pass
+
   # ##############################################################################
   # @spec post_signin(Auth.Domain.result()) :: Auth.Domain.result()
-  # def post_signin({:ok, auth = %Auth.Domain{status: :authed, user: %Ident.User{}}}) do
+  # def post_signin({:ok, auth = %Auth.Domain{status: :authed, user: %User{}}}) do
   #   Logger.info("Signin Success", uid: user.id)
   #   # TODO: events/triggers to table/signin count, etc
   #   {:ok, auth}

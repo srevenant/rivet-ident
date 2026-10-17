@@ -15,9 +15,10 @@ defmodule Rivet.Ident.User.Cache do
         {:ok, user}
 
       _no_cache ->
-        with {:ok, user} <- Ident.User.one(id: id) do
-          Ident.User.Lib.get_authz(user) |> persist
-        end
+        # TODO: reconcile overlap of these two caches
+        with {:ok, user} <- Ident.User.one(id: id),
+             {:ok, user} <- Rivet.Auth.Cache.get_authz(user),
+             do: persist(user)
     end
   end
 

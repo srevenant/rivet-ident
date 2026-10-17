@@ -5,15 +5,15 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
 
   doctest User.Lib, import: true
 
-  test "search" do
-    name = "RICHTHOFEN"
-    user = insert(:ident_user, name: name)
-    insert(:ident_handle, user: user)
-    insert(:ident_email, user: user)
-
-    assert {:ok, [%Rivet.Ident.User{name: ^name}]} =
-             Rivet.Ident.User.Lib.search(%{matching: String.downcase(name)}, [])
-  end
+  # test "search" do
+  #   name = "RICHTHOFEN"
+  #   user = insert(:ident_user, name: name)
+  #   insert(:ident_handle, user: user)
+  #   insert(:ident_email, user: user)
+  #
+  #   assert {:ok, [%Rivet.Ident.User{name: ^name}]} =
+  #            Rivet.Ident.User.Lib.search(%{matching: String.downcase(name)}, [])
+  # end
 
   test "various" do
     uuid = Ecto.UUID.generate()
@@ -25,10 +25,10 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert false == User.Lib.user_enabled?(disabled)
     errmsg = "sorry, account is disabled"
 
-    assert {:error, %{error: ^errmsg}} =
-             User.Lib.check_user_status({:ok, %Auth.Domain{user: disabled}})
+    assert {:error, %Auth.Domain{error: ^errmsg}} =
+             User.Lib.check_user_status(%Auth.Domain{user: disabled})
 
-    assert {:error, %{error: ^errmsg}} = User.Lib.check_user_status(disabled)
+    assert {:error, %Auth.Domain{error: ^errmsg}} = User.Lib.check_user_status(disabled)
     assert {:ok, _} = User.Lib.check_user_status(build(:ident_user))
   end
 

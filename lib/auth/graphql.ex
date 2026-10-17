@@ -4,7 +4,7 @@ defmodule Rivet.Auth.Graphql do
   """
   import Rivet.Graphql
   alias Rivet.Auth
-  alias Rivet.Ident
+  use Rivet.Ident
   alias Absinthe.Resolution
 
   ##############################################################################
@@ -56,23 +56,22 @@ defmodule Rivet.Auth.Graphql do
   and if the assertion includes a domain reference, it will attempt to walk
   up the reference tree (if a parent_id exists) and try checking auth again.
   """
-  # @spec 
-  def check_authz(%{context: %{user: %Ident.User{} = u}}, assertion),
+  # @spec
+  def check_authz(%{context: %{user: %User{} = u}}, assertion),
     do: check_authz(u, assertion)
 
-  def check_authz(%Ident.User{} = user, %Auth.Assertion{domain: :global} = assertion) do
-    Ident.User.Lib.check_authz(user, assertion)
-  end
+  def check_authz(%User{} = user, %Auth.Assertion{domain: :global} = assertion),
+    do: Rivet.Auth.check_authz(user, assertion)
 
-  def check_authz(%Ident.User{} = user, %Auth.Assertion{domain: domain} = assertion) do
-    with {:error, user} <- Ident.User.Lib.check_authz(user, assertion),
+  def check_authz(%User{} = user, %Auth.Assertion{domain: domain} = assertion) do
+    with {:error, user} <- Rivet.Auth.check_authz(user, assertion),
          {:ok, %{parent_id: parent_id}} when is_binary(parent_id) <-
            domain.one(id: assertion.ref_id) do
       # walk up the tree, but disable fallback -- if it didn't work before,
       # it won't work again
       check_authz(user, %Auth.Assertion{assertion | fallback: false})
     else
-      {:ok, %Ident.User{}} = pass -> pass
+      {:ok, %User{}} = pass -> pass
       _ -> {:error, user}
     end
   end
@@ -88,11 +87,11 @@ defmodule Rivet.Auth.Graphql do
         handle success
       end
   """
-  @type az_user :: Ident.User.t() | map()
+  @type az_user :: User.t() | map()
   @type az_assertion :: Auth.Assertion.t()
   @type az_log :: String.t() | nil
   @spec authz(az_user, az_assertion, az_log) ::
-          {:ok, Ident.User.t()} | {:ok, map()}
+          {:ok, User.t()} | {:ok, map()}
 
   def authz(meta, assertion, log \\ nil, kwlog \\ [])
   def authz(meta, assertion, nil, _), do: check_authz(meta, assertion)

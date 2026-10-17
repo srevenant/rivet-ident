@@ -6,6 +6,7 @@ defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
   alias Rivet.Auth
   alias Rivet.Auth.Signin.Local
   use Rivet.Ident
+  alias Rivet.Ident.Factor
 
   test "Signin Local" do
     # assert capture_log(fn ->
@@ -65,36 +66,25 @@ defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
     assert {:error, %Auth.Domain{log: "No auth factor for user"}} =
              Local.load_password_factor({:ok, %Auth.Domain{user: newu}})
 
-    #
-    # # Check password
-    # password = "Bad Wolf"
-    # hashed = Utils.Hash.password(password)
-    # assert true == Local.check_password(hashed, password)
-    # assert false == Local.check_password(hashed, "Time Lord")
-    assert true == Local.check_password(user, user_pass)
-    assert false == Local.check_password(newu, "not")
+    # Check password
+    password = "Bad Wolf"
+    hashed = Factor.Password.hash(password)
+    assert true == Local.check_password(hashed, password)
+    assert false == Local.check_password(hashed, "Time Lord")
+    # assert true == Local.check_password(user, user_pass)
+    # assert false == Local.check_password(newu, "not")
     assert false == Local.check_password(:bork, nil)
 
     # valid_user_factor
-
-    assert {:ok, [factor]} = Ident.Factor.all(user_id: user.id)
+    assert {:ok, [factor]} = Factor.all(user_id: user.id)
 
     assert {:error, %Auth.Domain{status: :unknown, log: "Invalid Password"}} =
-             Local.valid_user_factor(
-               {:ok, %Auth.Domain{user: user, factor: factor}},
-               "narf"
-             )
+             Local.valid_user_factor(%Auth.Domain{user: user, factor: factor}, "narf")
 
     assert {:error, %Auth.Domain{status: :unknown, log: "No password factor exists for user"}} =
-             Local.valid_user_factor({:ok, %Auth.Domain{user: user}}, user_pass)
+             Local.valid_user_factor(%Auth.Domain{user: user}, user_pass)
 
     assert {:ok, %Auth.Domain{status: :authed}} =
-             Local.valid_user_factor(
-               {:ok, %Auth.Domain{user: user, factor: factor}},
-               user_pass
-             )
-
-    # assert :narf = Local.valid_user_factor({:ok, %Auth.Domain{}}, "narf")
-    # end) =~ "Signin Success"
+             Local.valid_user_factor(%Auth.Domain{user: user, factor: factor}, user_pass)
   end
 end

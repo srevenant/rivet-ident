@@ -3,7 +3,7 @@ defmodule Rivet.Ident.Factor.Lib do
   @type log_msg :: str
   @type usr_msg :: str
   @type auth_result :: {:ok | :error, Rivet.Auth.Domain.t()}
-  alias Rivet.Ident
+  use Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Factor
   require Logger
   import Rivet.Utils.Time, only: [epoch_time: 1]
@@ -16,23 +16,14 @@ defmodule Rivet.Ident.Factor.Lib do
         pass
 
       :miss ->
-        case Ident.Factor.one!(
-               from(f in Ident.Factor, where: f.id == ^factor_id, preload: [:user])
-             ) do
-          %Ident.Factor{user: %Ident.User{} = user} = factor ->
-            user = Ident.User.Lib.get_authz(user)
-            user = %Ident.User{user | state: Map.put(user.state, :active_factor_id, factor.id)}
-
-            %Ident.Factor{factor | user: user}
-            |> Ident.Factor.Cache.persist()
-
-          err ->
-            err
+        with {:ok, %{user: %User{}} = f} <- Ident.Factor.one([id: factor_id], [:user]),
+             {:ok, %User{} = user} = Rivet.Auth.Cache.get_authz(f.user) do
+          user = %User{user | state: Map.put(user.state, :active_factor_id, f.id)}
+          Ident.Factor.Cache.persist(%Ident.Factor{f | user})
         end
     end
   rescue
-    err in Ecto.Query.CastError ->
-      {:error, err.message}
+    err in Ecto.Query.CastError -> {:error, err.message}
   end
 
   @doc """
@@ -41,10 +32,10 @@ defmodule Rivet.Ident.Factor.Lib do
       Ident.Factor.Lib.preloaded_with(model, type)
 
   """
-  def preloaded_with(%Ident.User{} = user, type) when is_list(type) do
+  def preloaded_with(%User{} = user, type) when is_list(type) do
     now = epoch_time(:second)
 
-    Ident.User.preload!(user,
+    User.preload!(user,
       factors:
         from(a in Ident.Factor,
           where: a.type in ^type and a.expires_at > ^now,
@@ -53,10 +44,10 @@ defmodule Rivet.Ident.Factor.Lib do
     )
   end
 
-  def preloaded_with(%Ident.User{} = user, type) when is_atom(type) do
+  def preloaded_with(%User{} = user, type) when is_atom(type) do
     now = epoch_time(:second)
 
-    Ident.User.preload!(user,
+    User.preload!(user,
       factors:
         from(a in Ident.Factor,
           where: a.type == ^type and a.expires_at > ^now,
@@ -199,7 +190,7 @@ defmodule Rivet.Ident.Factor.Lib do
   end
 
   # TODO: rename to set_federated_factor
-  @spec set_factor(user :: Ident.User.t(), fedid :: Ident.Factor.FedId.t()) ::
+  @spec set_factor(user :: User.t(), fedid :: Ident.Factor.FedId.t()) ::
           {:ok, Ident.Factor.t()} | {:error, Ecto.Changeset.t()}
   def set_factor(user, fedid) do
     Ident.Factor.create(%{
@@ -214,7 +205,7 @@ defmodule Rivet.Ident.Factor.Lib do
 
   def get_user(factor_id) do
     case get(factor_id) do
-      {:ok, %Ident.Factor{user: %Ident.User{}} = factor} ->
+      {:ok, %Ident.Factor{user: %User{}} = factor} ->
         {:ok, factor}
 
       {:error, _} ->
@@ -227,23 +218,21 @@ defmodule Rivet.Ident.Factor.Lib do
 
     # drop any non-password factors; password factors are cleaned when they
     # are changed (to keep a history)
-    from(f in Ident.Factor,
-      where: f.expires_at < ^now and f.type != :password
-    )
+    from(f in Ident.Factor, where: f.expires_at < ^now and f.type != :password)
     |> Ident.Factor.delete_all()
   end
 
-  def all_not_expired!(%Ident.User{id: user_id}) do
+  def all_not_expired!(%User{id: user_id}) do
     now = epoch_time(:second)
 
     from(f in Ident.Factor, where: f.user_id == ^user_id and f.expires_at > ^now)
     |> Ident.Factor.all!()
   end
 
-  def all_not_expired!(%Ident.User{} = user, type) when is_binary(type),
+  def all_not_expired!(%User{} = user, type) when is_binary(type),
     do: all_not_expired!(user, Transmogrify.As.as_atom!(type))
 
-  def all_not_expired!(%Ident.User{id: user_id}, type) when is_atom(type) do
+  def all_not_expired!(%User{id: user_id}, type) when is_atom(type) do
     now = epoch_time(:second)
 
     from(f in Ident.Factor,

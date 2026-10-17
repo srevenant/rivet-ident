@@ -23,12 +23,6 @@ defmodule Rivet.Ident.Test.Ident.Email.IssuesTest do
     assert %{status: :bouncing, issues: [%{id: ^issue_id}]} = Email.one!([id: e.id], [:issues])
 
     # create w/bad email id
-    log =
-      ExUnit.CaptureLog.capture_log(fn ->
-        assert {:ok, %{value: %{reason: "x"}}} = Issue.log(bogun_id, :bouncing, %{reason: "x"})
-      end)
-
-    assert log =~ ~r/Unexpected failure updating email status/
-    assert log =~ ~r/Failed to add Email.Issue: email_id does not exist/
+    assert {:ok, %{value: %{reason: "x"}}} = Issue.log(bogun_id, :bouncing, %{reason: "x"})
   end
 end

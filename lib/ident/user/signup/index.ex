@@ -150,7 +150,9 @@ defmodule Rivet.Ident.User.Signup do
   defp associate_email(%Auth.Domain{user: %User{}, input: %{email: %{address}}} = auth, opts)
        when is_binary(address) do
     verified = auth.input[:verified] || false
-    case User.Lib.add_email(auth.user, address, %{verified}, opts) do
+    opts = Map.new(opts) |> Map.put(:verified, verified)
+
+    case User.Lib.add_email(auth.user, address, opts) do
       {:ok, email} -> {:ok, %Auth.Domain{auth | email}}
       {:error, msg} -> error(auth, msg)
     end

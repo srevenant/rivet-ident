@@ -59,10 +59,12 @@ defmodule Rivet.Auth.Access do
         auth = %Auth.Domain{auth | status: :authed, token: %{ref: token, claims: claims}}
 
         # this checks the validation token embedded within the refresh token
-        case Auth.Token.Check.jwt(auth) |> Ident.User.Lib.check_user_status() do
-          {:ok, %Auth.Domain{} = auth} -> {:ok, auth}
-          # we passed signature, but the claims weren't right
-          {:error, %Auth.Domain{} = auth} -> {:error, %Auth.Domain{auth | status: :unknown}}
+        with {:ok, %Auth.Domain{} = auth} <- Auth.Token.Check.jwt(auth) do
+          case Ident.User.Lib.check_user_status(auth) do
+            {:ok, %Ident.User{}} -> {:ok, auth}
+            # we passed signature, but the claims weren't right
+            {:error, %Auth.Domain{} = auth} -> {:error, %Auth.Domain{auth | status: :unknown}}
+          end
         end
     end
   end

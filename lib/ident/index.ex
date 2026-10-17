@@ -2,7 +2,7 @@ defmodule Rivet.Ident do
   # runtime so we avoid circular dependencies
   def mailer_template(key), do: Application.get_env(:rivet, :mailer_templates)[key]
 
-  def critical_report(msg, opts),
+  def critical_report(msg, opts \\ []),
     do: mailer_template(:critical_fail).report(msg, opts)
 
   def critical_report_if_error(result, msg, opts),

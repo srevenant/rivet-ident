@@ -1,320 +1,186 @@
 defmodule Rivet.Ident.User.Update do
   @moduledoc """
-  Making changes to a user (administratively or as the user).
 
-  See UsersUpdate.update @spec for details on args.  Explains for said args:
-
-  - `user_changes` map is variable, in that it's keys may vary based on the input
-    args sent into GraphQL updatePerson() mutation
-  - `caller_authz` is the level of authorization for the caller, which changes
-    what updates are allowed.
-  - `target_user` is optional, if nil the user should be created, if exists then
-    it's an update for that user
-
-  Example (create):
-
-    ```elixir
-    ==> Rivet.Ident.UsersUpdate.update(%{
-        action: :upsert,
-        user: %{name: "The Doctor"},
-        email: %{email: "who@tardis.com"}
-      }, :admin)
-    {:ok, %User{}, %{"password": "R^EkW)aBY9G9", "passwordExp": 1649947803}}
-    ```
-    Rivet.Ident.UsersUpdate.update(%{ action: :upsert, user: %{name: "The Doctor"}, email: %{email: "who@tardis.com"} }, :admin)
-
-    Example — update a user's name as the user
-
-    ```elixir
-    ==> Rivet.Ident.UsersUpdate.update(%{
-      action: :upsert,
-      user: %{name: "Who"},
-    }, :user, %User{...})
-    {:ok, %User{}, %{}}
-    ```
-
-    Example — remove a phone
-
-    ```elixir
-    ==> Rivet.Ident.UsersUpdate.update(%{
-      action: :remove,
-      phone: %{id: "2342343-...-33"},
-    }, :user, %User{...})
-    {:ok, %User{}, %{}}
-    ```
+  Making changes to a user (administratively or as the user). Update scans through
+  args for known change keys (:email, :data, etc) but ONLY changes the first one
+  it encounters, so do not stack changes.
 
   """
-  alias Rivet.Ident
+
+  use Rivet.Ident
   require Logger
-  import Rivet.Auth.Settings, only: [getcfg: 2]
+  use Rivet.Ecto.Collection.Context, model: User
 
   @spec update(
-          user_changes :: map(),
-          caller_authz :: :admin | :user,
-          target_user :: Ident.User.t() | nil
+          change_map :: map(),
+          target_user :: User.t() | nil,
+          opts :: keyword()
         ) ::
-          {:ok, Ident.User.t()}
+          {:ok, User.t()}
           | {:error, reason :: String.t()}
 
-  def update(x, auth \\ :user, user \\ nil)
+  @changeable [:user, :email, :data, :handle, :phone, :role]
+  def update(args, %User{} = target, opts \\ []),
+    do: update_scan(@changeable, args, target, opts)
 
-  # USER CREATE NEW — special variant
-  def update(%{user: %{}, action: :upsert} = args, :admin, nil) do
-    with {:ok, args} <- preflight_user_create(args),
-         {:ok, user} <- Ident.User.create(args.user) do
-      generated = Ident.User.PasswordGenerator.generate()
+  defp update_scan([key | rest], args, target, opts) do
+    update = args[key]
 
-      expires_at = Rivet.Utils.Time.now() + getcfg(:initial_password_expiration_days, 1) * 86_400
-
-      with {:ok, factor} <-
-             Ident.Factor.Lib.set_password(user, generated, %{expires_at: expires_at}) do
-        finish_update(
-          args,
-          :user,
-          :admin,
-          %Ident.User{user | factors: [%{factor | details: %{"password" => generated}}]}
-        )
-      end
+    if is_map(update) and map_size(update) > 0 do
+      # I could do a single function stack, but I want to be able to have helper
+      # functions in orbit to each while in proximity to the parent
+      updater = String.to_existing_atom("update_#{key}")
+      apply(__MODULE__, updater, [args[:action], update, target, opts])
+    else
+      update_scan(rest, args, target, opts)
     end
   end
 
-  # USER UPDATE
-  def update(%{user: updates, action: :upsert} = args, admin, %Ident.User{} = user) do
-    updates =
-      case {admin, Map.get(updates, :disable)} do
-        {:admin, true} ->
-          Map.put(updates, :type, :disabled)
-
-        {:admin, false} ->
-          Map.put(updates, :type, :identity)
-
-        _pass ->
-          updates
-      end
-
-    with {:ok, user} <- Ident.User.update(user, updates) do
-      finish_update(args, :user, admin, user)
-    end
-  end
-
-  def update(%{user: _}, _, _), do: {:error, "Invalid user change configuration"}
+  defp update_scan([], _, _, _), do: {:error, "No updates found"}
 
   ##############################################################################
-  # PHONE
-  def update(%{phone: %{phone: phone}, action: :upsert} = args, admin, %Ident.User{} = user) do
-    with {:ok, _} <- Ident.User.Lib.add_phone(user, phone),
-         do: finish_update(args, :phone, admin, refresh(user, :phones))
-  end
-
-  def update(%{phone: %{id: phone_id}, action: :remove} = args, admin, %Ident.User{} = user) do
-    user_id = user.id
-
-    with {:ok, %Ident.Phone{user_id: ^user_id} = phone} <- Ident.Phone.one(id: phone_id),
-         {:ok, _} <- Ident.Phone.delete(phone) do
-      finish_update(args, :phone, admin, refresh(user, :phones))
+  # upsert in this case is update, since we require an existing target
+  def update_user(:upsert, update, %User{} = target, opts) do
+    if empty_str(update[:name]) do
+      {:error, "You must provide a name"}
+    else
+      disable = update[:disable]
+      update = Map.delete(update, :disable)
+      User.update(target, adjust_disabled(update, disable, opts[:auth]))
     end
   end
 
-  def update(%{phone: _}, _, _), do: {:error, "Invalid phone change configuration"}
+  def update_user(_, _, _, _), do: bad_args("user")
+
+  # only admin can enable/disable; on enable set to identity (next signin will fix)
+  defp adjust_disabled(updates, true, :admin), do: Map.put(updates, :type, :disabled)
+  defp adjust_disabled(updates, false, :admin), do: Map.put(updates, :type, :identity)
+  defp adjust_disabled(updates, _, _), do: updates
+
+  ##############################################################################
+  def update_phone(:upsert, %{number}, %User{} = target, _opts) do
+    with {:ok, _} <- User.Lib.add_phone(target, number), do: refresh(target, :phones)
+  end
+
+  def update_phone(:remove, %{id: phone_id}, %User{} = target, _opts) when is_uuid(phone_id) do
+    user_id = target.id
+
+    case Ident.Phone.one(id: phone_id) do
+      {:ok, %Ident.Phone{user_id: ^user_id} = phone} ->
+        with {:ok, _} <- Ident.Phone.delete(phone), do: refresh(target, :phones)
+
+      _ ->
+        {:error, :not_found}
+    end
+  end
+
+  def update_phone(_, _, _, _), do: bad_args("phone")
 
   ##############################################################################
   # HANDLE
-  def update(%{handle: %{handle: handle}, action: :upsert} = args, admin, %Ident.User{} = user)
-      when is_binary(handle) do
-    # inner with so the error can have the preloaded user
-    with {:ok, user} <- Ident.User.preload(user, [:handle]) do
-      with {:ok, :available} <- Ident.Handle.Lib.available(handle, user.id),
-           {:ok, new_handle} <- Ident.Handle.create(%{handle: handle, user_id: user.id}) do
-        # delete the old one
-        with %Ident.Handle{} <- user.handle, do: Ident.Handle.delete(user.handle)
-
-        finish_update(args, :handle, admin, %Ident.User{user | handle: new_handle})
-      else
-        # we already have this handle
+  def update_handle(:upsert, %{handle}, %User{} = target, _opts) when not_empty_str(handle) do
+    with {:ok, target} <- User.preload(target, [:handle]) do
+      case Handle.Lib.available(handle, target.id) do
         {:ok, :current} ->
-          finish_update(args, :handle, admin, user)
+          refresh(target, :handle)
+
+        {:ok, :available} ->
+          @repo.transact(fn ->
+            with {:ok, _} <- delete_old_handle(target.handle),
+                 {:ok, _} <- Handle.create(%{handle, user_id: target.id}),
+                 do: refresh(target, :handle)
+          end)
 
         {:error, private, public} ->
           Logger.error(private)
           {:error, public}
-
-        pass ->
-          pass
       end
     end
   end
 
-  def update(%{handle: _}, _, _), do: {:error, "Invalid handle change configuration"}
+  def update_handle(_, _, _, _), do: bad_args("handle")
+
+  # delete the old one, if there is one (should be), but if not still pretend it was deleted
+  defp delete_old_handle(%Handle{} = h), do: Handle.delete(h)
+  defp delete_old_handle(_), do: {:ok, nil}
 
   ##############################################################################
-  def update(
-        %{email: %{id: email_id, verify: true}, action: :upsert} = args,
-        admin,
-        %Ident.User{id: user_id} = user
-      ) do
-    with {:ok, %Ident.Email{user_id: ^user_id} = email} <-
-           Ident.Email.one([id: email_id], [:user]) do
+  # verify as in SEND verification, not change it
+  def update_email(:upsert, %{id: email_id, verify: true}, %User{id: user_id} = u, _opts) do
+    with {:ok, %Email{user_id: ^user_id} = email} <- Email.one([id: email_id], [:user]) do
       Rivet.Ident.mailer_template(:user_verification).queue(email)
-      finish_update(args, :email, admin, user)
+      refresh(u, :emails)
     end
   end
 
-  def update(%{email: %{email: email}, action: :upsert} = args, admin, %Ident.User{} = user) do
-    with {:ok, _email} <- Ident.User.Lib.add_email(user, email, %{}) do
-      finish_update(args, :email, admin, refresh(user, :emails))
-    end
+  def update_email(:upsert, %{address}, %User{} = u, opts) when is_binary(address) do
+    with {:ok, _email} <- User.Lib.add_email(u, address, opts), do: refresh(u, :emails)
   end
 
-  def update(
-        %{email: %{id: email_id}, action: :remove} = args,
-        admin,
-        %Ident.User{id: user_id} = user
-      ) do
-    with {:ok, %Ident.Email{user_id: ^user_id} = email} <- Ident.Email.one(id: email_id),
-         {:ok, _email} <- Ident.Email.delete(email) do
-      finish_update(args, :email, admin, refresh(user, :emails))
-    end
+  def update_email(:remove, %{id: email_id}, %User{id: user_id} = u, _opts) do
+    with {:ok, %Email{user_id: ^user_id} = email} <- Email.one(id: email_id),
+         {:ok, _email} <- Email.delete(email),
+         do: refresh(u, :emails)
   end
 
-  def update(%{email: _}, _, _), do: {:error, "Invalid email change configuration"}
+  def update_email(_, _, _, _), do: bad_args("email")
 
   ##############################################################################
-  def update(%{data: data, action: :upsert} = args, admin, %Ident.User{} = user) do
-    case data do
-      %{id: id} ->
-        with {:ok, current} <- Ident.User.Data.one(id: id, user_id: user.id) do
-          Ident.User.Data.update(current, %{value: data.value})
+  def update_data(:upsert, %{id, value}, %User{} = user, _) do
+    with {:ok, current} <- User.Data.one(id: id, user_id: user.id),
+         {:ok, _} <- User.Data.update(current, %{value}),
+         do: refresh(user, :data)
+  end
+
+  def update_data(:upsert, %{type, value}, %User{id: user_id} = user, _) do
+    with {:ok, _} <- User.Data.create(%{user_id, type, value}), do: refresh(user, :data)
+  end
+
+  def update_data(:remove, %{id}, %User{} = user, _) do
+    with {:ok, current} <- User.Data.one(id: id, user_id: user.id),
+         {:ok, _} <- User.Data.delete(current),
+         do: refresh(user, :data)
+  end
+
+  def update_data(_, _, _, _), do: bad_args("data")
+
+  ################################################################################
+  def update_role(action, %{id: role_id}, %User{} = u, opts) when is_number(role_id) do
+    case opts[:auth] do
+      :admin ->
+        case Ident.Role.one(id: role_id) do
+          {:ok, %Ident.Role{} = role} ->
+            access = Ident.Access.one(user_id: u.id, role_id: role_id)
+            update_role_(action, access, role, u)
+
+          {:error, :not_found} ->
+            bad_args("role/missing")
         end
 
-      _new ->
-        Ident.User.Data.create(%{user_id: user.id, type: data.type, value: data.value})
-    end
-    |> case do
-      {:ok, %Ident.User.Data{}} ->
-        finish_update(args, :data, admin, refresh(user, :data))
-
-      {:error, %Ecto.Changeset{}} = err ->
-        err
-
-      _other ->
-        {:error, "unable to update with user data"}
+      _ ->
+        # Logger for unauthz?
+        bad_args("role/auth")
     end
   end
 
-  ################################################################################
-  def update(%{role: role_arg, action: :upsert} = args, :admin, %Ident.User{} = user) do
-    with {:ok, role} <- Ident.Role.one(Enum.to_list(role_arg)),
-         {:error, _} <- Ident.Access.one(user_id: user.id, role_id: role.id),
-         {:ok, _} <- Ident.Access.upsert(%{role_id: role.id, user_id: user.id}) do
-      finish_update(args, :role, :admin, refresh(user, :accesses))
-    end
+  def update_role(_, _, _, _), do: bad_args("role")
+
+  #######
+  defp update_role_(:upsert, {:ok, _}, _, u), do: refresh(u, :accesses)
+
+  defp update_role_(:upsert, {:error, :not_found}, %{id: role_id}, %{id: user_id} = u) do
+    with {:ok, _} <- Ident.Access.upsert(%{role_id, user_id}), do: refresh(u, :accesses)
   end
 
-  def update(%{role: role_arg, action: :remove} = args, :admin, %Ident.User{} = user) do
-    with {:ok, role} <- Ident.Role.one(Enum.to_list(role_arg)),
-         {:ok, access} <- Ident.Access.one(user_id: user.id, role_id: role.id),
-         true <- Ident.User.Lib.has_other_admin?(role, user),
-         {:ok, _} <- Ident.Access.delete(access) do
-      finish_update(args, :role, :admin, refresh(user, :accesses))
-    end
+  defp update_role_(:remove, {:ok, access}, role, u) do
+    with true <- User.Lib.has_other_admin?(role, u),
+         {:ok, _} <- Ident.Access.delete(access),
+         do: refresh(u, :accesses)
   end
 
-  # ##############################################################################
-  # def mutate_update_role(%{role: role, id: user_id}, info)
-  #     when not is_nil(role) and not is_nil(user_id) do
-  #   with {:ok, admin} <- Auth.authz_action(info, %AuthAssertion{action: :user_admin}, "updateRole"),
-  #        {:user, {:ok, user}} <- {:user, Ident.User.one(id: user_id)},
-  #        {:role, {:ok, role}} <- {:role, Ident.Role.one(id: role)},
-  #        {:has_admin, true} <-
-  #          {:has_admin, Ident.User.Lib.tenant_has_other_admin?(user_id, admin.tenant_id)} do
-  #     case Ident.Access.one(user_id: user.id, role_id: role.id) do
-  #       {:ok, _access} ->
-  #         nil
-  #
-  #       {:error, _} ->
-  #         Ident.Access.upsert(%{role_id: role.id, user_id: user.id})
-  #     end
-  #
-  #     {:ok, %{success: true, result: Ident.User.preload!(user, [:accesses], force: true)}}
-  #   else
-  #     {:user, {:error, _}} ->
-  #       {:error, reason} = graphql_error("updateRole", "Couldn't find user with given ID.")
-  #       {:ok, %{success: false, reason: reason}}
-  #
-  #     {:role, {:error, _}} ->
-  #       {:error, reason} = graphql_error("updateRole", "Couldn't find role with given ID")
-  #       {:ok, %{success: false, reason: reason}}
-  #
-  #     {:has_admin, false} ->
-  #       {:error, reason} = graphql_error("updateRole", "Not allowed. No other admin exists.")
-  #       {:ok, %{success: false, reason: reason}}
-  #   end
-  # end
-
-  ################################################################################
-  def update(_, _, user), do: {:ok, user}
+  defp update_role_(_, _, _, _), do: bad_args("role/args")
 
   ##############################################################################
-  defp finish_update(args, did_type, admin, user),
-    do: update(Map.delete(args, did_type), admin, user)
-
-  ##############################################################################
-  def preflight_user_create(%{user: _} = args) do
-    with {:ok, args} <- enrich_create(args, :handle),
-         {:ok, args} <- enrich_create(args, :email) do
-      enrich_create(args, :user)
-    end
-  end
-
-  ##############################################################################
-  defp enrich_create(args, :user) do
-    {:ok,
-     Map.update(args, :user, %{}, fn u ->
-       settings = Map.get(u, :settings, %{}) |> Map.put("changePassword", true)
-       Map.merge(u, %{settings: settings, type: :identity})
-     end)}
-  end
-
-  # Handle?
-  defp enrich_create(%{handle: %{handle: h}} = args, :handle)
-       when is_binary(h) and byte_size(h) > 0,
-       do: enrich_handle(args, h)
-
-  defp enrich_create(%{email: %{email: addr}} = args, :handle)
-       when is_binary(addr) and byte_size(addr) > 0 do
-    case get_in(args, [:handle, :handle]) do
-      # if unspecified, auto-create a handle
-      nil ->
-        {:ok, Map.put(args, :handle, %{handle: Ident.Handle.Lib.gen_good_handle!(addr)})}
-
-      # or check the one they provide
-      handle ->
-        enrich_handle(args, handle)
-    end
-  end
-
-  defp enrich_create(%{email: %{email: addr}} = args, :email) when is_binary(addr),
-    do: create_ok(args, :email, :address, Ident.Emails, %{address: addr, email: addr})
-
-  defp create_ok(args, component, key, module, attrs) do
-    # inject some for the query to keep create_ok happy
-    check_args = Map.merge(%{user_id: "ignore"}, attrs)
-
-    case module.create_ok(check_args, [key]) do
-      :ok ->
-        {:ok, Map.put(args, component, attrs)}
-
-      {:error, :exists} ->
-        {:error, "Sorry that #{component} is already taken"}
-
-      pass ->
-        pass
-    end
-  end
-
-  defp enrich_handle(args, name),
-    do: create_ok(args, :handle, :handle, Ident.Handles, %{handle: name})
-
-  ##############################################################################
-  defp refresh(user, key), do: Ident.User.preload!(user, key, force: true)
+  defp refresh(user, key), do: User.preload(user, key, force: true)
+  defp bad_args(what), do: {:error, "Invalid #{what} change configuration"}
 end
