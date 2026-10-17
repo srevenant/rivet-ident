@@ -24,7 +24,7 @@ defmodule Rivet.Ident.MixProject do
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
       elixirc_paths: elixirc_paths(Mix.env()),
-      # xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
+      xref: [exclude: List.wrap(Application.get_env(:rivet, :repo))],
       aliases: aliases(),
       compilers: [:es6_maps | Mix.compilers()]
     ]
