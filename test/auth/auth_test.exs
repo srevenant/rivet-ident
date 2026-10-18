@@ -12,7 +12,17 @@ defmodule Rivet.Ident.Test.Auth.AuthTest do
   doctest Token.Check, import: true
   doctest Token.Create, import: true
   # doctest Token.Validation, import: true
-  doctest Token.Verify, import: true
+  # doctest Token.Verify, import: true
+
+  test "verify" do
+    tok =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjYWExOmFjYzpleGFtcG" <>
+        "xlLmNvbSIsImV4cCI6MTY3ODMxMTEwMywiZm9yIjp7fSwic3ViIjoiY2FzMTpuYXJ" <>
+        "mIn0.qMH6Tr_vvfQ4lmLnPilordYbfgv4ZDzCY2yAc8D8RVQ"
+
+    assert {:ok, %{aud: "caa1:acc:example.com", exp: 1_678_311_103, for: %{}, sub: "cas1:narf"}} =
+             Token.Verify.jwt(tok, :acc)
+  end
 
   describe "validation" do
     test "generate validation token" do

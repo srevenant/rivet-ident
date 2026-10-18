@@ -5,7 +5,7 @@ defmodule Rivet.Ident do
   def critical_report(msg, opts \\ []),
     do: mailer_template(:critical_fail).report(msg, opts)
 
-  def critical_report_if_error(result, msg, opts),
+  def critical_report_if_error(result, msg, opts \\ []),
     do: mailer_template(:critical_fail).report_if_error(result, msg, opts)
 
   defmacro __using__(_) do

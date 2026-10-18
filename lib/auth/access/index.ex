@@ -1,5 +1,6 @@
 defmodule Rivet.Auth.Access do
   use Rivet.Ident
+  alias Rivet.Auth
 
   @doc """
   ```
@@ -9,7 +10,7 @@ defmodule Rivet.Auth.Access do
   iex> check([], %Auth.Domain{})
   {:missing, %Auth.Domain{log: "Missing authorization header value"}}
   iex> check(["bearer token"], %Auth.Domain{})
-  {:error, %Auth.Domain{log: "Invalid authorization"}}
+  {:error, %Auth.Domain{log: "Cannot find matching key for authorization type :acc"}}
   iex> check(["narf"], %Auth.Domain{})
   {:error, %Auth.Domain{log: "Authorization header exists but is not formatted properly"}}
   iex> check(["narf narf"], %Auth.Domain{})

@@ -109,10 +109,7 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
       if expires_in > @max_refresh_seconds do
         @max_refresh_seconds
       else
-        max(
-          expires_in - @refresh_buffer_seconds,
-          @min_refresh_seconds
-        )
+        max(expires_in - @refresh_buffer_seconds, @min_refresh_seconds)
       end
     else
       _ ->

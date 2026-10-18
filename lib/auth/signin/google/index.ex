@@ -16,9 +16,10 @@ defmodule Rivet.Auth.Signin.Google do
 
   def check(hostname, %{"data" => %{"auth" => token}}, type)
       when not_empty_str(hostname) and not_empty_str(token) do
-    verify_google_signature(token)
-    |> find_or_create_user(hostname, type)
-    |> Auth.Signin.post_signin()
+    with {:ok, %{payload}} <- verify_google_signature(token),
+         {:ok, %Auth.Domain{} = auth} <- find_create_by_ident(payload, hostname, type),
+         # make sure its okay without {:ok
+         do: Auth.Signin.post_signin(auth)
   end
 
   def check(_, _, _),
@@ -45,7 +46,7 @@ defmodule Rivet.Auth.Signin.Google do
 
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
           {true, %JOSE.JWT{fields: fields}, %JOSE.JWS{} = jws} ->
-            {:ok, %{payload: fields, header: Map.from_struct(jws), token: token}}
+            {:ok, %{token, payload: fields, header: Map.from_struct(jws)}}
 
           {false, %JOSE.JWT{fields: %{"email" => email}}, %JOSE.JWS{}} ->
             {:error, %Auth.Domain{auth | log: "Unable to verify google token for #{email}"}}
@@ -60,55 +61,29 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   ##############################################################################
-  defp find_or_create_user(
-         {:ok, %{payload: %{"email_verified" => true} = payload}},
-         hostname,
-         type
-       ) do
-    payload
-    |> find_user(hostname, type)
-    |> update_user_avatar(payload["picture"])
-  end
-
-  defp find_or_create_user(pass, _, _), do: pass
-
-  ###############################################################################
-  # defp update_user_avatar(
-  # {:ok, %Auth.Domain{status: :authed, user: %User{} = _}} = pass,
-  # _picurl
-  # ) do
-  # IO.puts("Need to get avatar")
-  ## 1. see if user has avatar
-  ## 2. if not, in async process pull URL and submit as avatar
-  # pass
-  # end
-
-  defp update_user_avatar(pass, _), do: pass
-
-  ###############################################################################
-  defp find_user(%{"sub" => ident} = params, hostname, type) do
+  # only allow signin with google users who have verified their email
+  defp find_create_by_ident(%{"email_verified" => true, "sub" => ident} = params, h, type) do
     case User.ExtId.Lib.get("google", ident) do
-      {:ok, user_ident} -> User.one(id: user_ident.user_id) |> check_user_allowed(hostname)
-      _ -> find_user_by_email(params, hostname, type)
+      {:ok, user_ident} -> User.one(id: user_ident.user_id) |> check_user_allowed(h)
+      {:error, :not_found} -> find_create_by_email(params, h, type)
     end
   end
 
-  defp find_user(_, _, _),
-    do: {:error, "Unrecognized payload values, cannot continue; missing 'sub'"}
+  defp find_create_by_ident(_, _, _),
+    do: {:error, "Cannot sign in: federated identity is incomplete."}
 
-  ###############################################################################
-  defp find_user_by_email(%{"email" => email, "sub" => ident} = params, hostname, type) do
+  ####
+  defp find_create_by_email(%{"email" => email, "sub" => ident} = params, hostname, type) do
     case Ident.Email.one([address: email], [:user]) do
       {:ok, %Ident.Email{user: %User{} = u}} ->
-        {:ok, u}
-        |> check_user_allowed(hostname)
-        |> add_ident(ident)
+        check_user_allowed({:ok, u}, hostname) |> add_ident(ident)
 
-      _ ->
+      {:error, :not_found} ->
         create_user(params, hostname, type)
     end
   end
 
+  ##############################################################################
   defp google_allowed?(user) do
     case get_in(user.settings, ["authAllowed", "google"]) do
       nil ->
@@ -119,9 +94,10 @@ defmodule Rivet.Auth.Signin.Google do
             _ -> Map.put(user.settings, "authAllowed", %{"google" => true})
           end
 
-        with {:error, err} <- User.update(user, %{settings: settings}) do
-          IO.inspect(err, label: "Unexpected error updating user settings on signin")
-        end
+        User.update(user, %{settings: settings})
+        |> Rivet.Ident.critical_report_if_error(
+          "Unexpected error updating user settings on signin"
+        )
 
         true
 
@@ -156,7 +132,8 @@ defmodule Rivet.Auth.Signin.Google do
       email,
       handle: fedid.handle,
       name: params["name"],
-      settings: %{"authAllowed" => %{"google" => true}}
+      # email_verified: false,
+      settings: %{"authAllowed" => Map.put(fedid.settings, "#{fedid.provider.type}", true)}
     }
 
     User.Signup.signup(
@@ -170,35 +147,13 @@ defmodule Rivet.Auth.Signin.Google do
     |> add_ident(params["sub"])
   end
 
-  # ##############################################################################
+  ##############################################################################
   defp add_ident({:ok, %Auth.Domain{user: %User{} = u}} = pass, ident) do
-    with {:ok, _} <- User.ExtId.Lib.put(u, "google", ident) do
-      pass
-    end
+    with {:ok, _} <- User.ExtId.Lib.put(u, "google", ident), do: pass
   end
 
   defp add_ident(pass, _), do: pass
 
-  ##############################################################################
-  #  defp link_factor({:ok, %User{} = user}) do
-  #
-  #   {
-  #   "iss": "https://accounts.google.com",
-  #   "nbf": 1111111115,
-  #   "aud": "311111111124-ecb8lih2719bbpe1tv1itiq003p7pa4h.apps.googleusercontent.com",
-  #   "sub": "111111111111111111354",
-  #   "hd": "cdomain",
-  #   "email": "user@domain",
-  #   "email_verified": true,
-  #   "azp": "310dfasdfasdf-ecb7lih2717bbpe1td3itiq003e7pn4h.apps.googleusercontent.com",
-  #   "name": "Joe Friday",
-  #   "picture": "https://lh3.googleusercontent.com/a/AEwFTp5SjTOtm4RJ176koDsSEmkXv6o_7hTf1ueeZBOk=s96-c",
-  #   "given_name": "Joe",
-  #   "family_name": "Friday",
-  #   "iat": 1111111975,
-  #   "exp": 1111111575,
-  #   "jti": "casfdasdfasdfasdfasdf"
-  # }
   defp payload_to_fedid(payload) do
     # could update locale if we have it here in settings
     %Ident.Factor.FedId{
@@ -209,6 +164,7 @@ defmodule Rivet.Auth.Signin.Google do
         verified: false
       },
       phone: nil,
+      settings: %{locale: payload["locale"]},
       provider: %Ident.Factor.FedId.Provider{
         type: :google,
         sub: payload["sub"],
