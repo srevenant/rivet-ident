@@ -32,6 +32,7 @@ defmodule Rivet.Auth.Token.Access do
           testing_only_expiration_offset :: nil | integer()
         ) ::
           {:ok, token :: String.t(), claims :: map()}
+  # coveralls-ignore-next-line
   def jwt(factor, hostname, exp \\ 0)
 
   def jwt(%Factor{details: %{type: "acc"}} = factor, hostname, exp) do

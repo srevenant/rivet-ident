@@ -15,6 +15,11 @@ defmodule Rivet.Ident.Test.Ident.User.CodeTest do
     assert {:ok, _} = Code.delete(x)
   end
 
+  test "type!" do
+    assert Code.type!(:password_reset) == :password_reset
+    assert_raise RuntimeError, fn -> Code.type!(:bad) end
+  end
+
   ### requires :mailer; move to a supplementary Mailer lib
   # test "Lib.email_verify_code" do
   #   assert {:error, "Invalid EmailVerify Code" <> _} = Code.Lib.email_verify_code("nope")
