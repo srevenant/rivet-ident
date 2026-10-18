@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.User.ModelTest do
-  use Rivet.Ident.Test.Case, async: true
+  use Rivet.Ident.Support.Case, async: true
 
   doctest Rivet.Ident.User, import: true
   doctest Rivet.Ident.User.Lib, import: true

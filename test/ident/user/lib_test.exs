@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.User.LibTest do
-  use Rivet.Ident.Test.Case, async: true
+  use Rivet.Ident.Support.Case, async: true
   use Rivet.Ident
   alias Rivet.Auth
 
@@ -18,7 +18,7 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert User.enabled?(build(:ident_user))
     refute User.enabled?(disabled)
 
-    errmsg = "sorry, account is disabled"
+    errmsg = "Sorry, account is disabled"
 
     assert {:error, %Auth.Domain{error: ^errmsg}} =
              User.Lib.check_user_status(%Auth.Domain{user: disabled})
@@ -31,7 +31,7 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert {:ok, %User{id: ^id}} = User.Lib.get_user_by_handle(handle.handle)
 
     # passthrough check_user_status
-    assert {:ok, %Auth.Domain{error: "boo"}} =
+    assert {:error, "No user to verify"} =
              User.Lib.check_user_status(%Auth.Domain{error: "boo"})
 
     # nope

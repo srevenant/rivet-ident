@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Test.Case do
+defmodule Rivet.Ident.Support.Case do
   use ExUnit.CaseTemplate
 
   using do
@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Test.Case do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Rivet.Ident.Test.Case
+      import Rivet.Ident.Support.Case
 
       use ExMachina.Ecto, repo: Rivet.Ident.Test.Repo
       use Rivet.Ident.Test.IdentFactory

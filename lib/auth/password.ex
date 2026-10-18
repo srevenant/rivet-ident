@@ -4,6 +4,7 @@ defmodule Rivet.Auth.Password do
   """
   use Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: User.Code
+  require Logger
 
   alias Rivet.Auth
 

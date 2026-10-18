@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.User.CacheTest do
-  use Rivet.Ident.Test.Case, async: true
+  use Rivet.Ident.Support.Case, async: true
 
   test "cache" do
     %{id} = insert(:ident_user)

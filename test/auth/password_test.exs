@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
   This is a slow test because of all the password hash checking.
 
   """
-  use Rivet.Ident.Test.Case, async: true
+  use Rivet.Ident.Support.Case, async: true
   alias Rivet.Auth
   import Rivet.Auth.Password
   use Rivet.Ident

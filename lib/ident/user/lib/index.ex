@@ -112,12 +112,12 @@ defmodule Rivet.Ident.User.Lib do
   @spec check_user_status(User.t() | Auth.Domain.t()) ::
           {:ok, User.t() | Auth.Domain.t()} | {:error, Auth.Domain.t()}
   def check_user_status(%User{type: :disabled}),
-    do: {:error, %Auth.Domain{error: "sorry, account is disabled"}}
+    do: {:error, %Auth.Domain{error: "Sorry, account is disabled"}}
 
   def check_user_status(%User{} = user), do: {:ok, user}
 
   def check_user_status(%Auth.Domain{user: %User{} = user}), do: check_user_status(user)
-  def check_user_status(%Auth.Domain{} = pass), do: {:ok, pass}
+  def check_user_status(_), do: {:error, "No user to verify"}
 
   ##############################################################################
   def add_phone(user, phone) do

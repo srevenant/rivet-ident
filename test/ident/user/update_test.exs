@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.User.UpdateTest do
-  use Rivet.Ident.Test.Case, async: true
+  use Rivet.Ident.Support.Case, async: true
   use Rivet.Ident
   alias User.Update
 

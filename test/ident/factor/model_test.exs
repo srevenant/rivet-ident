@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Test.Ident.Factor.ModelTest do
-  use Rivet.Ident.Test.Case, async: true
+  use Rivet.Ident.Support.Case, async: true
   alias Rivet.Ident.Factor
 
   # doctest Ident.Factor, import: true

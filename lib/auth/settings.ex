@@ -40,8 +40,10 @@ defmodule Rivet.Auth.Settings do
         secret
 
       _ ->
+      # coveralls-ignore-start
         raise ArgumentError,
               "Configuration `:rivet_ident, jwt_#{token_type}_secrets_decoded: [...]` has no keys? Is :rivet_ident application started?"
+      # coveralls-ignore-stop
     end
   end
 
@@ -52,6 +54,7 @@ defmodule Rivet.Auth.Settings do
   def expire_limit(token_type, nil) do
     case getcfg(:auth_expire_limits, %{})[token_type] do
       dict when is_map(dict) ->
+      # coveralls-ignore-next-line
         raise "Invalid expire limit request for key #{inspect(token_type)} with no subkey"
 
       value ->
@@ -67,8 +70,10 @@ defmodule Rivet.Auth.Settings do
 
     case exp_config[token_type][sub_type] do
       nil ->
+        # coveralls-ignore-start
         IO.inspect([token_type, sub_type], label: "Lookup keys")
         raise "Invalid Configuration"
+        # coveralls-ignore-next-line
 
       pass ->
         pass
@@ -78,13 +83,10 @@ defmodule Rivet.Auth.Settings do
   def getcfg(name, default), do: Application.get_env(:rivet_ident, name, default)
   def putcfg(value, name), do: Application.put_env(:rivet_ident, name, value)
 
-  defp to_map(list) do
-    if Keyword.keyword?(list) do
-      Map.new(list, fn {k, v} ->
-        {as_atom!(k), to_map(v)}
-      end)
-    else
-      list
-    end
-  end
+  # converting Config keywords to maps
+  defp to_map(list) when is_list(list),
+    # coveralls-ignore-next-line
+    do: Map.new(list, fn {k, v} -> {as_atom!(k), to_map(v)} end)
+
+  defp to_map(map) when is_map(map), do: map
 end

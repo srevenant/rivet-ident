@@ -33,7 +33,6 @@ defmodule Rivet.Auth.Token.Check do
   ###########################################################################
   @doc """
   ```
-  iex> alias Rivet.Ident.Auth.Domain
   iex> {:error, auth} = enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: "asdf", aud: "asdf"}}})
   iex> auth.log
   "Cannot parse token.sub=asdf"
@@ -65,7 +64,6 @@ defmodule Rivet.Auth.Token.Check do
   ###########################################################################
   @doc """
   ```
-  iex> alias Rivet.Ident.Auth.Domain
   iex> {:error, auth} = valid_audience(%Auth.Domain{token: %{aud: "asdf"}})
   iex> auth.log
   "Cannot parse token.tok=asdf"
@@ -76,8 +74,8 @@ defmodule Rivet.Auth.Token.Check do
   {:error, "narf"}
   ```
   """
-  def valid_audience(%Auth.Domain{token: %{aud: audience}} = auth) do
-    case expand_claim_value(:tok, audience) do
+  def valid_audience(%Auth.Domain{token: %{aud}} = auth) do
+    case expand_claim_value(:tok, aud) do
       {:ok, %{tok: t_hostname, tok_type: t_type}} ->
         if auth.hostname == t_hostname do
           %Auth.Domain{auth | type: t_type, hostname: t_hostname}
@@ -95,7 +93,6 @@ defmodule Rivet.Auth.Token.Check do
   ###########################################################################
   @doc """
   ```
-  iex> alias Rivet.Ident.Auth.Domain
   iex> now = System.os_time(:second)
   iex> {:error, auth} = valid_expiration(%Auth.Domain{token: %{claims: %{for: %{}, exp: 0}}, type: :acc})
   iex> auth.log
@@ -130,7 +127,6 @@ defmodule Rivet.Auth.Token.Check do
   ###########################################################################
   @doc """
   ```
-  iex> alias Rivet.Ident.Auth.Domain
   iex> {:error, auth} = valid_subject(%Auth.Domain{})
   iex> auth.log
   "Unable to process token subject"

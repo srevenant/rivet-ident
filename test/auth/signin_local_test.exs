@@ -6,28 +6,23 @@ defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
   This is a slow test because of all the password hash checking.
 
   """
-  use Rivet.Ident.Test.Case, async: true
-  alias Rivet.Auth
-  alias Rivet.Auth.Signin.Local
+  use Rivet.Ident.Support.Case, async: true
   use Rivet.Ident
-  alias Rivet.Ident.Factor
+  alias Rivet.Auth
+  alias Rivet.Auth.Identify
+  alias Rivet.Auth.Signin.Local
+
+  @password "VFR$#EDCvfr43edc"
+  @common_error "Signup failed. Perhaps try password recovery?"
+  # @hashed Factor.Password.hash(@password)
 
   test "Signin Local" do
-    # assert capture_log(fn ->
-    # Signup
-    assert {:error,
-            %Auth.Domain{
-              log: "Auth signup failed, arguments don't match",
-              error: "Signup Failed"
-            }} = Local.signup("example.com", "narf")
-
-    user_pass = "VFR$#EDCvfr43edc"
     user_handle = "narf"
     user_email = "narf@narf.com"
 
     good_user = %{
       "handle" => user_handle,
-      "password" => user_pass,
+      "password" => @password,
       "email" => user_email
     }
 
@@ -35,15 +30,16 @@ defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
              Local.signup("example.com", good_user)
 
     user_id = user.id
-    error = "A signin already exists for `#{user_email}`"
+    error = "Signup failed: A signin already exists for `#{user_email}`"
 
-    assert {:error, %Auth.Domain{error: ^error}} = Local.signup("example.com", good_user)
+    assert {:error, %Auth.Domain{log: ^error, error: @common_error}} =
+             Local.signup("example.com", good_user)
 
     # Check
     assert {:ok, %Auth.Domain{status: :authed}} =
              Local.check(%Auth.Domain{status: :narf}, %{
                "handle" => user_handle,
-               "password" => user_pass
+               "password" => @password
              })
 
     assert {:error,
@@ -56,39 +52,38 @@ defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
 
     # Load user
     assert {:error, %{log: "Cannot find email red@narf"}} =
-             Local.load_user({:ok, %Auth.Domain{}}, "red@narf")
+             Local.load_user(%Auth.Domain{}, "red@narf")
 
-    assert {:error, %{log: "Cannot find person ~red"}} =
-             Local.load_user({:ok, %Auth.Domain{}}, "red")
+    assert {:ok, %{user: %Ident.User{id: ^user_id}}} = Local.load_user(%Auth.Domain{}, user_email)
 
-    assert {:ok, %{user: %Ident.User{id: ^user_id}}} =
-             Local.load_user({:ok, %Auth.Domain{}}, user_email)
+    # double-tap this test for Identify too
+    assert {:error, %Auth.Domain{error: "Sorry, that email address" <> _}} =
+             Identify.identify("example.com", %{email: user_email})
 
-    # Load password factor
-    newu = insert(:ident_user)
+    assert {:ok, %Auth.Domain{}} = Identify.identify("example.com", %{email: "new@blah.com"})
+  end
 
-    assert {:error, %Auth.Domain{log: "No auth factor for user"}} =
-             Local.load_password_factor({:ok, %Auth.Domain{user: newu}})
+  test "bad args" do
+    assert {:error,
+            %Auth.Domain{
+              error: @common_error,
+              log: "Signup failed: Invalid arguments"
+            }} = Local.signup("example.com", "narf")
 
-    # Check password
-    password = "Bad Wolf"
-    hashed = Factor.Password.hash(password)
-    assert true == Local.check_password(hashed, password)
-    assert false == Local.check_password(hashed, "Time Lord")
-    # assert true == Local.check_password(user, user_pass)
-    # assert false == Local.check_password(newu, "not")
-    assert false == Local.check_password(:bork, nil)
+    params = %{"handle" => "ahandle", "password" => @password, "email" => "email@address.com"}
 
-    # valid_user_factor
-    assert {:ok, [factor]} = Factor.all(user_id: user.id)
+    test_bad = fn a, b ->
+      assert {:error, %{log, error, status: :unknown}} =
+               Local.signup("example.com", Map.put(params, a, b))
 
-    assert {:error, %Auth.Domain{status: :unknown, log: "Invalid Password"}} =
-             Local.valid_user_factor(%Auth.Domain{user: user, factor: factor}, "narf")
+      assert error == log
+      assert "Signup failed; Missing #{a}" == log
+    end
 
-    assert {:error, %Auth.Domain{status: :unknown, log: "No password factor exists for user"}} =
-             Local.valid_user_factor(%Auth.Domain{user: user}, user_pass)
-
-    assert {:ok, %Auth.Domain{status: :authed}} =
-             Local.valid_user_factor(%Auth.Domain{user: user, factor: factor}, user_pass)
+    test_bad.("handle", nil)
+    test_bad.("password", "")
+    test_bad.("email", nil)
   end
 end
+
+# assert {:error, "narf"} = test_bad.("handle", "bad@handle")

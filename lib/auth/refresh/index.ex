@@ -55,13 +55,8 @@ defmodule Rivet.Auth.Refresh do
         }
 
         # this checks the validation token embedded within the refresh token
-        case Auth.Token.Check.jwt(valauth) do
-          {:ok, %Auth.Domain{} = valauth} ->
-            {:ok, auth, valauth}
-
-          {:error, %Auth.Domain{} = auth} ->
-            {:error, auth}
-        end
+        with {:ok, %Auth.Domain{} = valauth} <- Auth.Token.Check.jwt(valauth),
+             do: {:ok, auth, valauth}
     end
   end
 

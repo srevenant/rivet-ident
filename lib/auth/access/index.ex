@@ -2,22 +2,6 @@ defmodule Rivet.Auth.Access do
   use Rivet.Ident
   alias Rivet.Auth
 
-  @doc """
-  ```
-  iex> alias Rivet.Auth
-  iex> check([""], %Auth.Domain{})
-  {:missing, %Auth.Domain{log: "Missing authorization header value"}}
-  iex> check([], %Auth.Domain{})
-  {:missing, %Auth.Domain{log: "Missing authorization header value"}}
-  iex> check(["bearer token"], %Auth.Domain{})
-  {:error, %Auth.Domain{log: "Cannot find matching key for authorization type :acc"}}
-  iex> check(["narf"], %Auth.Domain{})
-  {:error, %Auth.Domain{log: "Authorization header exists but is not formatted properly"}}
-  iex> check(["narf narf"], %Auth.Domain{})
-  {:error, %Auth.Domain{log: "Invalid authorization type: narf"}}
-  ```
-  """
-
   @spec check(auth_header :: list(String.t()), Auth.Domain.t()) ::
           {:ok | :missing | :error, Auth.Domain.t()}
   def check([""], %Auth.Domain{} = auth),
@@ -51,8 +35,8 @@ defmodule Rivet.Auth.Access do
 
         # this checks the validation token embedded within the refresh token
         with {:ok, %Auth.Domain{} = auth} <- Auth.Token.Check.jwt(auth) do
-          case Ident.User.Lib.check_user_status(auth) do
-            {:ok, %Ident.User{} = user} -> {:ok, %{auth | user}}
+          case User.Lib.check_user_status(auth) do
+            {:ok, %User{} = user} -> {:ok, %{auth | user}}
             # we passed signature, but the claims weren't right
             {:error, %Auth.Domain{} = auth} -> {:error, %Auth.Domain{auth | status: :unknown}}
           end

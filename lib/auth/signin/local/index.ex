@@ -42,7 +42,7 @@ defmodule Rivet.Auth.Signin.Local do
   end
 
   def signup(_, _, _),
-    do: signup_error("Arguments don't match")
+    do: signup_error("Invalid arguments")
 
   # Rivet.Guard's empty_str is a little different from what we want
   defp invalid_value(x), do: not is_binary(x) or byte_size(x) == 0
@@ -57,7 +57,7 @@ defmodule Rivet.Auth.Signin.Local do
 
   ##############################################################################
   @spec check(Auth.Domain.t() | String.t(), params :: map()) :: Auth.Domain.result()
-  def check(%Auth.Domain{user: %User{}} = auth, %{"handle" => handle, "password" => password}) do
+  def check(%Auth.Domain{} = auth, %{"handle" => handle, "password" => password}) do
     with {:ok, auth} <- load_user(auth, handle),
          {:ok, user} <- User.Lib.check_user_status(auth.user),
          {:ok, auth} <- Auth.Password.valid_password_factor(%{auth | user}, password),
@@ -89,9 +89,7 @@ defmodule Rivet.Auth.Signin.Local do
     end
   end
 
-  def load_user({:ok, %Auth.Domain{} = auth}, handle), do: load_user(auth, handle)
-
   @auth_fail_msg "Unable to sign in. Did you want to sign up instead?"
   def signin_error(log, error \\ @auth_fail_msg),
-    do: {:error, %Auth.Domain{log, error}}
+    do: {:error, %Auth.Domain{log, error, status: :unknown}}
 end

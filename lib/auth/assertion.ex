@@ -28,18 +28,20 @@ defmodule Rivet.Auth.Assertion do
 
   def action(a, opts \\ []), do: struct(Assertion, opts ++ [action: a])
 
+  ##############################################################################
   @doc """
+
   check/2 attempts to verify %Assertion{} against the specified user,
-  and if the assertion includes a domain reference, it will attempt to walk
-  up the reference tree (if a parent_id exists) and try checking auth again.
+  and if the assertion includes a domain reference and fallback is true,
+  it will attempt a :global domain of the same permission (this is for superadmin
+  rights to certain things).
+
   """
 
-  def check(u, a, opts \\ [])
-
-  def check(%User{} = u, %Assertion{} = a, opts),
+  def check(%User{} = u, %Assertion{} = a, opts \\ []),
     do: check_(u, a, opts)
 
-  ########
+  ####
   defp check_(user, %{action, domain: :global}, opts) do
     with {:ok, user} <- Rivet.Auth.Cache.get_authz(user, opts),
          do: check_domain_(user, action, :global, nil)
@@ -54,12 +56,14 @@ defmodule Rivet.Auth.Assertion do
     end
   end
 
+  ##############################################################################
   defp check_domain_(user, action, domain, ref_id) do
     if MapSet.member?(user.authz, {action, domain, ref_id}),
       do: {:ok, user},
       else: {:error, user}
   end
 
+  ##############################################################################
   def web_check(user, assertion, method \\ nil, kwlog \\ []) do
     with {:ok, user} <- check(user, assertion) do
       graphql_log(method, kwlog)
