@@ -11,29 +11,19 @@ defmodule Rivet.Ident.Test.Ident.User.ExtIdTest do
 
   test "put and get external ID" do
     %{id: user_id} = user = insert(:ident_user)
+    origin = "google"
+    ext_id = Ecto.UUID.generate()
 
-    assert {:ok, _} = ExtId.Lib.put(user, "google", "abc123")
-    assert {:ok, extid} = ExtId.Lib.get("google", "abc123")
-    assert extid.user_id == user_id
-    assert extid.origin == "google"
-    assert extid.extid == "abc123"
+    assert {:ok, _} = ExtId.Lib.put(user, origin, ext_id)
 
-    # Both origin and external ID must match
-    assert :error = ExtId.Lib.get("github", "abc123")
-    assert :error = ExtId.Lib.get("google", "unknown")
-  end
+    assert {:error, "ExtId exists"} =
+             ExtId.Lib.put(%{user | id: Ecto.UUID.generate()}, origin, ext_id)
 
-  test "put replaces existing mapping" do
-    user1 = insert(:ident_user)
-    user2 = insert(:ident_user)
+    assert {:ok, %{user_id: ^user_id, origin: ^origin, extid: ^ext_id}} =
+             ExtId.Lib.get(origin, ext_id)
 
-    assert {:ok, _} = ExtId.Lib.put(user1, "google", "abc123")
-    assert {:ok, %{user_id: user_id}} = ExtId.Lib.get("google", "abc123")
-    assert user_id == user1.id
-
-    # Same external identity gets reassigned to another user
-    assert {:ok, _} = ExtId.Lib.put(user2, "google", "abc123")
-    assert {:ok, %{user_id: user_id}} = ExtId.Lib.get("google", "abc123")
-    assert user_id == user2.id
+    # mis-matched
+    assert {:error, :not_found} = ExtId.Lib.get("github", ext_id)
+    assert {:error, :not_found} = ExtId.Lib.get(origin, "unknown")
   end
 end

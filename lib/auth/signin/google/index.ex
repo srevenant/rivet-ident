@@ -1,12 +1,14 @@
 defmodule Rivet.Auth.Signin.Google do
   @moduledoc """
+
   Google login scheme
+
+  TODO? pull imageUrl (tiff?) and converts it / uploads it into user's profile
+
   """
   use Rivet.Ident
   alias Rivet.Auth
-
-  # TODO:
-  # - pull imageUrl (tiff?) and converts it / uploads it into user's profile
+  import Rivet.Auth.Signin
 
   ##############################################################################
   # note: this is different from `Auth.Domain.result()` typedef, in it can have any
@@ -22,13 +24,7 @@ defmodule Rivet.Auth.Signin.Google do
          do: Auth.Signin.post_signin(auth)
   end
 
-  def check(_, _, _),
-    do:
-      {:error,
-       %Auth.Domain{
-         error: "Signup Failed",
-         log: "Auth signup failed, arguments don't match"
-       }}
+  def check(_, _, _), do: signup_error("Invalid arguments")
 
   ##############################################################################
   @spec verify_google_signature(String.t()) ::
@@ -42,34 +38,36 @@ defmodule Rivet.Auth.Signin.Google do
         # signature of this jwt
         google_keys = Auth.Signin.Google.KeyManager.get_certs()
         jwk = Map.get(google_keys, header["kid"])
-        auth = %Auth.Domain{token: token}
+        # auth = %Auth.Domain{token: token}
 
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
           {true, %JOSE.JWT{fields: fields}, %JOSE.JWS{} = jws} ->
             {:ok, %{token, payload: fields, header: Map.from_struct(jws)}}
 
           {false, %JOSE.JWT{fields: %{"email" => email}}, %JOSE.JWS{}} ->
-            {:error, %Auth.Domain{auth | log: "Unable to verify google token for #{email}"}}
+            signin_error("Unable to verify google token for #{email}")
 
           _ ->
-            {:error, %Auth.Domain{auth | log: "Unable to verify google JWT"}}
+            signin_error("Unable to verify google JWT")
         end
 
       {:error, reason} ->
-        {:error, %Auth.Domain{log: reason}}
+        signin_error(reason)
     end
   end
 
+  # defp token_error(token,
+
   ##############################################################################
   # only allow signin with google users who have verified their email
-  defp find_create_by_ident(%{"email_verified" => true, "sub" => ident} = params, h, type) do
+  def find_create_by_ident(%{"email_verified" => true, "sub" => ident} = params, h, type) do
     case User.ExtId.Lib.get("google", ident) do
       {:ok, user_ident} -> User.one(id: user_ident.user_id) |> check_user_allowed(h)
       {:error, :not_found} -> find_create_by_email(params, h, type)
     end
   end
 
-  defp find_create_by_ident(_, _, _),
+  def find_create_by_ident(_, _, _),
     do: {:error, "Cannot sign in: federated identity is incomplete."}
 
   ####
@@ -110,17 +108,15 @@ defmodule Rivet.Auth.Signin.Google do
     if google_allowed?(user) and User.enabled?(user) do
       {:ok, %Auth.Domain{hostname: hostname, status: :authed, user: user}}
     else
-      {:error,
-       %Auth.Domain{
-         log: "Federated signin when user already exists",
-         error:
-           "The user has already signed in, but has not authorized google logins. You can try to reset your password."
-       }}
+      signin_error(
+        "Federated signin when user already exists",
+        "The user has already signed in, but has not authorized google logins. You can try to reset your password."
+      )
     end
   end
 
   defp check_user_allowed(_, _),
-    do: {:error, %Auth.Domain{log: "User identified but unable to load"}}
+    do: signin_error("User identified but unable to load")
 
   ##############################################################################
   defp create_user(params, hostname, type) do

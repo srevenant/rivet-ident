@@ -29,21 +29,14 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
   def handle_continue(:refresh, state), do: refresh(state)
 
   @impl GenServer
+  # coveralls-ignore-next-line
   def handle_info(:refresh, state), do: refresh(state)
 
   @impl GenServer
   def handle_call(:get_certs, _from, %{certs: certs} = state), do: {:reply, certs, state}
 
   ##############################################################################
-  @doc """
-  External interface to request a current copy of the certs for google
-
-  ```
-  iex> dict = Rivet.Auth.Signin.Google.KeyManager.get_certs()
-  iex> is_map(dict)
-  true
-  ```
-  """
+  # External interface to request a current copy of the certs for google
   def get_certs(), do: GenServer.call(:google_cert_manager, :get_certs)
 
   ##############################################################################
@@ -60,8 +53,10 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
 
   defp refresh_certs_and_requeue(old_certs) do
     with {:error, msg} <- fetch_certificates!() do
+      # coveralls-ignore-start
       Logger.error("Refreshing Google Auth Certificates Failure: #{msg}")
       {:ok, @retry_seconds, old_certs}
+      # coveralls-ignore-stop
     end
   end
 
@@ -73,11 +68,13 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
         # possibly we could verify application/json in headers but eh -BJG
         {:ok, next_refresh!(headers), decode_certs!(body)}
 
+      # coveralls-ignore-next-line
       {:ok, _result} ->
         # IO.inspect(result, label: "Invalid result from google certs query")
         {:error, "Invalid HTTP result from google certs query"}
 
       {:error, _} = pass ->
+        # coveralls-ignore-next-line
         pass
     end
   end
@@ -113,8 +110,10 @@ defmodule Rivet.Auth.Signin.Google.KeyManager do
       end
     else
       _ ->
+        # coveralls-ignore-start
         Logger.error("Google certificate response has no valid Expires header")
         Logger.error("Response headers: #{inspect(headers)}")
+        # coveralls-ignore-stop
 
         @retry_seconds
     end

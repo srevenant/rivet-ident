@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Test.Auth.SigninLocalTest do
+defmodule Rivet.Ident.Test.Auth.Signin.LocalTest do
   @moduledoc """
 
   NOTE NOTE NOTE NOTE

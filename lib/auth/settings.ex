@@ -40,10 +40,11 @@ defmodule Rivet.Auth.Settings do
         secret
 
       _ ->
-      # coveralls-ignore-start
+        # coveralls-ignore-start
         raise ArgumentError,
               "Configuration `:rivet_ident, jwt_#{token_type}_secrets_decoded: [...]` has no keys? Is :rivet_ident application started?"
-      # coveralls-ignore-stop
+
+        # coveralls-ignore-stop
     end
   end
 
@@ -54,7 +55,7 @@ defmodule Rivet.Auth.Settings do
   def expire_limit(token_type, nil) do
     case getcfg(:auth_expire_limits, %{})[token_type] do
       dict when is_map(dict) ->
-      # coveralls-ignore-next-line
+        # coveralls-ignore-next-line
         raise "Invalid expire limit request for key #{inspect(token_type)} with no subkey"
 
       value ->
@@ -73,7 +74,8 @@ defmodule Rivet.Auth.Settings do
         # coveralls-ignore-start
         IO.inspect([token_type, sub_type], label: "Lookup keys")
         raise "Invalid Configuration"
-        # coveralls-ignore-next-line
+
+      # coveralls-ignore-next-line
 
       pass ->
         pass

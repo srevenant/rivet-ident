@@ -59,7 +59,7 @@ defmodule Rivet.Ident.Test.Ident.User.SignupTest do
 
   test "federated signup creates a factor" do
     auth = build(:auth_domain_signin)
-    fedid = build(:ident_factor_fedid)
+    fedid = build(:ident_factor_google)
     input = auth.input |> Map.delete(:secret) |> Map.put(:fedid, fedid)
 
     assert {:ok, %Auth.Domain{user: %User{id: id}, status: :authed}} =

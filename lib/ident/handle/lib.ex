@@ -26,6 +26,8 @@ defmodule Rivet.Ident.Handle.Lib do
     end
   end
 
+  @max 32
+  @max0 @max - 1
   defp clean_handle!(handle) when is_binary(handle) do
     String.split(handle, "@", parts: 2)
     |> Enum.at(0)
@@ -33,6 +35,7 @@ defmodule Rivet.Ident.Handle.Lib do
     |> String.replace(~r/[^a-z0-9-]/, "-")
     |> String.replace(~r/-+/, "-")
     |> String.replace(~r/(^-|-$)/, "")
+    |> String.slice(0..@max0//1)
   end
 
   defp clean_handle!(_), do: ""
@@ -58,6 +61,14 @@ defmodule Rivet.Ident.Handle.Lib do
 
     case Ident.Handle.Lib.available(handle) do
       {:error, _, _} ->
+        handle =
+          if String.length(handle) >= @max do
+            shorter = @max / 2
+            String.slice(handle, 0..shorter//1)
+          else
+            handle
+          end
+
         gen_good_handle!(handle <> randchar() <> randchar())
 
       {:ok, _available_msg} ->

@@ -4,6 +4,7 @@ defmodule Rivet.Auth.Signin.Local do
   """
   alias Rivet.Auth
   use Rivet.Ident
+  import Rivet.Auth.Signin
 
   @spec signup(String.t(), params :: map()) :: Auth.Domain.result()
   def signup(host, args, type \\ :authed)
@@ -36,13 +37,12 @@ defmodule Rivet.Auth.Signin.Local do
             input = %{secret, handle, email}
 
             User.Signup.signup(%Auth.Domain{hostname, input}, type)
-            |> Auth.Signin.post_signin()
+            |> post_signin()
         end
     end
   end
 
-  def signup(_, _, _),
-    do: signup_error("Invalid arguments")
+  def signup(_, _, _), do: signup_error("Invalid arguments")
 
   # Rivet.Guard's empty_str is a little different from what we want
   defp invalid_value(x), do: not is_binary(x) or byte_size(x) == 0
@@ -52,16 +52,13 @@ defmodule Rivet.Auth.Signin.Local do
     signin_error(err, err)
   end
 
-  defp signup_error(log),
-    do: signin_error("Signup failed: #{log}", "Signup failed. Perhaps try password recovery?")
-
   ##############################################################################
   @spec check(Auth.Domain.t() | String.t(), params :: map()) :: Auth.Domain.result()
   def check(%Auth.Domain{} = auth, %{"handle" => handle, "password" => password}) do
     with {:ok, auth} <- load_user(auth, handle),
          {:ok, user} <- User.Lib.check_user_status(auth.user),
          {:ok, auth} <- Auth.Password.valid_password_factor(%{auth | user}, password),
-         do: Auth.Signin.post_signin(auth)
+         do: post_signin(auth)
   end
 
   def check(hostname, args = %{"handle" => _, "password" => _}) when is_binary(hostname),
@@ -88,8 +85,4 @@ defmodule Rivet.Auth.Signin.Local do
       end
     end
   end
-
-  @auth_fail_msg "Unable to sign in. Did you want to sign up instead?"
-  def signin_error(log, error \\ @auth_fail_msg),
-    do: {:error, %Auth.Domain{log, error, status: :unknown}}
 end

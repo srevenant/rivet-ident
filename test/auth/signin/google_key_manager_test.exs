@@ -1,6 +1,6 @@
-defmodule Rivet.Ident.Test.Auth.GoogleTimeTest do
-  use Rivet.Ident.Support.Case, async: true
-  import Rivet.Auth.Signin.Google.KeyManager, only: [parse_rfc1123_datetime: 1]
+defmodule Rivet.Ident.Test.Auth.Signin.GoogleKeyManagerTest do
+  use Rivet.Ident.Support.Case
+  import Rivet.Auth.Signin.Google.KeyManager
 
   test "parse_rfc1123_datetime" do
     # example from https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Expires
@@ -13,5 +13,9 @@ defmodule Rivet.Ident.Test.Auth.GoogleTimeTest do
 
     assert {:ok, ~U[2013-03-06 01:25:19Z]} =
              parse_rfc1123_datetime("Tue, 06 Mar 2013 01:25:19 GMT")
+  end
+
+  test "get_certs" do
+    assert is_map(Rivet.Auth.Signin.Google.KeyManager.get_certs())
   end
 end
