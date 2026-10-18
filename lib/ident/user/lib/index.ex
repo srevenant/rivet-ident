@@ -175,12 +175,10 @@ defmodule Rivet.Ident.User.Lib do
     end)
   end
 
-  @delete_code :delete_request
-  def delete_account_code_type(), do: @delete_code
-
+  @delete_type User.Code.type!(:delete_request)
   def delete_account(%User{} = user, code) when is_binary(code) do
     case User.Code.one(code: code, user_id: user.id) do
-      {:ok, %{type: @delete_code} = code} ->
+      {:ok, %{type: @delete_type} = code} ->
         if DateTime.before?(DateTime.utc_now(), code.expires) do
           # TODO: verify code isn't expired
           delete_account(user)

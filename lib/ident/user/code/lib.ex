@@ -58,11 +58,7 @@ defmodule Rivet.Ident.User.Code.Lib do
   end
 
   def clear_all_codes(for_user_id, type) do
-    from(c in User.Code,
-      where:
-        c.user_id == ^for_user_id and
-          c.type == ^type
-    )
+    from(c in User.Code, where: c.user_id == ^for_user_id and c.type == ^type)
     |> User.Code.delete_all()
   end
 

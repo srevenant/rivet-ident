@@ -1,9 +1,9 @@
 defmodule Rivet.Ident.User.Signup do
-  use Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: User
   import Rivet.Ecto.Errors, only: [convert_error_changeset: 1]
+  use Rivet.Ident
   alias Rivet.Auth
-  alias Ident.Factor.FedId
+  alias Factor.FedId
 
   @spec signup(Auth.Domain.t(), type :: :authed | :identity, keyword() | map()) ::
           {:ok, Auth.Domain.t()} | {:error, Auth.Domain.t()}

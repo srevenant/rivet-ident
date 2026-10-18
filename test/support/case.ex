@@ -8,10 +8,10 @@ defmodule Rivet.Ident.Test.Case do
       import Ecto.Query
       import Rivet.Ident.Test.Case
 
-      use ExMachina.Ecto, repo: Rivet.Auth.Repo
+      use ExMachina.Ecto, repo: Rivet.Ident.Test.Repo
       use Rivet.Ident.Test.IdentFactory
 
-      alias Rivet.Auth.Repo
+      alias Rivet.Ident.Test.Repo
       alias Rivet.Ident
       alias Ecto.Changeset
 
@@ -21,10 +21,10 @@ defmodule Rivet.Ident.Test.Case do
 
   setup tags do
     opts = tags |> Map.take([:isolation]) |> Enum.to_list()
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Rivet.Auth.Repo, opts)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Rivet.Ident.Test.Repo, opts)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Rivet.Auth.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Rivet.Ident.Test.Repo, {:shared, self()})
     end
 
     :ok

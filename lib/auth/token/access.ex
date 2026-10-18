@@ -1,6 +1,6 @@
 defmodule Rivet.Auth.Token.Access do
   alias Rivet.Auth
-  alias Rivet.Ident
+  use Rivet.Ident
 
   @doc ~S"""
   Generate an auth JWT to our specification
@@ -27,14 +27,14 @@ defmodule Rivet.Auth.Token.Access do
   ```
   """
   @spec jwt(
-          target :: Ident.Factor.t(),
+          target :: Factor.t(),
           hostname :: String.t(),
           testing_only_expiration_offset :: nil | integer()
         ) ::
           {:ok, token :: String.t(), claims :: map()}
   def jwt(factor, hostname, exp \\ 0)
 
-  def jwt(%Ident.Factor{details: %{type: "acc"}} = factor, hostname, exp) do
+  def jwt(%Factor{details: %{type: "acc"}} = factor, hostname, exp) do
     exp = if is_number(exp) and exp > 0, do: exp, else: Rivet.Auth.Settings.expire_limit(:acc)
     Auth.Token.Create.jwt(:acc, "cas1:#{factor.id}", hostname, exp)
   end

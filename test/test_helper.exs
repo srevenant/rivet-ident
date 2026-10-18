@@ -1,6 +1,6 @@
 ExUnit.start(capture_log: true)
 
-Supervisor.start_link([{Rivet.Auth.Repo, []}],
+Supervisor.start_link([{Rivet.Ident.Test.Repo, []}],
   strategy: :one_for_one,
   name: Rivet.Ident.Supervisor
 )

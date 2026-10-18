@@ -4,7 +4,6 @@ defmodule Rivet.Auth.Signin.Local do
   """
   alias Rivet.Auth
   use Rivet.Ident
-  alias Rivet.Ident.Factor
 
   @spec signup(String.t(), params :: map()) :: Auth.Domain.result()
   def signup(host, args, type \\ :authed)
@@ -14,126 +13,85 @@ defmodule Rivet.Auth.Signin.Local do
         %{"handle" => handle, "password" => secret, "email" => address},
         type
       )
-      when is_binary(hostname) do
-    case Ident.Email.one([address: address], [:user]) do
-      {:ok, %Ident.Email{}} ->
-        {:error, %Auth.Domain{error: "A signin already exists for `#{address}`"}}
+      when not_empty_str(hostname) do
+    cond do
+      invalid_value(handle) ->
+        signup_data_error("handle")
 
-      _ ->
-        handle = Ident.Handle.Lib.gen_good_handle!(handle)
-        email = %{address, verified: false}
-        input = %{secret, handle, email}
+      invalid_value(secret) ->
+        signup_data_error("password")
 
-        User.Signup.signup(%Auth.Domain{hostname, input}, type)
-        |> Rivet.Auth.Signin.post_signin()
+      invalid_value(address) ->
+        signup_data_error("email")
+
+      true ->
+        case Email.one([address: address], [:user]) do
+          {:ok, %Email{}} ->
+            # is this too much information to disclose?
+            signup_error("A signin already exists for `#{address}`")
+
+          _ ->
+            handle = Handle.Lib.gen_good_handle!(handle)
+            email = %{address, verified: false}
+            input = %{secret, handle, email}
+
+            User.Signup.signup(%Auth.Domain{hostname, input}, type)
+            |> Auth.Signin.post_signin()
+        end
     end
   end
 
-  def signup(_, _, _) do
-    {:error,
-     %Auth.Domain{log: "Auth signup failed, arguments don't match", error: "Signup Failed"}}
+  def signup(_, _, _),
+    do: signup_error("Arguments don't match")
+
+  # Rivet.Guard's empty_str is a little different from what we want
+  defp invalid_value(x), do: not is_binary(x) or byte_size(x) == 0
+
+  defp signup_data_error(missing) do
+    err = "Signup failed; Missing #{missing}"
+    signin_error(err, err)
   end
+
+  defp signup_error(log),
+    do: signin_error("Signup failed: #{log}", "Signup failed. Perhaps try password recovery?")
 
   ##############################################################################
   @spec check(Auth.Domain.t() | String.t(), params :: map()) :: Auth.Domain.result()
-  def check(%Auth.Domain{} = auth, %{"handle" => handle, "password" => password}) do
+  def check(%Auth.Domain{user: %User{}} = auth, %{"handle" => handle, "password" => password}) do
     with {:ok, auth} <- load_user(auth, handle),
          {:ok, user} <- User.Lib.check_user_status(auth.user),
-         {:ok, auth} <- load_password_factor(%{auth | user}),
-         {:ok, auth} <- valid_user_factor(auth, password),
-         do: Rivet.Auth.Signin.post_signin(auth)
+         {:ok, auth} <- Auth.Password.valid_password_factor(%{auth | user}, password),
+         do: Auth.Signin.post_signin(auth)
   end
 
   def check(hostname, args = %{"handle" => _, "password" => _}) when is_binary(hostname),
     do: check(%Auth.Domain{hostname: hostname}, args)
 
   ##############################################################################
-  @auth_fail_msg "Unable to sign in. Did you want to sign up instead?"
   @spec load_user(Auth.Domain.t(), handle :: String.t()) :: Auth.Domain.result()
   def load_user(%Auth.Domain{} = auth, handle) do
     if String.contains?(handle, "@") do
-      case Ident.Email.one([address: handle], [:user]) do
+      case Email.one([address: handle], [:user]) do
         {:ok, email} ->
           {:ok, %Auth.Domain{auth | user: email.user}}
 
-        _ ->
-          {:error, %Auth.Domain{log: "Cannot find email #{handle}", error: @auth_fail_msg}}
+        {:error, :not_found} ->
+          signin_error("Cannot find email #{handle}")
       end
     else
-      case Ident.Handle.one([handle: handle], [:user]) do
+      case Handle.one([handle: handle], [:user]) do
         {:ok, handle} ->
           {:ok, %Auth.Domain{auth | handle: handle, user: handle.user}}
 
-        _ ->
-          {:error, %Auth.Domain{log: "Cannot find person ~#{handle}", error: @auth_fail_msg}}
+        {:error, :not_found} ->
+          signin_error("Cannot find person ~#{handle}")
       end
     end
   end
 
   def load_user({:ok, %Auth.Domain{} = auth}, handle), do: load_user(auth, handle)
 
-  ##############################################################################
-  def load_password_factor(auth = %Auth.Domain{user: user = %User{}}) do
-    case Factor.Lib.preloaded_with(user, :password) do
-      %User{factors: []} = user ->
-        Logger.metadata(uid: user.id)
-        {:error, %Auth.Domain{auth | log: "No auth factor for user"}}
-
-      %User{factors: [factor | _]} = user ->
-        Logger.metadata(uid: user.id)
-        {:ok, %Auth.Domain{auth | factor: factor}}
-
-      _error ->
-        Logger.metadata(uid: user.id)
-        {:error, %Auth.Domain{auth | log: "Unexpected result from factor preload"}}
-    end
-  end
-
-  def load_password_factor({:ok, %Auth.Domain{} = auth}), do: load_password_factor(auth)
-
-  def load_password_factor(pass = %Auth.Domain{}), do: pass
-
-  ##############################################################################
-  def check_password(%User{} = user, password) do
-    case load_password_factor({:ok, %Auth.Domain{user: user}}) do
-      {:ok, %Auth.Domain{factor: %Factor{hash: hashed}}} ->
-        check_password(hashed, password)
-
-      _ ->
-        false
-    end
-  end
-
-  def check_password(hash, password) when is_binary(hash) and not is_nil(hash),
-    do: Factor.Password.verify(password, hash)
-
-  def check_password(_, _), do: false
-
-  @doc """
-  """
-  @spec valid_user_factor(Auth.Domain.result(), password :: String.t()) :: Auth.Domain.result()
-  def valid_user_factor(
-        auth = %Auth.Domain{user: %User{}, factor: %Factor{hash: hashed}},
-        password
-      )
-      when not is_nil(hashed) and hashed != "N/A" do
-    if check_password(hashed, password) do
-      {:ok, %Auth.Domain{auth | status: :authed}}
-    else
-      {:error, %Auth.Domain{auth | log: "Invalid Password"}}
-    end
-  end
-
-  def valid_user_factor(auth = %Auth.Domain{}, _),
-    do: {:error, %Auth.Domain{auth | log: "No password factor exists for user"}}
-
-  # ##############################################################################
-  # @spec post_signin(Auth.Domain.result()) :: Auth.Domain.result()
-  # def post_signin({:ok, auth = %Auth.Domain{status: :authed, user: %User{}}}) do
-  #   Logger.info("Signin Success", uid: user.id)
-  #   # TODO: events/triggers to table/signin count, etc
-  #   {:ok, auth}
-  # end
-  #
-  # def post_signin(pass = {:error, %Auth.Domain{}}), do: pass
+  @auth_fail_msg "Unable to sign in. Did you want to sign up instead?"
+  def signin_error(log, error \\ @auth_fail_msg),
+    do: {:error, %Auth.Domain{log, error}}
 end

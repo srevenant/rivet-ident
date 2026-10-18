@@ -4,7 +4,6 @@ defmodule Rivet.Ident.Factor.Cache do
   @persist_for 600_000
 
   use Rivet.Ident
-  alias Ident.Factor
   import Ecto.Query
 
   @doc """

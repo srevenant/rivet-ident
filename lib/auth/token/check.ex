@@ -3,7 +3,7 @@ defmodule Rivet.Auth.Token.Check do
   Validate tokens are meeting our requirements
   """
   alias Rivet.Auth
-  alias Rivet.Ident
+  use Rivet.Ident
   import Transmogrify.As
 
   @doc ~S"""
@@ -37,6 +37,7 @@ defmodule Rivet.Auth.Token.Check do
   iex> {:error, auth} = enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: "asdf", aud: "asdf"}}})
   iex> auth.log
   "Cannot parse token.sub=asdf"
+  iex> assert {:error, _} = enrich_sub_aud(%Auth.Domain{})
   ```
   """
   def enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: sub, aud: aud}}} = auth) do
@@ -70,7 +71,7 @@ defmodule Rivet.Auth.Token.Check do
   "Cannot parse token.tok=asdf"
   iex> {:error, auth} = valid_audience(%Auth.Domain{token: %{aud: "key:a.domain"}, hostname: "b.domain"})
   iex> auth.log
-  "Token audience does not match: a.domain != b.domain"
+  "Token audience does not match: 'a.domain' != 'b.domain'"
   iex> valid_audience({:error, "narf"})
   {:error, "narf"}
   ```
@@ -81,7 +82,7 @@ defmodule Rivet.Auth.Token.Check do
         if auth.hostname == t_hostname do
           %Auth.Domain{auth | type: t_type, hostname: t_hostname}
         else
-          auth_error(auth, "Token audience does not match: #{t_hostname} != #{auth.hostname}")
+          auth_error(auth, "Token audience does not match: '#{t_hostname}' != '#{auth.hostname}'")
         end
 
       reason ->
@@ -147,13 +148,13 @@ defmodule Rivet.Auth.Token.Check do
   ```
   """
   def valid_subject(%Auth.Domain{type: :acc, token: %{sub_type: :cas1, sub: sub}} = auth) do
-    case Ident.Factor.Lib.get_user(sub) do
+    case Factor.Lib.get_user(sub) do
       # type: :valtok is correct. The factor is the parent validation token
       # which created this access token, we are just looking through it to the user
-      {:ok, %Ident.Factor{type: :valtok} = factor} ->
+      {:ok, %Factor{type: :valtok} = factor} ->
         {:ok, %Auth.Domain{auth | factor: factor, user: factor.user}}
 
-      {:ok, %Ident.Factor{}} ->
+      {:ok, %Factor{}} ->
         auth_error(auth, "Provided factor is not a validation token")
 
       error ->
@@ -164,13 +165,16 @@ defmodule Rivet.Auth.Token.Check do
   def valid_subject(
         %Auth.Domain{token: %{aud_type: :caa1, sub_type: :cas1, sub: sub}, type: :val} = auth
       ) do
-    case Ident.Factor.Lib.get_user(sub) do
-      {:ok, %Ident.Factor{type: :valtok} = factor} ->
+    case Factor.Lib.get_user(sub) do
+      {:ok, %Factor{type: :valtok} = factor} ->
         if is_nil(factor.value) do
           auth_error(auth, "Factor for token is not a validation factor")
         else
           {:ok, %Auth.Domain{auth | factor: factor}}
         end
+
+      {:ok, _} ->
+        auth_error(auth, "Factor for token is not a validation factor(2)")
 
       error ->
         auth_error(auth, error)

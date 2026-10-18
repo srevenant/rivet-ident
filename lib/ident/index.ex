@@ -14,7 +14,10 @@ defmodule Rivet.Ident do
 
     quote location: :keep do
       alias Rivet.Ident
-      alias Rivet.Ident.{User, Handle, Email}
+      alias Rivet.Ident.{User, Handle, Email, Factor}
+      # note: the reason for no alias Rivet.Auth is `Auth` can be a common
+      # module name so to avoid external conflicts, it is excluded
+
       alias unquote(org_model), as: Org
       alias unquote(repo), as: Repo
 

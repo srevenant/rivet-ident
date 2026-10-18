@@ -111,8 +111,6 @@ defmodule Rivet.Ident.Factor.Lib do
   @password_history 5
   def set_password(user, password, overrides \\ %{}) do
     with :ok <- strong_password(password) do
-      Logger.info("setting password", user_id: user.id)
-
       params =
         %{
           type: :password,

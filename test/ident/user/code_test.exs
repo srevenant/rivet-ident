@@ -3,6 +3,9 @@ defmodule Rivet.Ident.Test.Ident.User.CodeTest do
   # use Rivet.Ident
   alias Rivet.Ident.User.Code
 
+  @email_verify Code.type!(:email_verify)
+  @delete_request Code.type!(:delete_request)
+
   test "model tests" do
     assert %Code{id} = insert(:ident_user_code)
     assert is_integer(id)
@@ -36,15 +39,15 @@ defmodule Rivet.Ident.Test.Ident.User.CodeTest do
     test "generate and validate code", %{user: %{id: user_id}} do
       meta = %{"source" => "test"}
 
-      assert {:ok, %{code, id: code_id, user_id: ^user_id, type: :email_verify, meta: ^meta}} =
-               Code.Lib.generate_code(user_id, :email_verify, 10, meta)
+      assert {:ok, %{code, id: code_id, user_id: ^user_id, type: @email_verify, meta: ^meta}} =
+               Code.Lib.generate_code(user_id, @email_verify, 10, meta)
 
       assert not_empty_str(code)
       assert {:ok, %{id: ^code_id}} = Code.Lib.get_valid(code)
     end
 
     test "expired codes are rejected and cleaned up", %{user: %{id}} do
-      assert {:ok, %{code}} = Code.Lib.generate_code(id, :email_verify, -1)
+      assert {:ok, %{code}} = Code.Lib.generate_code(id, @email_verify, -1)
       assert {:error, "Code Expired"} = Code.Lib.get_valid(code)
 
       Code.Lib.clear_expired_codes()
@@ -53,10 +56,10 @@ defmodule Rivet.Ident.Test.Ident.User.CodeTest do
     end
 
     test "reset codes only removes matching user and type", %{user: %{id}} do
-      {:ok, old} = Code.Lib.generate_code(id, :delete_request, 10)
-      {:ok, other} = Code.Lib.generate_code(id, :email_verify, 10)
+      {:ok, old} = Code.Lib.generate_code(id, @delete_request, 10)
+      {:ok, other} = Code.Lib.generate_code(id, @email_verify, 10)
 
-      assert {:ok, fresh} = Code.Lib.reset_generate(id, :delete_request)
+      assert {:ok, fresh} = Code.Lib.reset_generate(id, @delete_request)
       assert fresh.code != old.code
 
       assert {:error, :not_found} = Code.one(code: old.code)

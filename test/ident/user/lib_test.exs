@@ -10,6 +10,9 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert [] = User.Lib.search_name!(uuid)
     assert [] = User.Lib.all_since(DateTime.utc_now())
 
+    assert User.Code.type!(:email_verify)
+    assert User.Code.type!(:delete_request)
+
     disabled = build(:ident_user, type: :disabled)
 
     assert User.enabled?(build(:ident_user))
@@ -82,12 +85,9 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     {:ok, phone} = User.Lib.add_phone(user, "+18015551234")
     {:ok, _} = User.ExtId.Lib.put(user, "test", ext_key)
 
-    type = User.Lib.delete_account_code_type()
-    assert type == :delete_request
-
     {:ok, wrong_type} = User.Code.Lib.generate_code(user_id, :email_verify, 10)
-    {:ok, expired} = User.Code.Lib.generate_code(user_id, type, -1)
-    {:ok, valid} = User.Code.Lib.generate_code(user_id, type, 10)
+    {:ok, expired} = User.Code.Lib.generate_code(user_id, :delete_request, -1)
+    {:ok, valid} = User.Code.Lib.generate_code(user_id, :delete_request, 10)
 
     assert {:error, "Unable to continue"} = User.Lib.delete_account(user, wrong_type.code)
     assert {:error, "Unable to continue"} = User.Lib.delete_account(user, expired.code)

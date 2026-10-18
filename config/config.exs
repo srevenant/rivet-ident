@@ -9,7 +9,7 @@ config :ex_unit, capture_log: true
 
 config :rivet,
   app: :rivet_ident,
-  repo: Rivet.Auth.Repo,
+  repo: Rivet.Ident.Test.Repo,
   user_model: Rivet.Ident.User,
   user_code_model: Rivet.Ident.User.Code,
   email_model: Rivet.Ident.Email,
@@ -26,7 +26,7 @@ config :rivet,
   }
 
 config :rivet_ident,
-  ecto_repos: [Rivet.Auth.Repo],
+  ecto_repos: [Rivet.Ident.Test.Repo],
   federated: %{google: true},
   initial_password_expiration_days: 7,
   jwt_acc_secrets: ["none"],
@@ -43,8 +43,8 @@ config :rivet_ident,
     password: 365 * 86400
   }
 
-config :rivet_ident, Rivet.Auth.Repo,
-  migration_repo: Rivet.Auth.Repo,
+config :rivet_ident, Rivet.Ident.Test.Repo,
+  migration_repo: Rivet.Ident.Test.Repo,
   pool_size: 20,
   username: "postgres",
   password: "",

@@ -1,4 +1,4 @@
-defmodule Rivet.Auth.Repo do
+defmodule Rivet.Ident.Test.Repo do
   @moduledoc false
   use Ecto.Repo, otp_app: :rivet_ident, adapter: Ecto.Adapters.Postgres
 end
