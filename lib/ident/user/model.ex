@@ -42,6 +42,4 @@ defmodule Rivet.Ident.User do
   end
 
   use Rivet.Ecto.Collection, not_found: :atom, update: [:settings, :name, :last_seen, :type]
-
-  def enabled?(%__MODULE__{type: type}), do: type != :disabled
 end

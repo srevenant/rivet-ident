@@ -12,11 +12,4 @@ defmodule Rivet.Auth.Signin do
 
   def post_signin({:ok, %Auth.Domain{} = auth}), do: post_signin(auth)
   def post_signin(pass), do: pass
-
-  @auth_fail_msg "Unable to sign in. Did you want to sign up instead?"
-  def signin_error(log, error \\ @auth_fail_msg),
-    do: {:error, %Auth.Domain{log, error, status: :unknown}}
-
-  def signup_error(log),
-    do: signin_error("Signup failed: #{log}", "Signup failed. Perhaps try password recovery?")
 end

@@ -8,7 +8,7 @@ defmodule Rivet.Auth.Signin.Google do
   """
   use Rivet.Ident
   alias Rivet.Auth
-  import Rivet.Auth.Signin
+  require Logger
 
   ##############################################################################
   # note: this is different from `Auth.Domain.result()` typedef, in it can have any
@@ -24,12 +24,30 @@ defmodule Rivet.Auth.Signin.Google do
          do: Auth.Signin.post_signin(auth)
   end
 
-  def check(_, _, _), do: signup_error("Invalid arguments")
+  def check(_, _, _), do: signin_error("Invalid arguments")
 
   ##############################################################################
   @spec verify_google_signature(String.t()) ::
           {:ok, %{payload: map(), header: map(), token: String.t()}}
           | {:error, Auth.Domain.t()}
+
+  if Mix.env() == :test do
+    defp verify_google_signature("test:" <> encoded = token) do
+      with {:ok, json} <- Base.url_decode64(encoded, padding: false),
+           {:ok, claims} <- Jason.decode(json),
+           true <- valid_claims?(claims) do
+        {:ok, %{token: token, payload: claims, header: %{}}}
+      else
+        _ -> signin_error("Invalid Google test token")
+      end
+    end
+  end
+
+  ###
+  ### because of the nature of this checking against google directly, this is
+  ### not covered in normal tests, alas.
+  ###
+  # coveralls-ignore-start
   defp verify_google_signature(token) do
     case Auth.Token.extract(token, :header) do
       {:ok, header} ->
@@ -38,11 +56,14 @@ defmodule Rivet.Auth.Signin.Google do
         # signature of this jwt
         google_keys = Auth.Signin.Google.KeyManager.get_certs()
         jwk = Map.get(google_keys, header["kid"])
-        # auth = %Auth.Domain{token: token}
 
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
           {true, %JOSE.JWT{fields: fields}, %JOSE.JWS{} = jws} ->
-            {:ok, %{token, payload: fields, header: Map.from_struct(jws)}}
+            if valid_claims?(fields) do
+              {:ok, %{token, payload: fields, header: Map.from_struct(jws)}}
+            else
+              signin_error("Invalid Google JWT claims")
+            end
 
           {false, %JOSE.JWT{fields: %{"email" => email}}, %JOSE.JWS{}} ->
             signin_error("Unable to verify google token for #{email}")
@@ -56,19 +77,35 @@ defmodule Rivet.Auth.Signin.Google do
     end
   end
 
-  # defp token_error(token,
+  # coveralls-ignore-stop
+
+  @good_iss ["accounts.google.com", "https://accounts.google.com"]
+  @federated Application.compile_env!(:rivet_ident, :federated)
+  if @federated[:google] and is_nil(@federated[:google_client_id]) do
+    raise """
+    Google federated signin configured but no client id has been set. See your
+    application config: :rivet_ident, federated: %{google_client_id}
+    """
+  else
+    @client_id @federated[:google_client_id]
+  end
+
+  defp valid_claims?(%{"exp" => exp, "iss" => iss, "aud" => aud}) when is_integer(exp),
+    do: exp > System.system_time(:second) and iss in @good_iss and aud == @client_id
+
+  defp valid_claims?(_), do: false
 
   ##############################################################################
   # only allow signin with google users who have verified their email
-  def find_create_by_ident(%{"email_verified" => true, "sub" => ident} = params, h, type) do
+  defp find_create_by_ident(%{"email_verified" => true, "sub" => ident} = params, h, type) do
     case User.ExtId.Lib.get("google", ident) do
       {:ok, user_ident} -> User.one(id: user_ident.user_id) |> check_user_allowed(h)
       {:error, :not_found} -> find_create_by_email(params, h, type)
     end
   end
 
-  def find_create_by_ident(_, _, _),
-    do: {:error, "Cannot sign in: federated identity is incomplete."}
+  defp find_create_by_ident(_, _, _),
+    do: signin_error("Cannot sign in: federated identity is incomplete.")
 
   ####
   defp find_create_by_email(%{"email" => email, "sub" => ident} = params, hostname, type) do
@@ -104,18 +141,20 @@ defmodule Rivet.Auth.Signin.Google do
     end
   end
 
-  defp check_user_allowed({:ok, %User{} = user}, hostname) do
-    if google_allowed?(user) and User.enabled?(user) do
-      {:ok, %Auth.Domain{hostname: hostname, status: :authed, user: user}}
-    else
-      signin_error(
-        "Federated signin when user already exists",
-        "The user has already signed in, but has not authorized google logins. You can try to reset your password."
-      )
+  def check_user_allowed({:ok, %User{} = user}, hostname) do
+    with {:ok, user} <- Rivet.Ident.User.Lib.check_user_status(user) do
+      if google_allowed?(user) do
+        {:ok, %Auth.Domain{hostname, user, status: :authed}}
+      else
+        signin_error(
+          "Federated signin disabled for user",
+          "You have not authorized google logins. Perhaps try to reset your password?"
+        )
+      end
     end
   end
 
-  defp check_user_allowed(_, _),
+  def check_user_allowed(_, _),
     do: signin_error("User identified but unable to load")
 
   ##############################################################################
@@ -144,12 +183,13 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   ##############################################################################
-  defp add_ident({:ok, %Auth.Domain{user: %User{} = u}} = pass, ident) do
+  def add_ident({:ok, %Auth.Domain{user: %User{} = u}} = pass, ident) do
     with {:ok, _} <- User.ExtId.Lib.put(u, "google", ident), do: pass
   end
 
-  defp add_ident(pass, _), do: pass
+  def add_ident(pass, _), do: pass
 
+  ##############################################################################
   defp payload_to_fedid(payload) do
     # could update locale if we have it here in settings
     %Ident.Factor.FedId{
@@ -174,4 +214,7 @@ defmodule Rivet.Auth.Signin.Google do
       }
     }
   end
+
+  def signin_error(log, error \\ "Unable to sign in."),
+    do: {:error, %Auth.Domain{error, log: "Google signin failed: #{log}", status: :unknown}}
 end

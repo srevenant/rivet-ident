@@ -32,7 +32,7 @@ defmodule Rivet.Ident.MixProject do
 
   def application do
     [
-      mod: {Rivet.Ident.Application, []},
+      # mod: {Rivet.Ident.Application, []},
       env: [rivet: [app: :rivet_ident, base: Rivet.Ident, models_dir: "ident"]],
       # NOTE: :inets is required for :httpd_util.convert_request_date to not
       # throw a warning in static compile verification from OTP

@@ -136,28 +136,6 @@ defmodule Rivet.Ident.Test.IdentFactory do
         }
       end
 
-      def google_payload(opts \\ %{}) do
-        now = System.system_time(:second)
-
-        Map.merge(
-          %{
-            "email_verified" => true,
-            "sub" => Ecto.UUID.generate(),
-            "email" => "google-#{Ecto.UUID.generate()}@example.com",
-            "name" => "Google Test",
-            "locale" => "en",
-            "iss" => "https://accounts.google.com",
-            "aud" => "test-client",
-            "azp" => "test-client",
-            "iat" => now,
-            "exp" => now + 3600,
-            "jti" => Ecto.UUID.generate(),
-            "token" => "test-token"
-          },
-          opts
-        )
-      end
-
       def ident_factor_google_factory do
         %Ident.Factor.FedId{
           name: "fedid" <> Ecto.UUID.generate(),

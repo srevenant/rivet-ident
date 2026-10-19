@@ -27,7 +27,10 @@ config :rivet,
 
 config :rivet_ident,
   ecto_repos: [Rivet.Ident.Test.Repo],
-  federated: %{google: true},
+  federated: %{
+    google: true,
+    google_client_id: "test-google-client"
+  },
   initial_password_expiration_days: 7,
   jwt_acc_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
   jwt_val_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],

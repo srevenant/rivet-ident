@@ -14,7 +14,6 @@ defmodule Rivet.Ident.Test.Auth.Signin.LocalTest do
 
   @password "VFR$#EDCvfr43edc"
   @common_error "Signup failed. Perhaps try password recovery?"
-  # @hashed Factor.Password.hash(@password)
 
   test "Signin Local" do
     user_handle = "narf"

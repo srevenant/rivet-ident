@@ -112,7 +112,12 @@ defmodule Rivet.Ident.User.Lib do
   @spec check_user_status(User.t() | Auth.Domain.t()) ::
           {:ok, User.t() | Auth.Domain.t()} | {:error, Auth.Domain.t()}
   def check_user_status(%User{type: :disabled}),
-    do: {:error, %Auth.Domain{error: "Sorry, account is disabled"}}
+    do:
+      {:error,
+       %Auth.Domain{
+         log: "Google signin failed: Attempted login on disabled account",
+         error: "Sorry, account is disabled"
+       }}
 
   def check_user_status(%User{} = user), do: {:ok, user}
 
