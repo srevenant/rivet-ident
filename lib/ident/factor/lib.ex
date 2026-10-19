@@ -3,6 +3,8 @@ defmodule Rivet.Ident.Factor.Lib do
   @type log_msg :: str
   @type usr_msg :: str
   @type auth_result :: {:ok | :error, Rivet.Auth.Domain.t()}
+  @password_history Application.compile_env!(:rivet_ident, :password_history) || 5
+
   use Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Factor
   require Logger
@@ -23,6 +25,7 @@ defmodule Rivet.Ident.Factor.Lib do
         end
     end
   rescue
+    # coveralls-ignore-next-line
     err in Ecto.Query.CastError -> {:error, err.message}
   end
 
@@ -56,22 +59,7 @@ defmodule Rivet.Ident.Factor.Lib do
     )
   end
 
-  @doc """
-  ```
-  iex> strong_password("<KO)(IJM,ko09ijm")
-  :ok
-  iex> strong_password("boo")
-  {:error, "Password is not long enough (greater than 8)"}
-  iex> strong_password("<ko)(ijm,ko09ijm")
-  {:error, "Password needs both upper and lower case characters"}
-  iex> strong_password("KOIJMko09ijm")
-  {:error, "Password needs special characters (not alphanumeric)"}
-  iex> strong_password("<KO)(IJM,koijm")
-  {:error, "Password needs numbers"}
-  iex> strong_password("<)(,)(*&^%$#@><")
-  {:error, "Password needs letters"}
-  ```
-  """
+  ##############################################################################
   @password_minlen 8
   def strong_password(password) when not_empty_str(password) do
     cond do
@@ -108,7 +96,6 @@ defmodule Rivet.Ident.Factor.Lib do
   Then Auth.Signin.Local.load_password_factor should filter on !archived
   """
 
-  @password_history 5
   def set_password(user, password, overrides \\ %{}) do
     with :ok <- strong_password(password) do
       params =
@@ -134,21 +121,17 @@ defmodule Rivet.Ident.Factor.Lib do
     )
     |> Ident.Factor.all!()
     |> Enum.filter(fn f -> f.id != excluding_id end)
-    |> clean_old_factors(@password_history)
+    |> clean_old_factors(@password_history - 1)
   end
 
   defp clean_old_factors([x | rest], max) do
     now = epoch_time(:second)
 
     cond do
-      length(rest) + 1 > @password_history ->
-        Ident.Factor.delete(x)
-
-      x.expires_at > now ->
-        Ident.Factor.update(x, %{expires_at: now})
-
-      true ->
-        :ok
+      length(rest) >= max -> Ident.Factor.delete(x)
+      x.expires_at > now -> Ident.Factor.update(x, %{expires_at: now})
+      # coveralls-ignore-next-line
+      true -> :ok
     end
 
     clean_old_factors(rest, max)
@@ -156,37 +139,31 @@ defmodule Rivet.Ident.Factor.Lib do
 
   defp clean_old_factors(_, _), do: :ok
 
-  defp get_expiration(provider_exp, type) do
-    cfg = Rivet.Auth.Settings.getcfg(:auth_expire_limits, %{})
-    def_exp = 86400 * 365
+  # one year
+  @default_expire 86400 * 365
 
-    # because of how releases bring in configs, this appears as a keyword
-    # list in prod, vs a map in lower environs.  grr.
-    expiration =
-      if is_list(cfg) do
-        Keyword.get(cfg, type, def_exp)
-      else
-        if is_map(cfg),
-          do: Map.get(cfg, type, def_exp),
-          else: def_exp
-      end
+  defp default_expiration(type) do
+    Rivet.Auth.Settings.getcfg(:auth_expire_limits, %{})
+    |> Map.new()
+    |> Map.get(type, @default_expire)
+    |> Kernel.+(epoch_time(:second))
+  end
 
-    case {provider_exp, epoch_time(:second) + expiration} do
-      {nil, our_exp} ->
-        our_exp
+  def get_expiration(nil, type), do: default_expiration(type)
 
-      {provider_exp, our_exp} when provider_exp >= our_exp ->
-        our_exp
-
-      {provider_exp, _our_exp} ->
-        provider_exp
+  def get_expiration(provider_exp, type) do
+    def_exp = default_expiration(type)
+    if provider_exp >= def_exp do
+      def_exp
+    else
+      provider_exp
     end
   end
 
   # TODO: rename to set_federated_factor
-  @spec set_factor(user :: User.t(), fedid :: Ident.Factor.FedId.t()) ::
+  @spec set_federated_factor(user :: User.t(), fedid :: Ident.Factor.FedId.t()) ::
           {:ok, Ident.Factor.t()} | {:error, Ecto.Changeset.t()}
-  def set_factor(user, fedid) do
+  def set_federated_factor(user, fedid) do
     Ident.Factor.create(%{
       name: fedid.provider.kid,
       type: :federated,

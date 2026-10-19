@@ -31,6 +31,7 @@ config :rivet_ident,
     google: true,
     google_client_id: "test-google-client"
   },
+  password_history: 2,
   initial_password_expiration_days: 7,
   jwt_acc_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
   jwt_val_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
@@ -43,7 +44,7 @@ config :rivet_ident,
     ref: 15 * 60,
     acc: 60 * 60 * 24,
     api: 15 * 60,
-    password: 365 * 86400
+    password: 2 * 86400
   }
 
 config :rivet_ident, Rivet.Ident.Test.Repo,

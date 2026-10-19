@@ -2,10 +2,6 @@ defmodule Rivet.Ident.Test.Ident.Factor.ModelTest do
   use Rivet.Ident.Support.Case, async: true
   alias Rivet.Ident.Factor
 
-  # doctest Ident.Factor, import: true
-  # doctest Ident.Factor.Lib, import: true
-  # doctest Ident.Factor.Cache, import: true
-
   test "model tests" do
     assert %Factor{id} = insert(:ident_factor)
     assert is_uuid(id)
@@ -23,5 +19,11 @@ defmodule Rivet.Ident.Test.Ident.Factor.ModelTest do
     %{user: user, id: f_id} = insert(:ident_factor, type: :password)
 
     assert %User{factors: [%Factor{id: ^f_id}]} = Factor.Lib.preloaded_with(user, :password)
+  end
+
+  test "cache" do
+    factor = %{user} = insert(:ident_factor)
+    assert {:ok, _} = Factor.Cache.persist(factor)
+    assert :ok == Factor.Cache.update_user(%{user | state: %{active_factor_id: Ecto.UUID.generate()}})
   end
 end

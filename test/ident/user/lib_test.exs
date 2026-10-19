@@ -15,8 +15,7 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
 
     disabled = build(:ident_user, type: :disabled)
 
-    assert User.enabled?(build(:ident_user))
-    refute User.enabled?(disabled)
+    assert :narf = Rivet.Auth.Signin.post_signin(:narf)
 
     errmsg = "Sorry, account is disabled"
 

@@ -1,9 +1,6 @@
 defmodule Rivet.Ident.Test.Ident.Email.ModelTest do
   use Rivet.Ident.Support.Case, async: true
 
-  # doctest Rivet.Ident.Email, import: true
-  # doctest Rivet.Ident.Email.Lib, import: true
-
   test "model tests" do
     assert %Email{id} = insert(:ident_email)
     assert is_uuid(id)
@@ -37,8 +34,13 @@ defmodule Rivet.Ident.Test.Ident.Email.ModelTest do
 
   test "Lib" do
     u = insert(:ident_user)
+
     refute Email.Lib.has_verified?(u)
-    insert(:ident_email, user: u, verified: true)
-    assert Email.Lib.has_verified?(u)
+    assert Email.Lib.has_verified?(%{u | emails: [%Email{verified: true}]})
+
+    refute Email.sendable?(:no)
+    assert Email.sendable?(:verified)
+
+    assert "narf@narf.com" = Email.Lib.clean_email(" narf@narf.com.")
   end
 end

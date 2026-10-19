@@ -1,21 +1,4 @@
 defmodule Rivet.Auth.Token do
-  # Break out the claims of a JWT, without any validation
-  @doc """
-  ```
-  iex> jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjYWExOmFjYzpleGFtcGxlLmNvbSIsImV4cCI6MTY3MTkyMjMwMCwiZm9yIjp7fSwic3ViIjoiY2FzMTpuYXJmIn0.N6PV_XAGTjymi1CEfVkKRj433S0XBlTxcevL7VAhTRY"
-  iex> extract(jwt, :all)
-  {:ok, %{"alg" => "HS256","typ" => "JWT"}, %{aud: "caa1:acc:example.com", exp: 1671922300, for: %{}, sub: "cas1:narf"}}
-  iex> extract(jwt, :claims)
-  {:ok, %{aud: "caa1:acc:example.com", exp: 1671922300, for: %{}, sub: "cas1:narf"}}
-  iex> extract(jwt, :header)
-  {:ok, %{"alg" => "HS256","typ" => "JWT"}}
-  iex> extract("asdf", :all)
-  {:error, "Invalid JWT, cannot extract claims"}
-  iex> extract("asdf.asdf.asdf", :all)
-  {:error, "Unable to decode JWT part: asdf"}
-  ```
-  """
-
   def extract(token, part \\ :claims)
 
   def extract(token, :claims) do

@@ -44,8 +44,12 @@ defmodule Rivet.Ident.Factor do
   end
 
   @required_fields [:type, :expires_at, :user_id]
-  @update_fields [:fedtype, :name, :value, :details, :password]
-  use Rivet.Ecto.Collection, not_found: :atom, required: @required_fields, update: @update_fields
+  @update_fields [:fedtype, :name, :value, :details, :password, :expires_at]
+  use Rivet.Ecto.Collection,
+    not_found: :atom,
+    required: @required_fields,
+    update: @update_fields,
+    foreign_keys: [:user_id]
 
   @impl Rivet.Ecto.Collection
   def build(params) do
@@ -55,8 +59,8 @@ defmodule Rivet.Ident.Factor do
     |> hash_password()
   end
 
-  def hash_password(changeset = %Ecto.Changeset{valid?: true, changes: %{password: pass}}) do
-    put_change(changeset, :hash, Ident.Factor.Password.hash(pass))
+  def hash_password(changeset = %Ecto.Changeset{valid?: true, changes: %{password}}) do
+    put_change(changeset, :hash, Ident.Factor.Password.hash(password))
     # consider: delete password: token?
   end
 

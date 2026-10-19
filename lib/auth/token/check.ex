@@ -6,17 +6,6 @@ defmodule Rivet.Auth.Token.Check do
   use Rivet.Ident
   import Transmogrify.As
 
-  @doc ~S"""
-  Checks payload information to verify proper authorization matches
-
-  ```
-  iex> {:ok, _token, claims} = Rivet.Auth.Token.Access.jwt("narf", "example.com", 5)
-  ...> {:error, %Auth.Domain{} = a} = jwt(%Auth.Domain{hostname: "example.com", token: %{claims: claims}})
-  ...> a.log
-  "Cannot find identity factor=narf"
-  ```
-
-  """
   def jwt(%Auth.Domain{} = auth) do
     # order matters
     # - audience parses the token type
@@ -31,14 +20,6 @@ defmodule Rivet.Auth.Token.Check do
   end
 
   ###########################################################################
-  @doc """
-  ```
-  iex> {:error, auth} = enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: "asdf", aud: "asdf"}}})
-  iex> auth.log
-  "Cannot parse token.sub=asdf"
-  iex> assert {:error, _} = enrich_sub_aud(%Auth.Domain{})
-  ```
-  """
   def enrich_sub_aud(%Auth.Domain{token: %{claims: %{sub: sub, aud: aud}}} = auth) do
     with {:ok, sub} <- expand_claim_value(:sub, sub),
          {:ok, aud} <- expand_claim_value(:aud, aud) do
@@ -62,18 +43,6 @@ defmodule Rivet.Auth.Token.Check do
   end
 
   ###########################################################################
-  @doc """
-  ```
-  iex> {:error, auth} = valid_audience(%Auth.Domain{token: %{aud: "asdf"}})
-  iex> auth.log
-  "Cannot parse token.tok=asdf"
-  iex> {:error, auth} = valid_audience(%Auth.Domain{token: %{aud: "key:a.domain"}, hostname: "b.domain"})
-  iex> auth.log
-  "Token audience does not match: 'a.domain' != 'b.domain'"
-  iex> valid_audience({:error, "narf"})
-  {:error, "narf"}
-  ```
-  """
   def valid_audience(%Auth.Domain{token: %{aud}} = auth) do
     case expand_claim_value(:tok, aud) do
       {:ok, %{tok: t_hostname, tok_type: t_type}} ->
@@ -91,19 +60,6 @@ defmodule Rivet.Auth.Token.Check do
   def valid_audience({:error, _} = pass), do: pass
 
   ###########################################################################
-  @doc """
-  ```
-  iex> now = System.os_time(:second)
-  iex> {:error, auth} = valid_expiration(%Auth.Domain{token: %{claims: %{for: %{}, exp: 0}}, type: :acc})
-  iex> auth.log
-  "Token Expired"
-  iex> {:error, auth} = valid_expiration(%Auth.Domain{token: %{claims: %{for: %{}, exp: now+300000}}, type: :acc})
-  iex> auth.log
-  "Token expiration out of bounds"
-  iex> valid_expiration({:error, "narf"})
-  {:error, "narf"}
-  ```
-  """
   def valid_expiration(%Auth.Domain{token: %{claims: %{for: scope} = claims}, type: type} = auth) do
     now = System.os_time(:second)
     expires = claims.exp
@@ -125,24 +81,6 @@ defmodule Rivet.Auth.Token.Check do
   def valid_expiration({:error, _} = pass), do: pass
 
   ###########################################################################
-  @doc """
-  ```
-  iex> {:error, auth} = valid_subject(%Auth.Domain{})
-  iex> auth.log
-  "Unable to process token subject"
-  iex> {:error, auth} = valid_subject(%Auth.Domain{token: %{claims: %{sub: "red"}}, type: :acc})
-  iex> auth.log
-  "Cannot parse token.sub=red"
-  iex> {:error, auth} = valid_subject(%Auth.Domain{type: :acc, token: %{sub_type: :cas1, sub: "subject"}})
-  iex> auth.log
-  "Cannot find identity factor=subject"
-  iex> {:error, auth} = valid_subject(%Auth.Domain{token: %{aud_type: :caa1, sub_type: :cas1, sub: "subject"}, type: :val})
-  iex> auth.log
-  "Cannot find identity factor=subject"
-  iex> valid_subject({:error, "narf"})
-  {:error, "narf"}
-  ```
-  """
   def valid_subject(%Auth.Domain{type: :acc, token: %{sub_type: :cas1, sub: sub}} = auth) do
     case Factor.Lib.get_user(sub) do
       # type: :valtok is correct. The factor is the parent validation token

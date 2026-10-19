@@ -1,26 +1,29 @@
-defmodule Rivet.Ident.Test.Auth.TokenValidationTest do
+defmodule Rivet.Ident.Test.Auth.Token.ValidationTest do
   use Rivet.Ident.Support.Case, async: true
   alias Rivet.Auth
   alias Auth.{Domain, Token}
+  alias Auth.Token.Validation
 
   test "generate validation token" do
     domain = Faker.Internet.domain_name()
     user = insert(:ident_user)
 
-    case Token.Validation.jwt(user, domain) do
+    case Validation.jwt(user, domain) do
       {:ok, jwt, _, factor} ->
         {:ok, claims} = Token.extract(jwt, :claims)
         assert claims.sub == "cas1:#{factor.id}"
         assert claims.aud == "caa1:val:#{domain}"
         assert claims.for.type == "acc"
     end
+
+    assert {:error, _} = Validation.jwt(%{user | id: Ecto.UUID.generate()}, domain)
   end
 
   test "generate validation key" do
     user = insert(:ident_user)
     domain = Faker.Internet.domain_name()
 
-    case Token.Validation.key(domain, user) do
+    case Validation.key(domain, user) do
       {:ok, %{aud: aud, sub: "cas2:" <> sub}} ->
         assert aud == "caa1:ref:#{domain}"
         {:ok, claims} = Token.extract(sub, :claims)
@@ -33,8 +36,7 @@ defmodule Rivet.Ident.Test.Auth.TokenValidationTest do
     user = insert(:ident_user)
     domain = Faker.Internet.domain_name()
 
-    with {:ok, %{aud: aud, sec: sec, sub: sub}} <-
-           Token.Validation.key(domain, user) do
+    with {:ok, %{aud: aud, sec: sec, sub: sub}} <- Validation.key(domain, user) do
       auth = %Domain{hostname: domain, user: user}
 
       {:ok, bad_tok, _} =

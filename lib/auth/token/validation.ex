@@ -1,6 +1,6 @@
 defmodule Rivet.Auth.Token.Validation do
   alias Rivet.Auth
-  alias Rivet.Ident
+  use Rivet.Ident
   require Logger
 
   ##############################################################################
@@ -17,7 +17,7 @@ defmodule Rivet.Auth.Token.Validation do
   def jwt(target, hostname, scope \\ %{}, offset \\ 0)
 
   # # # # # # # # # #
-  def jwt(%Ident.Factor{details: %{type: type}} = factor, hostname, scope, offset)
+  def jwt(%Ident.Factor{details: %{type}} = factor, hostname, scope, offset)
       when is_binary(hostname) do
     val_age = Auth.Settings.expire_limit(:val, type) + offset
     scope = %{type: type} |> Map.merge(scope)
@@ -43,13 +43,13 @@ defmodule Rivet.Auth.Token.Validation do
            expires_at: System.os_time(:second) + val_age
          }) do
       {:ok, %Ident.Factor{} = factor} ->
-        with {:ok, tok, claims, _factor} <- jwt(factor, hostname, scope, offset) do
-          {:ok, tok, claims, factor}
-        end
+        with {:ok, tok, claims, _factor} <- jwt(factor, hostname, scope, offset),
+             do: {:ok, tok, claims, factor}
 
-      {:error, %{errors: [expires_at: {"is invalid", _}]}} ->
-        Logger.error("Unable to create Auth Token record in DB! Invalid Expiration.")
-        {:error, "Invalid Expiration"}
+      # dead code
+      # {:error, %{errors: [expires_at: {"is invalid", _}]}} ->
+      #   Logger.error("Unable to create Auth Token record in DB! Invalid Expiration.")
+      #   {:error, "Invalid Expiration"}
 
       error ->
         Logger.error("Unable to create Auth Token record in DB! #{inspect(error)}")
@@ -70,6 +70,7 @@ defmodule Rivet.Auth.Token.Validation do
        }}
     else
       err ->
+        # coveralls-ignore-next-line
         {:error, "Unable to create validaton token", err}
     end
   end

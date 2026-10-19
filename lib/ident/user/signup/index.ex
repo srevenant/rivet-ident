@@ -151,7 +151,7 @@ defmodule Rivet.Ident.User.Signup do
 
   # set fedid
   defp add_factor(%Auth.Domain{user: %User{}, input: %{fedid: %FedId{} = fedid}} = auth) do
-    case Ident.Factor.Lib.set_factor(auth.user, fedid) do
+    case Ident.Factor.Lib.set_federated_factor(auth.user, fedid) do
       {:ok, %Ident.Factor{} = factor} -> {:ok, %Auth.Domain{auth | factor}}
       # this is an edge/db error not worth testing
       # coveralls-ignore-next-line

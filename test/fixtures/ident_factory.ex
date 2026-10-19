@@ -136,6 +136,17 @@ defmodule Rivet.Ident.Test.IdentFactory do
         }
       end
 
+      def ident_factor_federated_factory do
+        %Ident.Factor{
+          user: build(:ident_user),
+          type: :federated,
+          fedtype: :google,
+          name: Ecto.UUID.generate(),
+          expires_at: Rivet.Utils.Time.epoch_time(:second) + 900,
+          details: %{sub: Ecto.UUID.generate()}
+        }
+      end
+
       def ident_factor_google_factory do
         %Ident.Factor.FedId{
           name: "fedid" <> Ecto.UUID.generate(),
@@ -145,12 +156,13 @@ defmodule Rivet.Ident.Test.IdentFactory do
             verified: false
           },
           provider: %Ident.Factor.FedId.Provider{
-            type: :google
+            type: :google,
+            # set extra high so our limit kicks in on tests
+            exp: Rivet.Utils.Time.epoch_time(:second) + (86400*400)
             # sub: payload["sub"],
             # jti: payload["jti"],
             # iss: payload["iss"],
             # iat: payload["iat"],
-            # exp: payload["exp"],
             # azp: payload["azp"],
             # aud: payload["aud"],
             # token: payload["token"]
