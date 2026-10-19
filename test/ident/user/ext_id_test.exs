@@ -16,6 +16,9 @@ defmodule Rivet.Ident.Test.Ident.User.ExtIdTest do
 
     assert {:ok, _} = ExtId.Lib.put(user, origin, ext_id)
 
+    # a second time to trigger the "yeah its there" condition
+    assert {:ok, _} = ExtId.Lib.put(user, origin, ext_id)
+
     assert {:error, "ExtId exists"} =
              ExtId.Lib.put(%{user | id: Ecto.UUID.generate()}, origin, ext_id)
 

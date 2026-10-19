@@ -13,6 +13,7 @@ Rivet.Auth.Settings.start()
 
 children = [
   Rivet.Auth.Cache,
+  Rivet.Ident.Role.Cache,
   Rivet.Ident.Factor.Cache,
   Rivet.Ident.User.Cache
 ]

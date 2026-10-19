@@ -24,6 +24,6 @@ defmodule Rivet.Ident.Test.Ident.Factor.ModelTest do
   test "cache" do
     factor = %{user} = insert(:ident_factor)
     assert {:ok, _} = Factor.Cache.persist(factor)
-    assert :ok == Factor.Cache.update_user(%{user | state: %{active_factor_id: Ecto.UUID.generate()}})
+    assert :ok == Factor.Cache.update_user(%{user | state: %{active_factor_id: factor.id}})
   end
 end

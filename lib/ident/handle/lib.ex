@@ -21,6 +21,8 @@ defmodule Rivet.Ident.Handle.Lib do
           {:error, "existing handle", "Sorry, that handle isn't available"}
 
         {:error, err} ->
+          # DB level errors
+          # coveralls-ignore-next-line
           {:error, "unexpected error=#{inspect(err)}", "Sorry, that handle isn't available"}
       end
     end
@@ -62,8 +64,9 @@ defmodule Rivet.Ident.Handle.Lib do
     case Ident.Handle.Lib.available(handle) do
       {:error, _, _} ->
         handle =
-          if String.length(handle) >= @max do
-            shorter = @max / 2
+          if String.length(handle) >= @max - 2 do
+            # start over and give us some extra room to play with
+            shorter = Kernel.trunc(@max / 2)
             String.slice(handle, 0..shorter//1)
           else
             handle

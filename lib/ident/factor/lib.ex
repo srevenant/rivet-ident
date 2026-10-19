@@ -153,6 +153,7 @@ defmodule Rivet.Ident.Factor.Lib do
 
   def get_expiration(provider_exp, type) do
     def_exp = default_expiration(type)
+
     if provider_exp >= def_exp do
       def_exp
     else

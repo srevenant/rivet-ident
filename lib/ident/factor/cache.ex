@@ -24,7 +24,8 @@ defmodule Rivet.Ident.Factor.Cache do
     {:ok, factor}
   end
 
-  # used to update cache if user state changes
+  # used to update cache'd user record if user state changes; like if the user
+  # is seen and timestamps change
   def update_user(%User{state: %{active_factor_id: id}} = user) do
     with {:ok, factor} <- get_user_factor(id) do
       persist(%Factor{factor | user})

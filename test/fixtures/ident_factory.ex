@@ -158,7 +158,7 @@ defmodule Rivet.Ident.Test.IdentFactory do
           provider: %Ident.Factor.FedId.Provider{
             type: :google,
             # set extra high so our limit kicks in on tests
-            exp: Rivet.Utils.Time.epoch_time(:second) + (86400*400)
+            exp: Rivet.Utils.Time.epoch_time(:second) + 86400 * 400
             # sub: payload["sub"],
             # jti: payload["jti"],
             # iss: payload["iss"],
