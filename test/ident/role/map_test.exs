@@ -18,10 +18,11 @@ defmodule Rivet.Ident.Test.Ident.Role.MapTest do
     action = insert(:ident_action)
     ref_id = Ecto.UUID.generate()
 
-    assert {:ok, _} = Ident.Role.Map.create(%{
-      role_id: role.id,
-      action_id: action.id
-    })
+    assert {:ok, _} =
+             Ident.Role.Map.create(%{
+               role_id: role.id,
+               action_id: action.id
+             })
 
     expected = [[action.name, :project, ref_id]]
 

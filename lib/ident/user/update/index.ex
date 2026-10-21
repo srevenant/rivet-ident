@@ -185,14 +185,23 @@ defmodule Rivet.Ident.User.Update do
   defp update_role_(:upsert, {:ok, _}, _, u), do: refresh(u, :accesses)
 
   defp update_role_(:upsert, {:error, :not_found}, %{id: role_id}, %{id: user_id} = u) do
-    with {:ok, _} <- Ident.Access.upsert(%{role_id, user_id}), do: refresh(u, :accesses)
+    with {:ok, _} <- Ident.Access.upsert(%{role_id, user_id}),
+         :ok <- clear_auth_cache(user_id),
+         do: refresh(u, :accesses)
   end
 
   defp update_role_(:remove, {:ok, access}, _, u) do
-    with {:ok, _} <- Ident.Access.delete(access), do: refresh(u, :accesses)
+    with {:ok, _} <- Ident.Access.delete(access),
+         :ok <- clear_auth_cache(u.id),
+         do: refresh(u, :accesses)
   end
 
   defp update_role_(_, _, _, _), do: bad_args("role/args")
+
+  defp clear_auth_cache(user_id) do
+    Rivet.Auth.Cache.delete(user_id)
+    :ok
+  end
 
   ##############################################################################
   defp refresh(user, key), do: User.preload(user, key, force: true)

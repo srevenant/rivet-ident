@@ -152,7 +152,7 @@ defmodule Rivet.Ident.User.Lib do
   iex> {:ok, _} = delete_account(u)
 
   """
-  @preloads [:emails, :factors, :handle, :ext_ids, :phones]
+  @preloads [:emails, :factors, :handle, :ext_ids, :phones, :codes]
   def delete_account(%User{} = u) do
     @repo.transact(fn ->
       with {:ok, u} <- User.preload(u, @preloads),
@@ -161,7 +161,12 @@ defmodule Rivet.Ident.User.Lib do
            # :ok <- delete_each(u.mailer_subs, Rivet.Mailer.Subs),
            :ok <- delete_each([u.handle], Ident.Handle),
            :ok <- delete_each(u.phones, Ident.Phone),
+           :ok <- delete_each(u.codes, Ident.User.Code),
            :ok <- delete_each(u.factors, Ident.Factor) do
+        Factor.Cache.invalidate_all_for(u.id)
+        User.Cache.delete(u.id)
+        Rivet.Auth.Cache.delete(u.id)
+
         # possibly add:
         #  data (private info?)
         #  accesses/roles?

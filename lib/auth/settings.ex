@@ -75,7 +75,7 @@ defmodule Rivet.Auth.Settings do
         IO.inspect([token_type, sub_type], label: "Lookup keys")
         raise "Invalid Configuration"
 
-      # coveralls-ignore-next-line
+      # coveralls-ignore-stop
 
       pass ->
         pass

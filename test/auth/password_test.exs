@@ -41,10 +41,10 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
 
     assert {:ok, %User.Code{}} = change_password_code(code, @password)
 
-    assert {:error, "Password reset codes cannot be used more than once"} =
+    assert {:error, "Password reset code has already been used"} =
              change_password_code(code, @password)
 
-    assert {:error, "Unable to find password reset code"} =
+    assert {:error, "Invalid password reset code"} =
              change_password_code(%{code | id: 0}, @password)
 
     assert {:error, "Password is not long enough (greater than 8)"} =
@@ -57,6 +57,9 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
     assert {:error, :args} = change_password_matching(nil, nil, nil)
 
     assert :ok == change_password_matching(user, @password, @password <> "x")
+
+    expired = insert(:ident_user_code, expires: DateTime.add(DateTime.utc_now(), -86400))
+    assert {:error, "Password reset code is expired"} = change_password_code(expired, @password)
   end
 
   test "valid_password_factor" do

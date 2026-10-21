@@ -42,6 +42,7 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
     assert {:error, %Auth.Domain{log: ^log, error: ^error}} = func.()
   end
 
+  ##############################################################################
   test "errors" do
     assert_authfail("Invalid arguments", fn -> Google.check("", %{}) end)
 
@@ -56,6 +57,7 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
     assert :nope = Google.add_ident(:nope, nil)
   end
 
+  ##############################################################################
   test "invalid claims" do
     now = System.system_time(:second)
 
@@ -70,6 +72,7 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
     end)
   end
 
+  ##############################################################################
   test "creates new user from verified Google identity" do
     payload = google_payload()
 
@@ -78,49 +81,82 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
     assert {:ok, %Ident.Email{user_id: ^id}} = Ident.Email.one(address: payload["email"])
   end
 
-  test "recognizes existing Google identity" do
-    user = insert(:ident_user, settings: %{"authAllowed" => %{"narf" => true}})
-    id = user.id
+  ##############################################################################
+  defp setup_user(settings \\ %{"authAllowed" => %{"google" => true}}) do
+    user = insert(:ident_user, settings: settings)
     payload = google_payload()
-
-    assert {:ok, _} = User.ExtId.Lib.put(user, "google", payload["sub"])
-
-    assert {:ok, %Auth.Domain{user: %User{id: ^id}, status: :authed}} =
-             check_google(payload)
-
-    assert {:ok, %User{settings: %{"authAllowed" => %{"google" => true}}}} =
-             User.one(id: id)
+    %{payload, user, user_id: user.id}
   end
 
-  test "links Google identity to user with existing email" do
-    user = insert(:ident_user, settings: %{})
-    id = user.id
-    payload = google_payload()
-
-    assert {:ok, _} = User.Lib.add_email(user, payload["email"])
-
-    assert {:ok, %Auth.Domain{user: %User{id: ^id}}} = check_google(payload)
-    assert {:ok, %{user_id: ^id}} = User.ExtId.Lib.get("google", payload["sub"])
+  defp add_ext_id(user, %{"sub" => sub}) do
+    assert {:ok, _} = User.ExtId.Lib.put(user, "google", sub)
   end
 
-  test "rejects user who has disabled Google signin" do
-    user = insert(:ident_user, settings: %{"authAllowed" => %{"google" => false}})
-    payload = google_payload()
+  defp add_email(user, %{"email" => email}, args \\ %{}) do
+    assert {:ok, _} = User.Lib.add_email(user, email, args)
+  end
 
-    assert {:ok, _} = User.ExtId.Lib.put(user, "google", payload["sub"])
+  ##############################################################################
+  test "recognizes existing google identity" do
+    %{payload, user, user_id} = setup_user(%{"authAllowed" => %{"narf" => true}})
+    add_ext_id(user, payload)
+
+    assert {:ok,
+            %Auth.Domain{
+              user: %User{
+                id: ^user_id,
+                settings: %{"authAllowed" => %{"google" => true, "narf" => true}}
+              },
+              status: :authed
+            }} = check_google(payload)
+
+    # do it a second time to walk to "already there" path for settings=true
+    assert {:ok, %Auth.Domain{}} = check_google(payload)
+  end
+
+  ##############################################################################
+  test "google identity collides with existing user and unverified email" do
+    %{payload, user} = setup_user(%{})
+    add_email(user, payload)
 
     assert_authfail(
-      "Federated signin disabled for user",
-      "You have not authorized google logins. Perhaps try to reset your password?",
+      "User identified but email is unverified. Please verify that first.",
+      "Unable to sign in.",
       fn -> check_google(payload) end
     )
   end
 
-  test "rejects disabled user" do
-    user = insert(:ident_user, type: :disabled, settings: %{})
-    payload = google_payload()
+  ##############################################################################
+  test "google identity hits existing user that has a verified email and it works" do
+    %{payload, user, user_id} = setup_user(%{})
+    assert map_size(user.settings) == 0
+    add_email(user, payload, %{verified: true})
 
-    assert {:ok, _} = User.ExtId.Lib.put(user, "google", payload["sub"])
+    assert {:ok,
+            %Auth.Domain{
+              user: %User{id: ^user_id, settings: %{"authAllowed" => %{"google" => true}}}
+            }} = check_google(payload)
+
+    assert {:ok, %{user_id: ^user_id}} = User.ExtId.Lib.get("google", payload["sub"])
+  end
+
+  ##############################################################################
+  test "rejects user who has disabled Google signin" do
+    %{payload, user} = setup_user(%{"authAllowed" => %{"google" => false}})
+    add_ext_id(user, payload)
+
+    assert_authfail(
+      "Federated signin disabled for user",
+      "You have disabled google logins. Perhaps try to reset your password?",
+      fn -> check_google(payload) end
+    )
+  end
+
+  ##############################################################################
+  test "rejects disabled user" do
+    %{payload, user} = setup_user()
+    assert {:ok, _} = User.update(user, %{type: :disabled})
+    add_ext_id(user, payload)
 
     assert_authfail(
       "Attempted login on disabled account",

@@ -9,20 +9,30 @@ defmodule Rivet.Auth.Password do
   alias Rivet.Auth
 
   ##############################################################################
+  # Lock the row until this transaction finishes to avoid concurrent attempts
+  defp get_locked(code_id) do
+    from(c in User.Code, where: c.id == ^code_id, lock: "FOR UPDATE")
+    |> User.Code.one()
+  end
+
   @reset_type User.Code.type!(:password_reset)
   def change_password_code(%User.Code{type: @reset_type, user: %User{}} = code, new)
       when not_empty_str(new) do
     @repo.transact(fn ->
-      # fresh copy
-      case User.Code.one(id: code.id) do
-        {:ok, %{type: @reset_type, used: false}} ->
-          with :ok <- set_password_(code.user, new), do: User.Code.update(code, %{used: true})
+      # User.Code.one(id: code.id) do
+      case get_locked(code.id) do
+        {:ok, %User.Code{type: @reset_type, used: false} = fresh} ->
+          if DateTime.after?(fresh.expires, DateTime.utc_now()) do
+            with :ok <- set_password_(code.user, new), do: User.Code.update(fresh, %{used: true})
+          else
+            {:error, "Password reset code is expired"}
+          end
 
         {:ok, _} ->
-          {:error, "Password reset codes cannot be used more than once"}
+          {:error, "Password reset code has already been used"}
 
         {:error, :not_found} ->
-          {:error, "Unable to find password reset code"}
+          {:error, "Invalid password reset code"}
       end
     end)
   end

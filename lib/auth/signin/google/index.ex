@@ -110,8 +110,11 @@ defmodule Rivet.Auth.Signin.Google do
   ####
   defp find_create_by_email(%{"email" => email, "sub" => ident} = params, hostname, type) do
     case Ident.Email.one([address: email], [:user]) do
-      {:ok, %Ident.Email{user: %User{} = u}} ->
+      {:ok, %Ident.Email{user: %User{} = u, verified: true}} ->
         check_user_allowed({:ok, u}, hostname) |> add_ident(ident)
+
+      {:ok, %Ident.Email{verified: false}} ->
+        signin_error("User identified but email is unverified. Please verify that first.")
 
       {:error, :not_found} ->
         create_user(params, hostname, type)
@@ -119,37 +122,38 @@ defmodule Rivet.Auth.Signin.Google do
   end
 
   ##############################################################################
-  defp google_allowed?(user) do
+  defp google_allowed_update(user) do
     case get_in(user.settings, ["authAllowed", "google"]) do
       nil ->
         # add google in if it wasn't set at all
         settings =
           case user.settings do
-            %{"authAllowed" => _} -> put_in(user.settings, ["authAllowed", "google"], true)
-            _ -> Map.put(user.settings, "authAllowed", %{"google" => true})
+            %{"authAllowed" => _} ->
+              put_in(user.settings, ["authAllowed", "google"], true)
+
+            _ ->
+              # This is not getting covered
+              Map.put(user.settings, "authAllowed", %{"google" => true})
           end
 
-        User.update(user, %{settings: settings})
+        User.update(user, %{settings})
         |> Rivet.Ident.critical_report_if_error(
           "Unexpected error updating user settings on signin"
         )
 
-        true
+      true ->
+        {:ok, user}
 
-      value ->
-        value
+      false ->
+        {:error, "You have disabled google logins. Perhaps try to reset your password?"}
     end
   end
 
   def check_user_allowed({:ok, %User{} = user}, hostname) do
     with {:ok, user} <- Rivet.Ident.User.Lib.check_user_status(user) do
-      if google_allowed?(user) do
-        {:ok, %Auth.Domain{hostname, user, status: :authed}}
-      else
-        signin_error(
-          "Federated signin disabled for user",
-          "You have not authorized google logins. Perhaps try to reset your password?"
-        )
+      case google_allowed_update(user) do
+        {:ok, user} -> {:ok, %Auth.Domain{hostname, user, status: :authed}}
+        {:error, msg} -> signin_error("Federated signin disabled for user", msg)
       end
     end
   end
