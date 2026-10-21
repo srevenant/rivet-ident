@@ -35,10 +35,10 @@ defmodule Rivet.Auth.Signin.Google do
     defp verify_google_signature("test:" <> encoded = token) do
       with {:ok, json} <- Base.url_decode64(encoded, padding: false),
            {:ok, claims} <- Jason.decode(json),
-           true <- valid_claims?(claims) do
+           :ok <- valid_claims(claims) do
         {:ok, %{token: token, payload: claims, header: %{}}}
       else
-        _ -> signin_error("Invalid Google test token")
+        {:error, what} -> signin_error("test_wrapped_error: " <> what)
       end
     end
   end
@@ -58,11 +58,10 @@ defmodule Rivet.Auth.Signin.Google do
         jwk = Map.get(google_keys, header["kid"])
 
         case JOSE.JWT.verify_strict(jwk, ["RS256"], token) do
-          {true, %JOSE.JWT{fields: fields}, %JOSE.JWS{} = jws} ->
-            if valid_claims?(fields) do
-              {:ok, %{token, payload: fields, header: Map.from_struct(jws)}}
-            else
-              signin_error("Invalid Google JWT claims")
+          {true, %JOSE.JWT{fields: payload}, %JOSE.JWS{} = jws} ->
+            case valid_claims(payload) do
+              :ok -> {:ok, %{token, payload, header: Map.from_struct(jws)}}
+              {:error, what} -> signin_error(what)
             end
 
           {false, %JOSE.JWT{fields: %{"email" => email}}, %JOSE.JWS{}} ->
@@ -80,20 +79,22 @@ defmodule Rivet.Auth.Signin.Google do
   # coveralls-ignore-stop
 
   @good_iss ["accounts.google.com", "https://accounts.google.com"]
-  @federated Application.compile_env!(:rivet_ident, :federated)
-  if @federated[:google] and is_nil(@federated[:google_client_id]) do
-    raise """
-    Google federated signin configured but no client id has been set. See your
-    application config: :rivet_ident, federated: %{google_client_id}
-    """
-  else
-    @client_id @federated[:google_client_id]
+  defp valid_claims(token) do
+    case Rivet.Auth.Settings.getcfg(:federated, %{}) do
+      %{google_client_id: google_aud, google: true} when not_empty_str(google_aud) ->
+        with %{"exp" => exp, "iss" => iss, "aud" => aud} when is_integer(exp) <- token,
+             true <- exp > System.system_time(:second) and iss in @good_iss and aud == google_aud do
+          :ok
+        else
+          _ ->
+            {:error, "Invalid Google ID token"}
+        end
+
+      # coveralls-ignore-next-line
+      _ ->
+        {:error, "Google federated signin not enabled or federated.google_client_id is unset"}
+    end
   end
-
-  defp valid_claims?(%{"exp" => exp, "iss" => iss, "aud" => aud}) when is_integer(exp),
-    do: exp > System.system_time(:second) and iss in @good_iss and aud == @client_id
-
-  defp valid_claims?(_), do: false
 
   ##############################################################################
   # only allow signin with google users who have verified their email

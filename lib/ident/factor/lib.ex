@@ -3,7 +3,6 @@ defmodule Rivet.Ident.Factor.Lib do
   @type log_msg :: str
   @type usr_msg :: str
   @type auth_result :: {:ok | :error, Rivet.Auth.Domain.t()}
-  @password_history Application.compile_env!(:rivet_ident, :password_history) || 5
 
   use Rivet.Ident
   use Rivet.Ecto.Collection.Context, model: Ident.Factor
@@ -128,7 +127,7 @@ defmodule Rivet.Ident.Factor.Lib do
     )
     |> Ident.Factor.all!()
     |> Enum.reject(&(&1.id == excluding_id))
-    |> clean_old_factors(@password_history - 1)
+    |> clean_old_factors(Rivet.Auth.Settings.getcfg(:password_history, 5) - 1)
   end
 
   ####

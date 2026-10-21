@@ -68,7 +68,9 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
       %{"exp" => nil}
     ]
     |> Enum.each(fn claim ->
-      assert_authfail("Invalid Google test token", fn -> check_google(google_payload(claim)) end)
+      assert_authfail("test_wrapped_error: Invalid Google ID token", fn ->
+        check_google(google_payload(claim))
+      end)
     end)
   end
 
