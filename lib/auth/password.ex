@@ -23,7 +23,8 @@ defmodule Rivet.Auth.Password do
       case get_locked(code.id) do
         {:ok, %User.Code{type: @reset_type, used: false} = fresh} ->
           if DateTime.after?(fresh.expires, DateTime.utc_now()) do
-            with :ok <- set_password_(code.user, new), do: User.Code.update(fresh, %{used: true})
+            with {:ok, _} <- set_password_(code.user, new),
+                 do: User.Code.update(fresh, %{used: true})
           else
             {:error, "Password reset code is expired"}
           end
@@ -35,6 +36,7 @@ defmodule Rivet.Auth.Password do
           {:error, "Invalid password reset code"}
       end
     end)
+    |> notify_pass_change(code.user)
   end
 
   def change_password_code(_, _), do: {:error, :args}
@@ -44,7 +46,7 @@ defmodule Rivet.Auth.Password do
       when not_empty_str(new) and not_empty_str(current) do
     cond do
       current == new -> {:error, "New password is the same as old"}
-      matching_password?(user, current) -> set_password_(user, new)
+      matching_password?(user, current) -> set_password_(user, new) |> notify_pass_change(user)
       true -> {:error, "Password change failure: current password mis-match"}
     end
   end
@@ -52,12 +54,14 @@ defmodule Rivet.Auth.Password do
   def change_password_matching(_, _, _), do: {:error, :args}
 
   ##############################################################################
-  defp set_password_(%User{} = user, new) do
-    with {:ok, %Factor{}} <- Factor.Lib.set_password(user, new) do
-      Ident.mailer_template(:password_changed).queue(user)
-      :ok
-    end
+  defp set_password_(%User{} = user, new), do: Factor.Lib.set_password(user, new)
+
+  defp notify_pass_change({:ok, _} = good, user) do
+    Ident.mailer_template(:password_changed).queue(user)
+    good
   end
+
+  defp notify_pass_change(pass, _), do: pass
 
   ##############################################################################
   ## used for direct user w/out %Auth.Domain{}

@@ -56,7 +56,7 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
     assert {:error, :args} = change_password_code(nil, nil)
     assert {:error, :args} = change_password_matching(nil, nil, nil)
 
-    assert :ok == change_password_matching(user, @password, @password <> "x")
+    assert {:ok, %Factor{}} = change_password_matching(user, @password, @password <> "x")
 
     expired = insert(:ident_user_code, expires: DateTime.add(DateTime.utc_now(), -86400))
     assert {:error, "Password reset code is expired"} = change_password_code(expired, @password)

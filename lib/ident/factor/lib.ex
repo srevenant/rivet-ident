@@ -107,38 +107,50 @@ defmodule Rivet.Ident.Factor.Lib do
         }
         |> Map.merge(overrides)
 
-      with {:ok, factor} <- Ident.Factor.create(params) do
-        clean_password_history(user.id, factor.id)
-        {:ok, factor}
-      end
+      @repo.transact(fn ->
+        # Serialize password changes for this user
+        query = from(u in User, where: u.id == ^user.id, lock: "FOR UPDATE")
+
+        with {:ok, %User{}} <- User.one(query),
+             {:ok, factor} <- Ident.Factor.create(params),
+             :ok <- clean_password_history(user.id, factor.id) do
+          {:ok, factor}
+        end
+      end)
     end
   end
 
+  ##############################################################################
   def clean_password_history(user_id, excluding_id) do
     from(f in Ident.Factor,
       where: f.user_id == ^user_id and f.type == :password,
-      order_by: [asc: f.expires_at]
+      order_by: [asc: f.inserted_at, asc: f.id]
     )
     |> Ident.Factor.all!()
-    |> Enum.filter(fn f -> f.id != excluding_id end)
+    |> Enum.reject(&(&1.id == excluding_id))
     |> clean_old_factors(@password_history - 1)
   end
 
-  defp clean_old_factors([x | rest], max) do
+  ####
+  defp clean_old_factors([factor | rest], max) do
+    with {:ok, _} <- clean_old_update_factor(factor, length(rest), max),
+         do: clean_old_factors(rest, max)
+  end
+
+  defp clean_old_factors([], _), do: :ok
+
+  ####
+  defp clean_old_update_factor(f, remaining, max) do
     now = epoch_time(:second)
 
     cond do
-      length(rest) >= max -> Ident.Factor.delete(x)
-      x.expires_at > now -> Ident.Factor.update(x, %{expires_at: now})
-      # coveralls-ignore-next-line
-      true -> :ok
+      remaining >= max -> Ident.Factor.delete(f)
+      f.expires_at > now -> Ident.Factor.update(f, %{expires_at: now})
+      true -> {:ok, f}
     end
-
-    clean_old_factors(rest, max)
   end
 
-  defp clean_old_factors(_, _), do: :ok
-
+  ##############################################################################
   # one year
   @default_expire 86400 * 365
 
