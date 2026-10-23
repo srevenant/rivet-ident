@@ -15,7 +15,10 @@ defmodule Rivet.Ident.Test.NullTemplate do
   def listen(pid \\ self()), do: Process.put(@listener, pid)
 
   defp test_callback(hook, args) do
-    if pid = Process.get(@listener), do: send(pid, {hook, args})
+    if pid = Process.get(@listener) do
+      IO.inspect({hook, args}, label: "SENDING")
+       send(pid, {hook, args})
+     end
   end
 
   # could instrument more callbacks here if/when desired
