@@ -15,10 +15,7 @@ defmodule Rivet.Ident.Test.NullTemplate do
   def listen(pid \\ self()), do: Process.put(@listener, pid)
 
   defp test_callback(hook, args) do
-    if pid = Process.get(@listener) do
-      IO.inspect({hook, args}, label: "SENDING")
-       send(pid, {hook, args})
-     end
+    if pid = Process.get(@listener), do: send(pid, {hook, args})
   end
 
   # could instrument more callbacks here if/when desired
@@ -42,6 +39,4 @@ defmodule Rivet.Ident.Test.NullTemplate do
   def report_if_error({:ok, _} = pass, _, _), do: pass
 
   def unattended_task(func), do: func.()
-
-  #
 end
