@@ -2,6 +2,7 @@ defmodule Rivet.Ident.Handle.Lib do
   use Rivet.Ident
   alias Rivet.Auth
   use Rivet.Ecto.Collection.Context, model: Ident.Handle
+  alias Ident.Handle
 
   @doc """
   Check if handle is open, return double-error (internal/external msg)
@@ -10,8 +11,8 @@ defmodule Rivet.Ident.Handle.Lib do
     if String.length(handle) < 4 do
       {:error, "short handle", "Your handle should be at least 4 characters long"}
     else
-      case Ident.Handle.one(handle: handle) do
-        {:ok, %Ident.Handle{user_id: ^user_id}} ->
+      case Handle.one(handle: handle) do
+        {:ok, %Handle{user_id: ^user_id}} ->
           {:ok, :current}
 
         {:error, :not_found} ->
@@ -61,7 +62,7 @@ defmodule Rivet.Ident.Handle.Lib do
   def gen_good_handle!(handle) do
     handle = clean_handle!(handle)
 
-    case Ident.Handle.Lib.available(handle) do
+    case Handle.Lib.available(handle) do
       {:error, _, _} ->
         handle =
           if String.length(handle) >= @max - 2 do

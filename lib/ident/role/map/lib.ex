@@ -21,7 +21,7 @@ defmodule Rivet.Ident.Role.Map.Lib do
   end
 
   def map_actions([role_id, domain, ref_id]) do
-    Ident.Role.Map.all!(role_id: role_id)
-    |> Enum.map(fn e -> [Ident.Role.Map.preload!(e, [:action]).action.name, domain, ref_id] end)
+    Ident.Role.Map.all!([role_id: role_id], preload: [:action])
+    |> Enum.map(fn e -> [e.action.name, domain, ref_id] end)
   end
 end

@@ -8,39 +8,49 @@ defmodule Rivet.Ident.Factor.Lib do
   use Rivet.Ecto.Collection.Context, model: Ident.Factor
   require Logger
   import Rivet.Utils.Time, only: [epoch_time: 1]
+  import Rivet.Guards
+  import Rivet.Auth.Settings, only: [getcfg: 2]
+  alias Ident.{Factor, User}
+
+  ##############################################################################
+  def get_user(factor_id) do
+    case get(factor_id) do
+      {:ok, %Factor{user: %User{}} = factor} ->
+        {:ok, factor}
+
+      {:error, _} ->
+        {:error, "Cannot find identity factor=#{factor_id}"}
+    end
+  end
 
   # override the function brought in by the collection module
   # was one_with_user_tenant
   def get(factor_id) when is_binary(factor_id) do
-    case Ident.Factor.Cache.get_user_factor(factor_id) do
-      {:ok, %Ident.Factor{}} = pass ->
-        pass
-
-      :miss ->
-        with {:ok, %{user: %User{}} = f} <- Ident.Factor.one([id: factor_id], [:user]),
-             {:ok, %User{} = user} = Rivet.Auth.Cache.get_authz(f.user) do
-          user = %User{user | state: Map.put(user.state, :active_factor_id, f.id)}
-          Ident.Factor.Cache.persist(%Ident.Factor{f | user})
-        end
+    with :miss <- Factor.Cache.get_user_factor(factor_id),
+         {:ok, %{user: %User{}} = f} <- Factor.one([id: factor_id], [:user]),
+         {:ok, %User{} = user} = Rivet.Auth.Cache.get_authz(f.user) do
+      user = %User{user | state: Map.put(user.state, :active_factor_id, f.id)}
+      Factor.Cache.persist(%Factor{f | user})
     end
   rescue
     # coveralls-ignore-next-line
     err in Ecto.Query.CastError -> {:error, err.message}
   end
 
+  ##############################################################################
   @doc """
   Preload factors for a related model, with criteria, and only unexpired factors
 
-      Ident.Factor.Lib.preloaded_with(model, type)
+      Factor.Lib.preloaded_with(model, type)
 
   """
-  def preloaded_with(%User{} = user, type) when is_list(type) do
+  def preloaded_with(%User{} = user, types) when is_list(types) do
     now = epoch_time(:second)
 
     User.preload!(user,
       factors:
-        from(a in Ident.Factor,
-          where: a.type in ^type and a.expires_at > ^now,
+        from(a in Factor,
+          where: a.type in ^types and a.expires_at > ^now,
           order_by: [desc: :updated_at]
         )
     )
@@ -51,7 +61,7 @@ defmodule Rivet.Ident.Factor.Lib do
 
     User.preload!(user,
       factors:
-        from(a in Ident.Factor,
+        from(a in Factor,
           where: a.type == ^type and a.expires_at > ^now,
           order_by: [desc: :updated_at]
         )
@@ -59,44 +69,18 @@ defmodule Rivet.Ident.Factor.Lib do
   end
 
   ##############################################################################
-  @password_minlen 8
-  def strong_password(password) when not_empty_str(password) do
-    cond do
-      String.length(password) < @password_minlen ->
-        {:error, "Password is not long enough (greater than #{@password_minlen})"}
-
-      Regex.replace(~r/[a-z]/i, password, "") == password ->
-        {:error, "Password needs letters"}
-
-      String.downcase(password) == password ->
-        {:error, "Password needs both upper and lower case characters"}
-
-      Regex.replace(~r/[^a-z0-9]/i, password, "") == password ->
-        {:error, "Password needs special characters (not alphanumeric)"}
-
-      Regex.replace(~r/[0-9]/, password, "") == password ->
-        {:error, "Password needs numbers"}
-
-      true ->
-        :ok
-    end
-  end
-
-  def strong_password(_), do: {:error, "No password given"}
-
   @doc """
   set a password
 
   Future change:
 
-  change Ident.Factors so there is an archive state, some types when being cleaned
+  change Factors so there is an archive state, some types when being cleaned
   are archived instead of deleted (such as passwords).
 
   Then Auth.Signin.Local.load_password_factor should filter on !archived
   """
-
   def set_password(user, password, overrides \\ %{}) do
-    with :ok <- strong_password(password) do
+    with :ok <- Rivet.Auth.Password.strong_password(password) do
       params =
         %{
           type: :password,
@@ -111,7 +95,7 @@ defmodule Rivet.Ident.Factor.Lib do
         query = from(u in User, where: u.id == ^user.id, lock: "FOR UPDATE")
 
         with {:ok, %User{}} <- User.one(query),
-             {:ok, factor} <- Ident.Factor.create(params),
+             {:ok, factor} <- Factor.create(params),
              :ok <- clean_password_history(user.id, factor.id) do
           {:ok, factor}
         end
@@ -121,13 +105,13 @@ defmodule Rivet.Ident.Factor.Lib do
 
   ##############################################################################
   def clean_password_history(user_id, excluding_id) do
-    from(f in Ident.Factor,
+    from(f in Factor,
       where: f.user_id == ^user_id and f.type == :password,
       order_by: [asc: f.inserted_at, asc: f.id]
     )
-    |> Ident.Factor.all!()
+    |> Factor.all!()
     |> Enum.reject(&(&1.id == excluding_id))
-    |> clean_old_factors(Rivet.Auth.Settings.getcfg(:password_history, 5) - 1)
+    |> clean_old_factors(getcfg(:password_history, 5) - 1)
   end
 
   ####
@@ -143,18 +127,18 @@ defmodule Rivet.Ident.Factor.Lib do
     now = epoch_time(:second)
 
     cond do
-      remaining >= max -> Ident.Factor.delete(f)
-      f.expires_at > now -> Ident.Factor.update(f, %{expires_at: now})
+      remaining >= max -> Factor.delete(f)
+      f.expires_at > now -> Factor.update(f, %{expires_at: now})
       true -> {:ok, f}
     end
   end
 
   ##############################################################################
-  # one year
+  # default 1 year
   @default_expire 86400 * 365
 
   defp default_expiration(type) do
-    Rivet.Auth.Settings.getcfg(:auth_expire_limits, %{})
+    getcfg(:auth_expire_limits, %{})
     |> Map.new()
     |> Map.get(type, @default_expire)
     |> Kernel.+(epoch_time(:second))
@@ -172,44 +156,35 @@ defmodule Rivet.Ident.Factor.Lib do
     end
   end
 
-  # TODO: rename to set_federated_factor
-  @spec set_federated_factor(user :: User.t(), fedid :: Ident.Factor.FedId.t()) ::
-          {:ok, Ident.Factor.t()} | {:error, Ecto.Changeset.t()}
-  def set_federated_factor(user, fedid) do
-    Ident.Factor.create(%{
-      name: fedid.provider.kid,
-      type: :federated,
-      fedtype: fedid.provider.type,
-      expires_at: get_expiration(fedid.provider.exp, :password),
-      user_id: user.id,
-      details: Map.from_struct(fedid.provider)
-    })
-  end
-
-  def get_user(factor_id) do
-    case get(factor_id) do
-      {:ok, %Ident.Factor{user: %User{}} = factor} ->
-        {:ok, factor}
-
-      {:error, _} ->
-        {:error, "Cannot find identity factor=#{factor_id}"}
-    end
-  end
+  ### deprecated? Now we really just use ExtIdent, and this is largely ignored?
+  ### or is FedId still a thing...
+  # @spec set_federated_factor(user :: User.t(), fedid :: Factor.FedId.t()) ::
+  #         {:ok, Factor.t()} | {:error, Ecto.Changeset.t()}
+  # def set_federated_factor(user, fedid) do
+  #   Factor.create(%{
+  #     name: fedid.provider.kid,
+  #     type: :federated,
+  #     fedtype: fedid.provider.type,
+  #     expires_at: get_expiration(fedid.provider.exp, :password),
+  #     user_id: user.id,
+  #     details: Map.from_struct(fedid.provider)
+  #   })
+  # end
 
   def drop_expired() do
     now = epoch_time(:second)
 
     # drop any non-password factors; password factors are cleaned when they
     # are changed (to keep a history)
-    from(f in Ident.Factor, where: f.expires_at < ^now and f.type != :password)
-    |> Ident.Factor.delete_all()
+    from(f in Factor, where: f.expires_at < ^now and f.type != :password)
+    |> Factor.delete_all()
   end
 
   def all_not_expired!(%User{id: user_id}) do
     now = epoch_time(:second)
 
-    from(f in Ident.Factor, where: f.user_id == ^user_id and f.expires_at > ^now)
-    |> Ident.Factor.all!()
+    from(f in Factor, where: f.user_id == ^user_id and f.expires_at > ^now)
+    |> Factor.all!()
   end
 
   def all_not_expired!(%User{} = user, type) when is_binary(type),
@@ -218,9 +193,9 @@ defmodule Rivet.Ident.Factor.Lib do
   def all_not_expired!(%User{id: user_id}, type) when is_atom(type) do
     now = epoch_time(:second)
 
-    from(f in Ident.Factor,
+    from(f in Factor,
       where: f.user_id == ^user_id and f.expires_at > ^now and f.type == ^type
     )
-    |> Ident.Factor.all!()
+    |> Factor.all!()
   end
 end

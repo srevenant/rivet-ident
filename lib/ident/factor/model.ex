@@ -51,18 +51,12 @@ defmodule Rivet.Ident.Factor do
     update: @update_fields,
     foreign_keys: [:user_id]
 
-  @impl Rivet.Ecto.Collection
-  def build(params) do
-    %__MODULE__{}
-    |> cast(params, @required_fields ++ @update_fields)
-    |> validate()
-    |> hash_password()
-  end
+  # always hash a password if it is provided...
+  def validate_post(chgset), do: hash_password(chgset)
 
-  def hash_password(changeset = %Ecto.Changeset{valid?: true, changes: %{password}}) do
-    put_change(changeset, :hash, Ident.Factor.Password.hash(password))
+  def hash_password(changeset = %Ecto.Changeset{valid?: true, changes: %{password}}),
+    do: put_change(changeset, :hash, Ident.Factor.Password.hash(password))
     # consider: delete password: token?
-  end
 
   def hash_password(changeset), do: changeset
 end

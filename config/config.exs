@@ -32,6 +32,7 @@ config :rivet_ident,
     google_client_id: "test-google-client"
   },
   password_history: 2,
+  access_domains: [global: 0],
   initial_password_expiration_days: 7,
   jwt_acc_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
   jwt_val_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],

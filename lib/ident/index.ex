@@ -8,20 +8,34 @@ defmodule Rivet.Ident do
   def critical_report_if_error(result, msg, opts \\ []),
     do: mailer_template(:critical_fail).report_if_error(result, msg, opts)
 
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
     org_model = Application.compile_env!(__CALLER__, :rivet, :org_model)
     repo = Application.compile_env!(__CALLER__, :rivet, :repo)
 
+    access_domains =
+      Application.compile_env!(__CALLER__, :rivet_ident, :access_domains)
+      # to/from map to assure its in kw format
+      |> Map.new()
+      |> Map.to_list()
+
     quote location: :keep do
-      alias Rivet.Ident
-      alias Rivet.Ident.{User, Handle, Email, Factor}
       # note: the reason for no alias Rivet.Auth is `Auth` can be a common
       # module name so to avoid external conflicts, it is excluded
+      alias Rivet.Ident
+      alias Rivet.Ident.{User, Handle, Email, Factor}
+
+      ## TODO: revise; this isn't going to work as the `use` here is still
+      ## internal to this app. we need something that points to the external
+      ## app configs
       alias unquote(org_model), as: Org
       alias unquote(repo), as: Repo
 
+      @access_domains unquote(access_domains)
+
       import Rivet.Guards
       import Rivet.Ident
+
+      import Rivet.Ecto.DefEnum
     end
   end
 end

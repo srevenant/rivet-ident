@@ -1,4 +1,5 @@
 defmodule Rivet.Ident.Factor.Cache do
+  # verified
   use Rivet.Utils.LazyCache
 
   @persist_for 600_000
@@ -7,7 +8,7 @@ defmodule Rivet.Ident.Factor.Cache do
   import Ecto.Query
 
   @doc """
-  Read-through cache for loading user factors from Ident.
+  Read-through cache for loading user factors from Db.
   """
   def get_user_factor(id) do
     case lookup(id) do
