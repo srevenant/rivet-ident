@@ -46,8 +46,10 @@ config :rivet_ident,
     api: 15 * 60,
     password: 2 * 86400
   },
-  access_domains: [global: 0],
-  user_code_types: [password_reset: 0, email_verify: 1, delete_request: 3],
+  defenums: [
+    {Rivet.Ident.Access.Domains, global: 0},
+    {Rivet.Ident.User.Code.Types, password_reset: 0, email_verify: 1, delete_request: 3}
+  ],
   extend_user: []
 
 config :rivet_ident, Rivet.Ident.Test.Repo,

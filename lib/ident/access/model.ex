@@ -3,8 +3,11 @@ defmodule Rivet.Ident.Access do
   use Rivet.Ecto.Model, id_type: :intid
   use Rivet.Ident
 
-  import Rivet.Ecto.DefEnum
-  defenum(Domains, @access_domains)
+  # configuration defined; see Rivet.Ident
+  alias __MODULE__.Domains
+
+  # import Rivet.Ecto.DefEnum
+  # defenum(Domains, @access_domains)
 
   typed_schema "ident_accesses" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
