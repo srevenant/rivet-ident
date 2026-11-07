@@ -1,11 +1,10 @@
 defmodule Rivet.Ident.Role do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
-  import Rivet.Ecto.DefEnum
 
   typed_schema "ident_roles" do
     field(:name, Rivet.Ecto.Atom)
-    field(:domain, Ident.Access.Domains, default: :global)
+    field(:domain, Rivet.Ident.Access.Domains, default: :global)
     field(:description, :string)
 
     many_to_many(:actions, Rivet.Ident.Action,

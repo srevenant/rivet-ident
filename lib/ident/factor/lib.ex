@@ -8,7 +8,6 @@ defmodule Rivet.Ident.Factor.Lib do
   use Rivet.Ecto.Collection.Context, model: Ident.Factor
   require Logger
   import Rivet.Utils.Time, only: [epoch_time: 1]
-  import Rivet.Guards
   import Rivet.Auth.Settings, only: [getcfg: 2]
   alias Ident.{Factor, User}
 
@@ -156,20 +155,20 @@ defmodule Rivet.Ident.Factor.Lib do
     end
   end
 
-  ### deprecated? Now we really just use ExtIdent, and this is largely ignored?
-  ### or is FedId still a thing...
-  # @spec set_federated_factor(user :: User.t(), fedid :: Factor.FedId.t()) ::
-  #         {:ok, Factor.t()} | {:error, Ecto.Changeset.t()}
-  # def set_federated_factor(user, fedid) do
-  #   Factor.create(%{
-  #     name: fedid.provider.kid,
-  #     type: :federated,
-  #     fedtype: fedid.provider.type,
-  #     expires_at: get_expiration(fedid.provider.exp, :password),
-  #     user_id: user.id,
-  #     details: Map.from_struct(fedid.provider)
-  #   })
-  # end
+  ## deprecated? Now we really just use ExtIdent, and this is largely ignored?
+  ## or is FedId still a thing...
+  @spec set_federated_factor(user :: User.t(), fedid :: Factor.FedId.t()) ::
+          {:ok, Factor.t()} | {:error, Ecto.Changeset.t()}
+  def set_federated_factor(user, fedid) do
+    Factor.create(%{
+      name: fedid.provider.kid,
+      type: :federated,
+      fedtype: fedid.provider.type,
+      expires_at: get_expiration(fedid.provider.exp, :password),
+      user_id: user.id,
+      details: Map.from_struct(fedid.provider)
+    })
+  end
 
   def drop_expired() do
     now = epoch_time(:second)

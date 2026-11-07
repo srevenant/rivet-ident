@@ -48,7 +48,7 @@ defmodule Rivet.Ident.User.Signup do
   # federated ID doesn't include %{secret} at all, this will work fine. See
   # Google/Local.signin modules for more.
   def good_password(%Auth.Domain{input: %{secret}} = auth) do
-    with {:error, error} <- Ident.Factor.Lib.strong_password(secret),
+    with {:error, error} <- Auth.Password.strong_password(secret),
          do: {:error, %{auth | error}}
   end
 

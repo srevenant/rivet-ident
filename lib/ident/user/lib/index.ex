@@ -183,7 +183,8 @@ defmodule Rivet.Ident.User.Lib do
     end)
   end
 
-  @delete_type User.Code.type!(:delete_request)
+  @delete_type :delete_request
+
   def delete_account(%User{} = user, code) when is_binary(code) do
     case User.Code.one(code: code, user_id: user.id) do
       {:ok, %{type: @delete_type} = code} ->

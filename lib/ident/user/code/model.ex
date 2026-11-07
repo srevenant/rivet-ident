@@ -5,7 +5,8 @@ defmodule Rivet.Ident.User.Code do
 
   import Rivet.Ecto.DefEnum
   # IO.inspect(@user_code_types)
-  defenum(Types, global: 0) # @user_code_types)
+  # @user_code_types)
+  defenum(Types, global: 0)
 
   typed_schema "user_codes" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

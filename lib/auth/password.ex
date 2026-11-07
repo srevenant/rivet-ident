@@ -15,7 +15,8 @@ defmodule Rivet.Auth.Password do
     |> User.Code.one()
   end
 
-  @reset_type User.Code.type!(:password_reset)
+  @reset_type :password_reset
+
   def change_password_code(%User.Code{type: @reset_type, user: %User{}} = code, new)
       when not_empty_str(new) do
     @repo.transact(fn ->
@@ -23,7 +24,7 @@ defmodule Rivet.Auth.Password do
       case get_locked(code.id) do
         {:ok, %User.Code{type: @reset_type, used: false} = fresh} ->
           if DateTime.after?(fresh.expires, DateTime.utc_now()) do
-            with {:ok, _} <- set_password(code.user, new),
+            with {:ok, _} <- Factor.Lib.set_password(code.user, new),
                  do: User.Code.update(fresh, %{used: true})
           else
             {:error, "Password reset code is expired"}
@@ -45,9 +46,14 @@ defmodule Rivet.Auth.Password do
   def change_password_matching(%User{} = user, current, new)
       when not_empty_str(new) and not_empty_str(current) do
     cond do
-      current == new -> {:error, "New password is the same as old"}
-      matching_password?(user, current) -> set_password(user, new) |> notify_pass_change(user)
-      true -> {:error, "Password change failure: current password mis-match"}
+      current == new ->
+        {:error, "New password is the same as old"}
+
+      matching_password?(user, current) ->
+        Factor.Lib.set_password(user, new) |> notify_pass_change(user)
+
+      true ->
+        {:error, "Password change failure: current password mis-match"}
     end
   end
 
