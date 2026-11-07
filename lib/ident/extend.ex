@@ -7,7 +7,7 @@ defmodule Rivet.Ecto.SchemaExtensions do
 
     for {kind, name, type, opts} <- fields do
       quote do
-        unquote(kind)(unquote(name), unquote(type), unquote(opts))
+        unquote(kind)(unquote(name), unquote(type), unquote(Macro.escape(opts)))
       end
     end
     |> then(fn declarations ->
