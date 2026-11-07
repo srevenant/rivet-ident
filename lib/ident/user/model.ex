@@ -3,7 +3,7 @@ defmodule Rivet.Ident.User do
   import Rivet.Ecto.DefEnum
   alias Rivet.Ident
   use Rivet.Ecto.Model
-  import Rivet.Ecto.SchemaExtensions
+  import Rivet.Ecto.ExtendFields
 
   defenum(Types,
     unknown: 0,
@@ -30,7 +30,6 @@ defmodule Rivet.Ident.User do
     field(:last_seen, :utc_datetime)
     has_many(:factors, Ident.Factor, on_delete: :delete_all)
     has_many(:accesses, Ident.Access, on_delete: :delete_all)
-    # has_many(:tags, Ident.TagUser, on_delete: :delete_all)
     has_many(:ext_ids, Ident.User.ExtId, on_delete: :delete_all)
     has_many(:codes, Ident.User.Code, on_delete: :delete_all)
 
