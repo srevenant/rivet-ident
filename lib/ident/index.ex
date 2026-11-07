@@ -8,17 +8,17 @@ defmodule Rivet.Ident do
   def critical_report_if_error(result, msg, opts \\ []),
     do: mailer_template(:critical_fail).report_if_error(result, msg, opts)
 
-  defp enum_list(key) do
+  defp enum_list(caller, key) do
     # to/from map to assure its in kw format
-    Application.compile_env!(__CALLER__, :rivet_ident, key) |> Map.new() |> Map.to_list()
+    Application.compile_env!(caller, :rivet_ident, key) |> Map.new() |> Map.to_list()
   end
 
   defmacro __using__(opts) do
     org_model = Application.compile_env!(__CALLER__, :rivet, :org_model)
     repo = Application.compile_env!(__CALLER__, :rivet, :repo)
 
-    access_domains = enum_list(:access_domains)
-    user_code_types = enum_list(:user_code_types)
+    access_domains = enum_list(__CALLER__, :access_domains)
+    user_code_types = enum_list(__CALLER__, :user_code_types)
 
     quote location: :keep do
       # note: the reason for no alias Rivet.Auth is `Auth` can be a common

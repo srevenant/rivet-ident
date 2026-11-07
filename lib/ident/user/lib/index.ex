@@ -56,7 +56,7 @@ defmodule Rivet.Ident.User.Lib do
   def all_since(time), do: User.all!(from(u in User, where: u.last_seen > ^time))
 
   ##############################################################################
-  def add_email(user, address, opts \\ %{}) do
+  def add_email(user, address, opts \\ %{}) when is_map(opts) do
     address = Email.Lib.clean_email(address)
 
     # basic
@@ -80,7 +80,6 @@ defmodule Rivet.Ident.User.Lib do
 
       {:error, :not_found} ->
         has_email? = Email.exists?(user_id: user.id)
-        opts = Map.new(opts)
 
         attrs = %{
           address,
@@ -115,7 +114,7 @@ defmodule Rivet.Ident.User.Lib do
     do:
       {:error,
        %Auth.Domain{
-         log: "Google signin failed: Attempted login on disabled account",
+         log: "Signin failed: Attempted login on disabled account",
          error: "Sorry, account is disabled"
        }}
 
@@ -125,13 +124,12 @@ defmodule Rivet.Ident.User.Lib do
   def check_user_status(_), do: {:error, "No user to verify"}
 
   ##############################################################################
-  def add_phone(user, phone) do
+  def add_phone(%User{id: user_id}, number) do
     # TODO: do an internal ph# validation
-    phone = String.trim(phone)
+    number = String.trim(number)
 
-    with {:error, :not_found} <- Ident.Phone.one(user_id: user.id, number: phone),
-         {:error, chgset} <- Ident.Phone.create(%{user_id: user.id, number: phone}),
-         do: {:error, Rivet.Ecto.Errors.convert_error_changeset(chgset)}
+    with {:error, :not_found} <- Ident.Phone.one(user_id: user_id, number: number),
+      do: Ident.Phone.create(%{user_id, number})
   end
 
   ##############################################################################
