@@ -36,7 +36,7 @@ defmodule Rivet.Ident do
       ## internal to this app. we need something that points to the external
       ## app configs
       alias unquote(org_model), as: Org
-      alias unquote(repo), as: Repo
+      @repo unquote(repo)
 
       # @access_domains unquote(access_domains)
       # @user_code_types unquote(user_code_types)

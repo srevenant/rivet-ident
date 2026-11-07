@@ -6,7 +6,7 @@ defmodule Rivet.Ident.Email.Lib do
 
   def has_verified?(%User{id}) do
     from(e in Email, where: e.user_id == ^id and e.verified)
-    |> Repo.exists?()
+    |> @repo.exists?()
   end
 
   def clean_email(eaddr) do

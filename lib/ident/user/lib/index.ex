@@ -175,7 +175,7 @@ defmodule Rivet.Ident.User.Lib do
 
         Enum.each(u.ext_ids, fn %{origin: o} ->
           from(i in Ident.User.ExtId, where: i.origin == ^o and i.user_id == ^u_id)
-          |> Repo.delete_all()
+          |> @repo.delete_all()
         end)
 
         {:ok, u}

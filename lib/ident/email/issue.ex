@@ -37,7 +37,7 @@ defmodule Rivet.Ident.Email.Issue do
   ##############################################################################
   def update_fail_status(email_id, status) do
     from(e in Email, where: e.id == ^email_id)
-    |> Repo.update_all(set: [status: status, verified: false])
+    |> @repo.update_all(set: [status: status, verified: false])
     |> case do
       {1, _} -> :ok
       other -> critical_report("Unexpected failure updating email status", result: other)
