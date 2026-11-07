@@ -1,7 +1,4 @@
 defmodule Rivet.Ident.Role.Map do
-  @moduledoc """
-  Schema for representing and working with a Ident.Role.Map.
-  """
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
   alias Rivet.Ident

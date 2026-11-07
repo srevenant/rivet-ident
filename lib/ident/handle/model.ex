@@ -1,7 +1,4 @@
 defmodule Rivet.Ident.Handle do
-  @moduledoc """
-  Schema for representing and working with a Handle.
-  """
   use TypedEctoSchema
   use Rivet.Ecto.Model
   alias Rivet.Ident

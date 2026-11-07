@@ -1,13 +1,10 @@
 defmodule Rivet.Ident.Access do
-  @moduledoc """
-  Schema for representing and working with a Ident.Access.
-  """
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
   use Rivet.Ident
-  import Rivet.Ecto.DefEnum
+  import Rivet.Ecto.DefAppEnum
 
-  defenum(Domains, @access_domains)
+  def_app_enum(Domains, :rivet_ident, :access_domains)
 
   typed_schema "ident_accesses" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

@@ -25,3 +25,7 @@ Add to your project's rivet migrations.exs:
 ```
 
 (note: look in `rivet_ident/priv/rivet/migrations` for more details).
+
+
+migrate notes for Cato
+- Role.type -> Role.domain (# and set domains)

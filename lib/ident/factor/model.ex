@@ -1,7 +1,4 @@
 defmodule Rivet.Ident.Factor do
-  @moduledoc """
-  Schema for representing and working with an AuthFactor.
-  """
   use TypedEctoSchema
   alias Rivet.Ident
   use Rivet.Ecto.Model, export_json: [:name, :expires_at, :value, :details]

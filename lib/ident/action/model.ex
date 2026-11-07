@@ -1,7 +1,4 @@
 defmodule Rivet.Ident.Action do
-  @moduledoc """
-  Schema for representing and working with a Ident.Action.
-  """
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
 

@@ -3,16 +3,10 @@ defmodule Rivet.Ident.Role do
   use Rivet.Ecto.Model, id_type: :intid
   import Rivet.Ecto.DefEnum
 
-  defenum(Type, global: 0, domain: 1, mixed: 2)
-
   typed_schema "ident_roles" do
     field(:name, Rivet.Ecto.Atom)
-    #########
-    ##L#L##
-    #
-#    field(:domain, Core.Db.Ident.Access.Domains, default: :global)
+    field(:domain, Ident.Access.Domains, default: :global)
     field(:description, :string)
-    field(:type, Type, default: :global)
 
     many_to_many(:actions, Rivet.Ident.Action,
       join_through: Rivet.Ident.Role.Map,
@@ -23,5 +17,5 @@ defmodule Rivet.Ident.Role do
   use Rivet.Ecto.Collection,
     not_found: :atom,
     required: [:name, :description],
-    update: [:description, :name, :type, :domain]
+    update: [:description, :name, :domain]
 end

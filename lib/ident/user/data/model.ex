@@ -1,7 +1,4 @@
 defmodule Rivet.Ident.User.Data do
-  @moduledoc """
-  Schema for representing and working with a Ident.User.Data.
-  """
   use TypedEctoSchema
   use Rivet.Ecto.Model
   import Rivet.Ecto.DefEnum
