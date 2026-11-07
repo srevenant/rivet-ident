@@ -32,8 +32,6 @@ config :rivet_ident,
     google_client_id: "test-google-client"
   },
   password_history: 2,
-  access_domains: [global: 0],
-  user_code_types: [password_reset: 0, email_verify: 1, delete_request: 3],
   initial_password_expiration_days: 7,
   jwt_acc_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
   jwt_val_secrets: ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
@@ -47,7 +45,10 @@ config :rivet_ident,
     acc: 60 * 60 * 24,
     api: 15 * 60,
     password: 2 * 86400
-  }
+  },
+  access_domains: [global: 0],
+  user_code_types: [password_reset: 0, email_verify: 1, delete_request: 3],
+  extend_user: []
 
 config :rivet_ident, Rivet.Ident.Test.Repo,
   migration_repo: Rivet.Ident.Test.Repo,

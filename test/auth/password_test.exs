@@ -15,6 +15,20 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
   @password "VFR$#EDCvfr43edc"
   @hashed Factor.Password.hash(@password)
 
+  test "strong_password" do
+    assert :ok = strong_password("<KO)(IJM,ko09ijm")
+    assert {:error, "Password is not long enough (greater than 8)"} = strong_password("boo")
+
+    assert {:error, "Password needs both upper and lower case characters"} =
+             strong_password("<ko)(ijm,ko09ijm")
+
+    assert {:error, "Password needs special characters (not alphanumeric)"} =
+             strong_password("KOIJMko09ijm")
+
+    assert {:error, "Password needs numbers"} = strong_password("<KO)(IJM,koijm")
+    assert {:error, "Password needs letters"} = strong_password("<)(,)(*&^%$#@><")
+  end
+
   test "load_password_factor" do
     user = insert(:ident_user)
 

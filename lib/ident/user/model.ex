@@ -3,6 +3,7 @@ defmodule Rivet.Ident.User do
   import Rivet.Ecto.DefEnum
   alias Rivet.Ident
   use Rivet.Ecto.Model
+  import Rivet.Ecto.SchemaExtensions
 
   defenum(Types,
     unknown: 0,
@@ -36,6 +37,9 @@ defmodule Rivet.Ident.User do
     field(:type, Types, default: :unknown)
     field(:authz, Rivet.Ecto.MapSet, default: nil, virtual: true)
     field(:state, :map, default: %{}, virtual: true)
+
+    extend_fields(:rivet_ident, :extend_user)
+
     timestamps()
   end
 

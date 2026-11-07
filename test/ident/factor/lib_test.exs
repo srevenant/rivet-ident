@@ -6,20 +6,6 @@ defmodule Rivet.Ident.Test.Ident.Factor.LibTest do
   import Rivet.Ident.Factor.Lib
   # alias Rivet.Ident.Factor.Lib
 
-  test "strong_password" do
-    assert :ok = strong_password("<KO)(IJM,ko09ijm")
-    assert {:error, "Password is not long enough (greater than 8)"} = strong_password("boo")
-
-    assert {:error, "Password needs both upper and lower case characters"} =
-             strong_password("<ko)(ijm,ko09ijm")
-
-    assert {:error, "Password needs special characters (not alphanumeric)"} =
-             strong_password("KOIJMko09ijm")
-
-    assert {:error, "Password needs numbers"} = strong_password("<KO)(IJM,koijm")
-    assert {:error, "Password needs letters"} = strong_password("<)(,)(*&^%$#@><")
-  end
-
   test "passwords expired after new is set" do
     user = insert(:ident_user)
 

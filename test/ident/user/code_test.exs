@@ -3,8 +3,8 @@ defmodule Rivet.Ident.Test.Ident.User.CodeTest do
   # use Rivet.Ident
   alias Rivet.Ident.User.Code
 
-  @email_verify Code.type!(:email_verify)
-  @delete_request Code.type!(:delete_request)
+  @email_verify :email_verify
+  @delete_request :delete_request
 
   test "model tests" do
     assert %Code{id} = insert(:ident_user_code)
@@ -13,11 +13,6 @@ defmodule Rivet.Ident.Test.Ident.User.CodeTest do
     params = params_with_assocs(:ident_user_code)
     assert {:ok, %Code{} = x} = Code.create(params)
     assert {:ok, _} = Code.delete(x)
-  end
-
-  test "type!" do
-    assert Code.type!(:password_reset) == :password_reset
-    assert_raise RuntimeError, fn -> Code.type!(:bad) end
   end
 
   ### requires :mailer; move to a supplementary Mailer lib
