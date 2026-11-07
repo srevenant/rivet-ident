@@ -6,13 +6,22 @@ defmodule Rivet.Ecto.SchemaExtensions do
     fields = Application.compile_env(__CALLER__, app, key, [])
 
     for {kind, name, type, opts} <- fields do
-      quote do
-        unquote(kind)(unquote(name), unquote(type), unquote(Macro.escape(opts)))
+      case kind do
+        :enum ->
+          quote do
+            defenum(unquote(type), unquote(Macro.escape(opts)))
+            field(unquote(name), unquote(type))
+          end
+
+        _ ->
+          quote do
+            unquote(kind)(unquote(name), unquote(type), unquote(Macro.escape(opts)))
+          end
       end
     end
     |> then(fn declarations ->
       quote do
-        unquote_splicing(declarations)
+        (unquote_splicing(declarations))
       end
     end)
   end
