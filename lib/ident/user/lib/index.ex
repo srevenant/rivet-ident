@@ -129,7 +129,7 @@ defmodule Rivet.Ident.User.Lib do
     number = String.trim(number)
 
     with {:error, :not_found} <- Ident.Phone.one(user_id: user_id, number: number),
-      do: Ident.Phone.create(%{user_id, number})
+         do: Ident.Phone.create(%{user_id, number})
   end
 
   ##############################################################################

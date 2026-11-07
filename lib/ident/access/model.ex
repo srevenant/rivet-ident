@@ -2,9 +2,9 @@ defmodule Rivet.Ident.Access do
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
   use Rivet.Ident
-  import Rivet.Ecto.DefAppEnum
 
-  def_app_enum(Domains, :rivet_ident, :access_domains)
+  import Rivet.Ecto.DefEnum
+  defenum(Domains, @access_domains)
 
   typed_schema "ident_accesses" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)

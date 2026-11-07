@@ -53,7 +53,8 @@ defmodule Rivet.Ident.Factor do
 
   def hash_password(changeset = %Ecto.Changeset{valid?: true, changes: %{password}}),
     do: put_change(changeset, :hash, Ident.Factor.Password.hash(password))
-    # consider: delete password: token?
+
+  # consider: delete password: token?
 
   def hash_password(changeset), do: changeset
 end

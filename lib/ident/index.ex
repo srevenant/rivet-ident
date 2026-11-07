@@ -13,7 +13,7 @@ defmodule Rivet.Ident do
     Application.compile_env!(caller, :rivet_ident, key) |> Map.new() |> Map.to_list()
   end
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     org_model = Application.compile_env!(__CALLER__, :rivet, :org_model)
     repo = Application.compile_env!(__CALLER__, :rivet, :repo)
 

@@ -53,7 +53,6 @@ defmodule Rivet.Auth.Password do
 
   def change_password_matching(_, _, _), do: {:error, :args}
 
-
   ##############################################################################
 
   defp notify_pass_change({:ok, _} = good, user) do
