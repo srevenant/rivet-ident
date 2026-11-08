@@ -1,4 +1,5 @@
 defmodule Rivet.Ident.Role.Map do
+  @moduledoc "see Rivet.Ident.Role for explanations on Access/Roles/Maps and users"
   use TypedEctoSchema
   use Rivet.Ecto.Model, id_type: :intid
   alias Rivet.Ident

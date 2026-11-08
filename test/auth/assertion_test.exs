@@ -29,13 +29,13 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
       # side-tap; while we're at it force a reload in Cache
       assert {:ok, %User{}} = Rivet.Auth.Cache.get_authz(user, force: true)
 
-
       admin = insert(:ident_user)
-      insert(:ident_role_map, 
+      assert {:ok, _} = Ident.Access.Lib.add(admin, role.name, nil)
 
+      # the action references a project mapping; but this user has global so fallback should still allow it
       assert {:ok, _} =
                check(
-                 user,
+                 admin,
                  action(action.name, domain: :project, ref_id: project_id, fallback: true)
                )
     end
@@ -46,7 +46,6 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
       assert {:ok, _} = Ident.Access.Lib.add(user, role.name, nil)
       assert {:ok, _} = web_check(user, action(action.name, domain: :global))
       assert {:error, _} = check(user, action(action.name, domain: :project, ref_id: project_id))
-
     end
   end
 end

@@ -20,6 +20,7 @@ defmodule Rivet.Ident.User.Update do
 
   defp update_scan([key | rest], args, target, opts) do
     update = args[key]
+    opts = Map.new(opts)
 
     if is_map(update) and map_size(update) > 0 do
       # I could do a single function stack, but I want to be able to have helper
@@ -161,47 +162,13 @@ defmodule Rivet.Ident.User.Update do
   def update_data(_, _, _, _), do: bad_args("data")
 
   ################################################################################
-  def update_role(action, %{id: role_id}, %User{} = u, opts) when is_integer(role_id) do
-    case opts[:auth] do
-      :admin ->
-        case Ident.Role.one(id: role_id) do
-          {:ok, %Ident.Role{} = role} ->
-            access = Ident.Access.one(user_id: u.id, role_id: role_id)
-            update_role_(action, access, role, u)
-
-          {:error, :not_found} ->
-            bad_args("role/missing")
-        end
-
-      _ ->
-        # Logger for unauthz?
-        bad_args("role/auth")
-    end
+  def update_role(action, %{id: role_id}, %User{} = u, %{auth: :admin})
+      when is_integer(role_id) do
+    with {:ok, _} <- Ident.Access.Lib.change(action, role_id, u, nil),
+         do: User.preload(u, [:accesses], force: true)
   end
 
   def update_role(_, _, _, _), do: bad_args("role")
-
-  #######
-  defp update_role_(:upsert, {:ok, _}, _, u), do: refresh(u, :accesses)
-
-  defp update_role_(:upsert, {:error, :not_found}, %{id: role_id}, %{id: user_id} = u) do
-    with {:ok, _} <- Ident.Access.upsert(%{role_id, user_id}),
-         :ok <- clear_auth_cache(user_id),
-         do: refresh(u, :accesses)
-  end
-
-  defp update_role_(:remove, {:ok, access}, _, u) do
-    with {:ok, _} <- Ident.Access.delete(access),
-         :ok <- clear_auth_cache(u.id),
-         do: refresh(u, :accesses)
-  end
-
-  defp update_role_(_, _, _, _), do: bad_args("role/args")
-
-  defp clear_auth_cache(user_id) do
-    Rivet.Auth.Cache.delete(user_id)
-    :ok
-  end
 
   ##############################################################################
   defp refresh(user, key), do: User.preload(user, key, force: true)

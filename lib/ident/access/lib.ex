@@ -44,77 +44,93 @@ defmodule Rivet.Ident.Access.Lib do
   end
 
   ##############################################################################
-  @spec add(User.t() | String.t(), atom(), String.t() | nil) ::
+  defguard is_role_key(role_key) when is_atom(role_key) or is_integer(role_key)
+
+  def valid_user_id(%User{id}), do: {:ok, id}
+  def valid_user_id(id) when is_uuid(id), do: {:ok, id}
+  def valid_user_id(_), do: {:error, "Invalid user or user id"}
+
+  ##############################################################################
+  @spec add(User.t() | String.t(), atom() | integer(), String.t() | nil) ::
           {:ok, Access.t()} | {:error, String.t()}
-  def add(user, role, ref_id \\ nil)
-
-  def add(%User{} = user, role, ref_id), do: add(user.id, role, ref_id)
-
-  def add(user_id, role, ref_id) when is_uuid(user_id) and is_atom(role) do
-    case Role.one(name: role) do
-      {:ok, %{domain, id: role_id}} ->
-        # ref_id might be nil, which throws off the Access.one
-        attrs = no_nils(%{role_id, user_id, domain, ref_id})
-
-        with {:error, :not_found} <- Access.one(Map.to_list(attrs)),
-             {:ok, _} = ok <- Access.create(attrs) do
-          Rivet.Auth.Cache.delete(user_id)
-          ok
-        end
-
-      _ ->
-        {:error, "cannot find role #{inspect(role)}"}
+  def add(user, role_key, ref_id \\ nil) when is_role_key(role_key) do
+    with {:ok, user_id} <- valid_user_id(user) do
+      case get_role(role_key) do
+        # giving it a ref_id of nil forces it :global
+        {:ok, %{id: role_id}} when is_nil(ref_id) -> add_(%{role_id, user_id, domain: :global})
+        {:ok, %{domain, id: role_id}} -> add_(%{role_id, user_id, domain, ref_id})
+        _ -> {:error, "Cannot find role=#{role_key}"}
+      end
     end
   end
 
-  defp no_nils(map), do: Transmogrify.transmogrify(map, no_nil_value: true)
+  # # # # # # #
+  defp add_(%{user_id} = attrs) do
+    with {:ok, _} = r <- Access.upsert(attrs), do: clear_auth_cache(user_id, r)
+  end
 
   ##############################################################################
   @spec drop(User.t(), atom() | nil, String.t() | nil) ::
-          {:ok, Access.t()} | {:error, String.t()}
+          {:ok, deleted_count :: integer()} | {:error, String.t()}
 
-  def drop(%User{id: user_id}, role_atom, ref_id \\ nil) when is_atom(role_atom) do
-    case Role.one(name: role_atom) do
-      {:ok, %{domain, id: role_id}} ->
-        attrs = no_nils(%{role_id, user_id, domain, ref_id}) |> Map.to_list()
+  def drop(user, role_key, ref_id \\ nil) when is_role_key(role_key) do
+    with {:ok, user_id} <- valid_user_id(user) do
+      case get_role(role_key) do
+        {:ok, %{id: role_id}} when is_nil(ref_id) ->
+          delete_access(user_id, role_id, :global)
 
-        case Access.one(attrs) do
-          {:ok, access} -> delete_all(access)
-          _ -> {:error, "cannot find access link"}
-        end
+        {:ok, %{domain, id: role_id}} ->
+          with {:ok, c1} <- delete_access(user_id, role_id, :global),
+               {:ok, c2} <- delete_access(user_id, role_id, domain, ref_id),
+               do: {:ok, c1 + c2}
 
-      {:error, _} ->
-        {:error, "cannot find role #{role_atom}"}
+        {:error, _} ->
+          {:error, "cannot find role=#{role_key}"}
+      end
     end
   end
 
-  ##############################################################################
-  # /3
-  def delete_all(user_id, domain, ref_id),
-    do: delete_all_(user_id, domain: domain, ref_id: ref_id)
+  # # # # # # # # #
+  def delete_access(user_id, role_id, domain, ref_id \\ nil)
 
-  # /1
-  def delete_all(user_id) when is_uuid(user_id),
-    do: delete_all_(user_id, [])
+  def delete_access(user_id, role_id, :global, nil),
+    do: delete_all(user_id, role_id: role_id, domain: :global)
 
-  # TBD if needed
-  # def delete_all(%Access{user_id, domain, ref_id: nil}),
-  #   do: delete_all_(user_id, domain: domain)
-  #
-  # def delete_all(%Access{user_id, domain, ref_id}),
-  #   do: delete_all_(user_id, domain: domain, ref_id: ref_id)
+  def delete_access(user_id, role_id, domain, ref_id) when is_uuid(ref_id),
+    do: delete_all(user_id, role_id: role_id, domain: domain, ref_id: ref_id)
 
-  defp delete_all_(user_id, and_more) when is_list(and_more) do
-    with {x, _} <- Access.delete_all([user_id: user_id] ++ and_more) do
-      Rivet.Auth.Cache.delete(user_id)
-      {:ok, x}
-    end
+  # # # # # # # #
+  def delete_all(user_id, and_more \\ []) when is_list(and_more) do
+    with {x, _} <- Access.delete_all([user_id: user_id] ++ and_more),
+         do: clear_auth_cache(user_id, {:ok, x})
   end
 
   ##############################################################################
-  def delete_user_domain(user_id, domain, ref_id),
-    do: Access.delete_all(user_id: user_id, domain: domain, ref_id: ref_id)
+  defp get_role(role_id) when is_integer(role_id), do: Ident.Role.one(id: role_id)
+  defp get_role(role_name) when is_atom(role_name), do: Ident.Role.one(name: role_name)
 
-  def delete_user_access(user_id),
-    do: Access.delete_all(from(a in Access, where: a.user_id == ^user_id))
+  ##############################################################################
+  @doc """
+
+  change/4 is a helper to simplify front-end API calls
+
+  """
+  def change(action, key, user, ref_id) when is_role_key(key) do
+    with {:ok, user_id} <- valid_user_id(user), do: change_(action, key, user_id, ref_id)
+  end
+
+  # # # # # # # #
+  defp change_(:upsert, role_key, user_id, ref_id) do
+    with {:ok, _} = r <- add(user_id, role_key, ref_id), do: clear_auth_cache(user_id, r)
+  end
+
+  defp change_(:remove, role_key, user_id, ref_id) do
+    with {:ok, _} = r <- drop(user_id, role_key, ref_id), do: clear_auth_cache(user_id, r)
+  end
+
+  ##############################################################################
+  defp clear_auth_cache(user_id, return) do
+    Rivet.Auth.Cache.delete(user_id)
+    return
+  end
 end

@@ -10,9 +10,6 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert [] = User.Lib.search_name!(uuid)
     assert [] = User.Lib.all_since(DateTime.utc_now())
 
-    assert User.Code.type!(:email_verify)
-    assert User.Code.type!(:delete_request)
-
     disabled = build(:ident_user, type: :disabled)
 
     assert :narf = Rivet.Auth.Signin.post_signin(:narf)

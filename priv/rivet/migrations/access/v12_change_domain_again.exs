@@ -20,5 +20,11 @@ defmodule Rivet.Ident.Access.Migrations.V12ChangeDomainAgain do
     alter table(:ident_accesses) do
       modify(:domain, :smallint, default: 0)
     end
+
+    drop(index(:ident_accesses, [], name: :accesses_unique_index))
+
+    create(
+      unique_index(:ident_accesses, [:user_id, :role_id, :domain, :ref_id], nulls_distinct: false)
+    )
   end
 end

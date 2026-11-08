@@ -2,34 +2,52 @@ defmodule Rivet.Ident.Test.Ident.Access.ModelTest do
   use Rivet.Ident.Support.Case, async: true
   alias Rivet.Ident.Access
   alias Access.Lib
+  # for the macro
+  require Access.Lib
 
   test "model tests" do
-    assert %Access{id} = insert(:ident_access)
-    assert is_integer(id)
-    assert %Access{id: ^id} = Access.one!(id: id)
-    params = params_with_assocs(:ident_access)
-    assert {:ok, %Access{} = x} = Access.create(params)
-    assert {:ok, _} = Access.delete(x)
+    %{role_id, user_id, domain: :global} = params = params_with_assocs(:ident_access)
+    assert {:ok, %Access{}} = Access.create(params)
+    assert {1, nil} = Access.delete_all(user_id: user_id, role_id: role_id, domain: :global)
+  end
+
+  test "coverage" do
+    uuid = Ecto.UUID.generate()
+
+    assert Lib.is_role_key(1)
+    assert Lib.is_role_key(:atom)
+    refute Lib.is_role_key(uuid)
+
+    assert {:ok, ^uuid} = Lib.valid_user_id(uuid)
+    assert {:error, "Invalid user or user id"} = Lib.valid_user_id(1)
   end
 
   describe "Lib" do
     setup do
       user = insert(:ident_user)
-      role = insert(:ident_role)
-      action = insert(:ident_action)
+      role = insert(:ident_role, domain: :project)
+
       ref1 = Ecto.UUID.generate()
       ref2 = Ecto.UUID.generate()
-      {:ok, %{user, role, action, ref1, ref2}}
+      {:ok, %{user, role, ref1, ref2}}
     end
 
-    test "add and get_actions", %{user, role, action, ref1, ref2} do
+    test "add and get_actions", %{user, role, ref1, ref2} do
+      action = %{name: action_name} = insert(:ident_action)
+
       insert(:ident_role_map, role: role, action: action)
 
+      assert [] = Lib.action_strings!(user, role.domain, ref1)
+
       # good add
-      assert {:ok, _} = Lib.add(user, role.name, :project, ref1)
-      assert {:ok, _} = Lib.add(user, role.name, :project, ref2)
+      assert {:ok, %Access{}} = Lib.add(user, role.name, ref1)
+      assert {:ok, %Access{}} = Lib.add(user, role.name, ref2)
+
+      action_name = to_string(action_name)
+      assert [^action_name] = Lib.action_strings!(user, role.domain, ref1)
+
       # bad add
-      assert {:error, _} = Lib.add(user, :nope, :project, ref2)
+      assert {:error, _} = Lib.add(user, :nope, ref2)
 
       # get_actions
       assert MapSet.new([{action.name, :project, ref1}]) == Lib.get_actions(user, :project, ref1)
@@ -38,44 +56,39 @@ defmodule Rivet.Ident.Test.Ident.Access.ModelTest do
       assert MapSet.size(Lib.get_actions(user)) == 2
     end
 
-    test "drop", %{user, role, ref1} do
-      assert {:ok, access} = Lib.add(user, role.name, :project, ref1)
-      assert {:ok, %Access{}} = Lib.drop(user, role.name, :project, ref1)
-      assert {:error, :not_found} = Access.one(id: access.id)
-      assert {:error, "cannot find access link"} = Lib.drop(user, role.name, :project, ref1)
+    test "change and drop", %{user, role, ref1, ref2} do
+      role2 = insert(:ident_role)
 
-      assert {:error, "cannot find role definitely_missing_role"} =
-               Lib.drop(user, :definitely_missing_role)
-    end
+      # project1
+      assert {:ok, %Access{}} = Lib.add(user, role.name, ref1)
+      # project2
+      assert {:ok, %Access{}} = Lib.add(user, role.name, ref2)
+      # a global one
+      assert {:ok, %Access{}} = Lib.change(:upsert, role2.id, user, nil)
 
-    test "delete_user_domain removes only matching access", %{user, role, ref1, ref2} do
-      other = insert(:ident_user)
+      # before delete we have 3 (we'd use count!, but it aggregates by :id)
+      assert [_, _, _] = Access.all!(user_id: user.id)
 
-      {:ok, a1} = Lib.add(user, role.name, :project, ref1)
-      {:ok, a2} = Lib.add(user, role.name, :project, ref2)
-      {:ok, a3} = Lib.add(user, role.name, :global)
-      {:ok, a4} = Lib.add(other, role.name, :project, ref1)
+      assert {:ok, 1} = Lib.drop(user, role.name, ref1)
 
-      Lib.delete_user_domain(user.id, :project, ref1)
+      # will delete nothing, but exercises change
+      assert {:ok, 0} = Lib.change(:remove, role.name, user, ref1)
 
-      assert {:error, :not_found} = Access.one(id: a1.id)
-      assert {:ok, _} = Access.one(id: a2.id)
-      assert {:ok, _} = Access.one(id: a3.id)
-      assert {:ok, _} = Access.one(id: a4.id)
-    end
+      # and after delete we still have our other 2
+      assert [_, _] = Access.all!(user_id: user.id)
 
-    test "delete_user_access removes all access for one user", %{user, role} do
-      other = insert(:ident_user)
+      # drop global
+      assert {:ok, 1} = Lib.drop(user, role2.id)
 
-      {:ok, a1} = Lib.add(user, role.name, :global)
-      {:ok, a2} = Lib.add(user, role.name, :project, Ecto.UUID.generate())
-      {:ok, a3} = Lib.add(other, role.name, :global)
+      assert [_] = Access.all!(user_id: user.id)
 
-      Lib.delete_user_access(user.id)
+      assert {:error, :not_found} =
+               Access.one(user_id: user.id, role_id: role.id, domain: role.domain, ref_id: ref1)
 
-      assert {:error, :not_found} = Access.one(id: a1.id)
-      assert {:error, :not_found} = Access.one(id: a2.id)
-      assert {:ok, _} = Access.one(id: a3.id)
+      assert {:error, "cannot find role=no_such_role"} = Lib.drop(user, :no_such_role)
+
+      assert {:ok, 1} = Lib.delete_access(user.id, role.id, role.domain, ref2)
+      assert [] = Access.all!(user_id: user.id)
     end
   end
 end

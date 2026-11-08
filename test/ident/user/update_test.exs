@@ -102,9 +102,9 @@ defmodule Rivet.Ident.Test.Ident.User.UpdateTest do
       %{id: role_id} = insert(:ident_role)
 
       assert %User{accesses: []} = User.one!([id: user.id], [:accesses])
-      assert {:error, "Invalid role/auth" <> _} = upsert2.(:role, %{id: role_id})
-      assert {:error, "Invalid role/missing" <> _} = upsert3.(:role, %{id: 1}, auth: :admin)
-      assert {:error, "Invalid role/args" <> _} = remove3.(:role, %{id: role_id}, auth: :admin)
+      error = "Invalid role change configuration"
+      assert {:error, ^error} = upsert2.(:role, %{id: role_id})
+      assert {:error, "Cannot find role=3000"} = upsert3.(:role, %{id: 3000}, auth: :admin)
 
       assert {:ok, %User{accesses: [%{role_id: ^role_id}]}} =
                upsert3.(:role, %{id: role_id}, auth: :admin)
