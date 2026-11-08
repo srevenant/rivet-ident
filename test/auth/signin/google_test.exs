@@ -160,10 +160,10 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
     assert {:ok, _} = User.update(user, %{type: :disabled})
     add_ext_id(user, payload)
 
-    assert_authfail(
-      "Attempted login on disabled account",
-      "Sorry, account is disabled",
-      fn -> check_google(payload) end
-    )
+    assert {:error,
+            %Auth.Domain{
+              log: "Signin failed: Attempted login on disabled account",
+              error: "Sorry, account is disabled"
+            }} = check_google(payload)
   end
 end

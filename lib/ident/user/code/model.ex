@@ -3,12 +3,10 @@ defmodule Rivet.Ident.User.Code do
   use Rivet.Ecto.Model, id_type: :intid
   use Rivet.Ident
 
-  # configuration defined; see Rivet.Ident
-  alias __MODULE__.Types
-
   typed_schema "user_codes" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
-    field(:type, Types)
+    # configuration defined; see Rivet.Ident
+    field(:type, __MODULE__.Types)
     field(:code, :string)
     field(:used, :boolean)
     field(:meta, :map, default: %{})

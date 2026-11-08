@@ -1,10 +1,7 @@
 defmodule Rivet.Ident.Email do
   use TypedEctoSchema
   use Rivet.Ecto.Model
-  import Rivet.Ecto.DefEnum
   use Rivet.Ident
-
-  defenum(Status, pending: 0, verified: 1, bouncing: 2, complaint: 3, rejected: 4)
 
   def sendable?(status) when status in [:pending, :verified], do: true
   def sendable?(_), do: false
@@ -15,7 +12,8 @@ defmodule Rivet.Ident.Email do
     field(:address, :string)
     field(:primary, :boolean, default: false)
     field(:verified, :boolean, default: false)
-    field(:status, Status, default: :pending)
+    # configuration defined; see Rivet.Ident
+    field(:status, __MODULE__.Status, default: :pending)
     timestamps()
   end
 

@@ -46,7 +46,7 @@ defmodule Rivet.Ident.MixProject do
   defp aliases do
     [
       "ecto.setup": ["ecto.create", "rivet migrate", "ecto.migrate"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "ecto.reset": ["ecto.drop --force-drop -f", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
       # keystrokes of life
       c: ["compile"]

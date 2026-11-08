@@ -1,5 +1,5 @@
 defmodule Rivet.Ident.Access.Lib do
-  alias Rivet.Ident.{Access, Role}
+  alias Rivet.Ident.{Access, Role, Action}
   use Rivet.Ecto.Collection.Context, model: Access
   use Rivet.Ident
 

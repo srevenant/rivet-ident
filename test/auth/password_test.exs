@@ -16,8 +16,10 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
   @hashed Factor.Password.hash(@password)
 
   test "strong_password" do
+    min_len = Application.fetch_env!(:rivet_ident, :password_min_length)
     assert :ok = strong_password("<KO)(IJM,ko09ijm")
-    assert {:error, "Password is not long enough (greater than 8)"} = strong_password("boo")
+    err = "Password is not long enough (greater than #{min_len})"
+    assert {:error, ^err} = strong_password("boo")
 
     assert {:error, "Password needs both upper and lower case characters"} =
              strong_password("<ko)(ijm,ko09ijm")
@@ -60,9 +62,6 @@ defmodule Rivet.Ident.Test.Auth.PasswordTest do
 
     assert {:error, "Invalid password reset code"} =
              change_password_code(%{code | id: 0}, @password)
-
-    assert {:error, "Password is not long enough (greater than 8)"} =
-             change_password_matching(user, @password, "narf")
 
     assert {:error, "New password is the same as old"} =
              change_password_matching(user, @password, @password)

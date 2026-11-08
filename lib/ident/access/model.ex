@@ -1,15 +1,13 @@
 defmodule Rivet.Ident.Access do
   use TypedEctoSchema
-  use Rivet.Ecto.Model, id_type: :intid
+  use Rivet.Ecto.Model, id_type: :none
   use Rivet.Ident
-
-  # configuration defined; see Rivet.Ident
-  alias __MODULE__.Domains
 
   typed_schema "ident_accesses" do
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     belongs_to(:role, Ident.Role, foreign_key: :role_id)
-    field(:domain, Domains, default: :global)
+    # configuration defined; see Rivet.Ident
+    field(:domain, __MODULE__.Domains, default: :global)
     field(:ref_id, :binary_id)
   end
 

@@ -13,32 +13,40 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
 
   describe "Check" do
     setup do
-      %{role, action} = insert(:ident_role_map)
-
       project_id = Ecto.UUID.generate()
       user = insert(:ident_user)
-      {:ok, %{role, action, user, project_id}}
+      {:ok, %{user, project_id}}
     end
 
-    test "scoped", %{action, user, role, project_id} do
-      assert {:ok, _} = Ident.Access.Lib.add(user, role.name, :project, project_id)
+    test "scoped", %{user, project_id} do
+      role = insert(:ident_role, domain: :project)
+      %{role, action} = insert(:ident_role_map, role: role)
+      assert {:ok, _} = Ident.Access.Lib.add(user, role.name, project_id)
+
       assert {:ok, _} = check(user, action(action.name, domain: :project, ref_id: project_id))
       assert {:error, _} = web_check(user, action(action.name, domain: :global))
 
       # side-tap; while we're at it force a reload in Cache
       assert {:ok, %User{}} = Rivet.Auth.Cache.get_authz(user, force: true)
-    end
 
-    test "global", %{action, user, role, project_id} do
-      assert {:ok, _} = Ident.Access.Lib.add(user, role.name, :global, nil)
-      assert {:ok, _} = web_check(user, action(action.name, domain: :global))
-      assert {:error, _} = check(user, action(action.name, domain: :project, ref_id: project_id))
+
+      admin = insert(:ident_user)
+      insert(:ident_role_map, 
 
       assert {:ok, _} =
                check(
                  user,
                  action(action.name, domain: :project, ref_id: project_id, fallback: true)
                )
+    end
+
+    test "global", %{user, project_id} do
+      # default role is global
+      %{role, action} = insert(:ident_role_map)
+      assert {:ok, _} = Ident.Access.Lib.add(user, role.name, nil)
+      assert {:ok, _} = web_check(user, action(action.name, domain: :global))
+      assert {:error, _} = check(user, action(action.name, domain: :project, ref_id: project_id))
+
     end
   end
 end
