@@ -28,9 +28,10 @@ defmodule Rivet.Ident do
 
     quote location: :keep do
       # note: the reason for no alias Rivet.Auth is `Auth` can be a common
-      # module name so to avoid external conflicts, it is excluded
+      # module name so to avoid external conflicts, it is excluded. Similarly
+      # "Access" conflicts with the build-in module.
       alias Rivet.Ident
-      alias Rivet.Ident.{User, Handle, Email, Factor, Access}
+      alias Rivet.Ident.{User, Handle, Email, Factor}
 
       ## TODO: revise; this isn't going to work as the `use` here is still
       ## internal to this app. we need something that points to the external
