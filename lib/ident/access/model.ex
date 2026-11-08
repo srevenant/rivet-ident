@@ -17,4 +17,7 @@ defmodule Rivet.Ident.Access do
     required: [:user_id, :role_id],
     update: [:domain, :ref_id],
     unique: [:role_id, [:user_id, :role_id, :domain, :ref_id]]
+
+  defdelegate add(a, b, c), to: Access.Lib
+  defdelegate drop(a, b, c), to: Access.Lib
 end
