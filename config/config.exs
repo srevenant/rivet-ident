@@ -17,12 +17,12 @@ config :rivet,
   handle_model: Rivet.Ident.Handle,
   test: true,
   mailer_templates: %{
-    critical_fail: Rivet.Ident.Fixtures.NullTemplate,
-    system_error: Rivet.Ident.Fixtures.NullTemplate,
-    password_changed: Rivet.Ident.Fixtures.NullTemplate,
-    password_reset: Rivet.Ident.Fixtures.NullTemplate,
-    user_failed_change: Rivet.Ident.Fixtures.NullTemplate,
-    user_verification: Rivet.Ident.Fixtures.NullTemplate
+    critical_fail: Rivet.Ident.Test.Fixtures.NullTemplate,
+    system_error: Rivet.Ident.Test.Fixtures.NullTemplate,
+    password_changed: Rivet.Ident.Test.Fixtures.NullTemplate,
+    password_reset: Rivet.Ident.Test.Fixtures.NullTemplate,
+    user_failed_change: Rivet.Ident.Test.Fixtures.NullTemplate,
+    user_verification: Rivet.Ident.Test.Fixtures.NullTemplate
   }
 
 config :rivet_ident,
