@@ -38,16 +38,16 @@ defmodule Rivet.Auth.Assertion do
 
   """
 
-  def check(%User{} = u, %Assertion{} = a, opts \\ []),
-    do: check_(u, a, opts)
+  def check_authz(%User{} = u, %Assertion{} = a, opts \\ []),
+    do: check_authz_(u, a, opts)
 
   ####
-  defp check_(user, %{action, domain: :global}, opts) do
+  defp check_authz_(user, %{action, domain: :global}, opts) do
     with {:ok, user} <- Rivet.Auth.Cache.get_authz(user, opts),
          do: check_domain_(user, action, :global, nil)
   end
 
-  defp check_(user, %{action, domain, ref_id, fallback}, opts) do
+  defp check_authz_(user, %{action, domain, ref_id, fallback}, opts) do
     with {:ok, user} <- Rivet.Auth.Cache.get_authz(user, opts),
          {:error, user} <- check_domain_(user, action, domain, ref_id) do
       if fallback,
@@ -64,8 +64,8 @@ defmodule Rivet.Auth.Assertion do
   end
 
   ##############################################################################
-  def web_check(user, assertion, method \\ nil, kwlog \\ []) do
-    with {:ok, user} <- check(user, assertion) do
+  def web_check_authz(user, assertion, method \\ nil, kwlog \\ []) do
+    with {:ok, user} <- check_authz(user, assertion) do
       graphql_log(method, kwlog)
       {:ok, user}
     else

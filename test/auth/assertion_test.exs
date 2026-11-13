@@ -23,8 +23,8 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
       %{role, action} = insert(:ident_role_map, role: role)
       assert {:ok, _} = Ident.Access.Lib.add(user, role.name, project_id)
 
-      assert {:ok, _} = check(user, action(action.name, domain: :project, ref_id: project_id))
-      assert {:error, _} = web_check(user, action(action.name, domain: :global))
+      assert {:ok, _} = check_authz(user, action(action.name, domain: :project, ref_id: project_id))
+      assert {:error, _} = web_check_authz(user, action(action.name, domain: :global))
 
       # side-tap; while we're at it force a reload in Cache
       assert {:ok, %User{}} = Rivet.Auth.Cache.get_authz(user, force: true)
@@ -34,7 +34,7 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
 
       # the action references a project mapping; but this user has global so fallback should still allow it
       assert {:ok, _} =
-               check(
+               check_authz(
                  admin,
                  action(action.name, domain: :project, ref_id: project_id, fallback: true)
                )
@@ -44,8 +44,8 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
       # default role is global
       %{role, action} = insert(:ident_role_map)
       assert {:ok, _} = Ident.Access.Lib.add(user, role.name, nil)
-      assert {:ok, _} = web_check(user, action(action.name, domain: :global))
-      assert {:error, _} = check(user, action(action.name, domain: :project, ref_id: project_id))
+      assert {:ok, _} = web_check_authz(user, action(action.name, domain: :global))
+      assert {:error, _} = check_authz(user, action(action.name, domain: :project, ref_id: project_id))
     end
   end
 end
