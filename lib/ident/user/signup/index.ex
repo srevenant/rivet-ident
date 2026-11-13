@@ -27,7 +27,7 @@ defmodule Rivet.Ident.User.Signup do
   end
 
   # DRYing out some things
-  defp new_user(%Auth.Domain{} = auth, type, opts) do
+  def new_user(%Auth.Domain{} = auth, type, opts) do
     with {:ok, %Auth.Domain{} = auth} <- create_user(auth, type),
          {:ok, %Auth.Domain{} = auth} <- associate_email(auth, opts),
          do: add_handle(auth)
@@ -92,40 +92,6 @@ defmodule Rivet.Ident.User.Signup do
     end
   end
 
-  ##############################################################################
-  # def get_site_(uuid) when is_uuid(uuid) do
-  #   with {:error, :not_found} <- Core.Db.Site.one(id: uuid),
-  #        do: Core.Db.Site.one(domain: uuid)
-  # end
-  #
-  # def get_site_(domain), do: Core.Db.Site.one(domain: domain)
-  #
-  # def signup_create_with_email(site_ref, eaddr, opts \\ %{}) do
-  #   case get_site_(site_ref) do
-  #     {:ok, %Core.Db.Site{} = site} ->
-  #       %Auth.Domain{
-  #         hostname: site.domain,
-  #         input: %{
-  #           email: %{address: eaddr, verified: false}
-  #         },
-  #         site: site
-  #       }
-  #       |> new_user(:identity, opts)
-  #       |> case do
-  #         {:ok, %{email: %Db.Ident.Email{} = email}} -> {:ok, email}
-  #         {:error, _, {inner, outer}} -> {:error, inner, outer}
-  #       end
-  #
-  #     {:error, _} ->
-  #       {:error, "Unable to find site matching: `#{site_ref}`"}
-  #   end
-  # end
-  # when eaddr does not exist
-  #
-  # def signup_create_with_email(address, site, opts \\ %{}) do
-  #   auth = %Auth.Domain{site, hostname: site.domain, input: %{email: %{address, verified: false}}}
-  #   signup(auth, :identity, opts)
-  # end
 
   # ##############################################################################
   # # result is any as we ignore it
