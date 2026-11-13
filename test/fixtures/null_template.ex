@@ -1,4 +1,4 @@
-defmodule Rivet.Ident.Test.NullTemplate do
+defmodule Rivet.Ident.Fixtures.NullTemplate do
   @moduledoc """
 
   This is a "look ahead" type module, since we are in a circular dependency
