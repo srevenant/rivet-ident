@@ -64,7 +64,12 @@ defmodule Rivet.Auth.Assertion do
   end
 
   ##############################################################################
-  def web_check_authz(user, assertion, method \\ nil, kwlog \\ []) do
+  def web_check_authz(user, assertion, method \\ nil, kwlog \\ [])
+
+  def web_check_authz(%{context: %{user: %User{} = user}}, assertion, method, kwlog),
+    do: web_check_authz(user, assertion, method, kwlog)
+
+  def web_check_authz(user, assertion, method, kwlog) do
     with {:ok, user} <- check_authz(user, assertion) do
       graphql_log(method, kwlog)
       {:ok, user}
