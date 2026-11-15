@@ -27,7 +27,7 @@ defmodule Rivet.Auth.Password do
     @repo.transact(fn ->
       # User.Code.one(id: code.id) do
       case get_code_locked(code, user) do
-        {:ok, %User.Code{user: %Db.User{} = user, type: @reset_type, used: false} = fresh} ->
+        {:ok, %User.Code{user: %User{} = user, type: @reset_type, used: false} = fresh} ->
           if DateTime.after?(fresh.expires, DateTime.utc_now()) do
             with {:ok, _} <- Factor.Lib.set_password(user, new),
                  {:ok, _} <- User.Code.update(fresh, %{used: true}),
