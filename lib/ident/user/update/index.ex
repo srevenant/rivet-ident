@@ -16,11 +16,10 @@ defmodule Rivet.Ident.User.Update do
 
   @changeable [:user, :email, :data, :handle, :phone, :role]
   def update(args, %User{} = target, opts \\ []),
-    do: update_scan(@changeable, args, target, opts)
+    do: update_scan(@changeable, args, target, Map.new(opts))
 
   defp update_scan([key | rest], args, target, opts) do
     update = args[key]
-    opts = Map.new(opts)
 
     if is_map(update) and map_size(update) > 0 do
       # I could do a single function stack, but I want to be able to have helper

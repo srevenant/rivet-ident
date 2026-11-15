@@ -37,13 +37,6 @@ defmodule Rivet.Ident.User.Signup do
   defp dispatch_email({:ok, %Auth.Domain{user}}, false), do: User.Lib.send_verify_email(user)
   defp dispatch_email(_, _), do: :ok
 
-  # def signup_from_email(address, opts \\ []) do
-  #   preload = Keyword.get(opts, :preload, [:user])
-  #
-  #   with {:error, _} <- Email.one([address: address], preload),
-  #        do: signup_create_with_email(address, opts)
-  # end
-
   ##############################################################################
   # federated ID doesn't include %{secret} at all, this will work fine. See
   # Google/Local.signin modules for more.
@@ -91,16 +84,6 @@ defmodule Rivet.Ident.User.Signup do
       {:error, e} -> error(auth, e)
     end
   end
-
-  # ##############################################################################
-  # # result is any as we ignore it
-  # ### todo: flip to transaction
-  # @spec signup_abort_create(Auth.Domain.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  # defp signup_abort_create(auth) do
-  #   if not is_nil(auth.user) do
-  #     User.delete(auth.user)
-  #   end
-  # end
 
   ##############################################################################
   # set password
