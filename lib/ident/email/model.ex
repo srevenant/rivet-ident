@@ -21,7 +21,6 @@ defmodule Rivet.Ident.Email do
   use Rivet.Ecto.Collection,
     not_found: :atom,
     required: @required_fields,
-    foreign_keys: [:issue_id],
     update: [:address, :primary, :verified, :status]
 
   def validate(chgset) do
