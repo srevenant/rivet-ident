@@ -9,23 +9,29 @@ defmodule Rivet.Auth.Password do
   alias Rivet.Auth
 
   ##############################################################################
-  # Lock the row until this transaction finishes to avoid concurrent attempts
-  defp get_locked(code_id) do
+  # Lock the row until this transaction finishes to avoid concurrent attempts.
+  # user is nil when signed out, if they are signed in it must match
+  defp get_code_locked(code_id, nil) do
     from(c in User.Code, where: c.id == ^code_id, lock: "FOR UPDATE")
-    |> User.Code.one()
+    |> User.Code.one(preload: [:user])
+  end
+
+  defp get_code_locked(code_id, %User{id: user_id}) do
+    from(c in User.Code, where: c.id == ^code_id and c.user_id == ^user_id, lock: "FOR UPDATE")
+    |> User.Code.one(preload: [:user])
   end
 
   @reset_type :password_reset
 
-  def change_password_code(%User.Code{type: @reset_type, user: %User{}} = code, new)
-      when not_empty_str(new) do
+  def change_password_code(user, code, new) when not_empty_str(code) and not_empty_str(new) do
     @repo.transact(fn ->
       # User.Code.one(id: code.id) do
-      case get_locked(code.id) do
-        {:ok, %User.Code{type: @reset_type, used: false} = fresh} ->
+      case get_code_locked(code, user) do
+        {:ok, %User.Code{user: %Db.User{} = user, type: @reset_type, used: false} = fresh} ->
           if DateTime.after?(fresh.expires, DateTime.utc_now()) do
-            with {:ok, _} <- Factor.Lib.set_password(code.user, new),
-                 do: User.Code.update(fresh, %{used: true})
+            with {:ok, _} <- Factor.Lib.set_password(user, new),
+                 {:ok, _} <- User.Code.update(fresh, %{used: true}),
+                 do: {:ok, user}
           else
             {:error, "Password reset code is expired"}
           end
@@ -37,7 +43,8 @@ defmodule Rivet.Auth.Password do
           {:error, "Invalid password reset code"}
       end
     end)
-    |> notify_pass_change(code.user)
+    # outside the transaction
+    |> notify_pass_change()
   end
 
   def change_password_code(_, _), do: {:error, :args}
@@ -50,7 +57,8 @@ defmodule Rivet.Auth.Password do
         {:error, "New password is the same as old"}
 
       matching_password?(user, current) ->
-        Factor.Lib.set_password(user, new) |> notify_pass_change(user)
+        with {:ok, _} <- Factor.Lib.set_password(user, new),
+          do: notify_pass_change({:ok, user})
 
       true ->
         {:error, "Password change failure: current password mis-match"}
@@ -61,12 +69,12 @@ defmodule Rivet.Auth.Password do
 
   ##############################################################################
 
-  defp notify_pass_change({:ok, _} = good, user) do
+  defp notify_pass_change({:ok, %User{}} = pass) do
     Ident.mailer_template(:password_changed).queue(user)
-    good
+    pass
   end
 
-  defp notify_pass_change(pass, _), do: pass
+  defp notify_pass_change({:error, _} = pass, _), do: pass
 
   ##############################################################################
   ## used for direct user w/out %Auth.Domain{}
