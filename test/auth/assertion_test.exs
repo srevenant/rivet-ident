@@ -23,7 +23,9 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
       %{role, action} = insert(:ident_role_map, role: role)
       assert {:ok, _} = Ident.Access.Lib.add(user, role.name, project_id)
 
-      assert {:ok, _} = check_authz(user, action(action.name, domain: :project, ref_id: project_id))
+      assert {:ok, _} =
+               check_authz(user, action(action.name, domain: :project, ref_id: project_id))
+
       assert {:error, _} = web_check_authz(user, action(action.name, domain: :global))
 
       # side-tap; while we're at it force a reload in Cache
@@ -45,7 +47,9 @@ defmodule Rivet.Ident.Test.Auth.AssertionTest do
       %{role, action} = insert(:ident_role_map)
       assert {:ok, _} = Ident.Access.Lib.add(user, role.name, nil)
       assert {:ok, _} = web_check_authz(user, action(action.name, domain: :global))
-      assert {:error, _} = check_authz(user, action(action.name, domain: :project, ref_id: project_id))
+
+      assert {:error, _} =
+               check_authz(user, action(action.name, domain: :project, ref_id: project_id))
     end
   end
 end

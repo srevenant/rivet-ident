@@ -20,7 +20,9 @@ defmodule Test.Rivet.Data.FunctionalTest do
     # should become 2304 in length
     bigd = Enum.reduce(0..4//1, bigk, fn _, acc -> acc <> acc end)
     pd = build(:ident_user_data)
-    pd2 = build(:ident_user_data, type: :social, depth: :list, value: %{"list" => [%{"id" => id}]})
+
+    pd2 =
+      build(:ident_user_data, type: :social, depth: :list, value: %{"list" => [%{"id" => id}]})
 
     # shallow
     assert {:error, "Invalid key for data"} = invalid1(:bad, "ok")

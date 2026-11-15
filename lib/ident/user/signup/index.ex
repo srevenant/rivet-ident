@@ -92,7 +92,6 @@ defmodule Rivet.Ident.User.Signup do
     end
   end
 
-
   # ##############################################################################
   # # result is any as we ignore it
   # ### todo: flip to transaction

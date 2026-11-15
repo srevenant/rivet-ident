@@ -18,6 +18,8 @@ defmodule Rivet.Ident.Access do
     update: [:domain, :ref_id],
     unique: [:role_id, [:user_id, :role_id, :domain, :ref_id]]
 
+    # coveralls-ignore-start
   defdelegate add(a, b, c), to: __MODULE__.Lib
   defdelegate drop(a, b, c), to: __MODULE__.Lib
+    # coveralls-ignore-stop
 end

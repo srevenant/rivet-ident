@@ -12,21 +12,18 @@ defmodule Rivet.Auth.Password do
   # Lock the row until this transaction finishes to avoid concurrent attempts.
   # user is nil when signed out, if they are signed in it must match
   defp get_code_locked(code_id, nil) do
-    from(c in User.Code, where: c.id == ^code_id, lock: "FOR UPDATE")
-    |> User.Code.one(preload: [:user])
+    from(c in User.Code, where: c.code == ^code_id, lock: "FOR UPDATE")
   end
 
   defp get_code_locked(code_id, %User{id: user_id}) do
-    from(c in User.Code, where: c.id == ^code_id and c.user_id == ^user_id, lock: "FOR UPDATE")
-    |> User.Code.one(preload: [:user])
+    from(c in User.Code, where: c.code == ^code_id and c.user_id == ^user_id, lock: "FOR UPDATE")
   end
 
   @reset_type :password_reset
 
   def change_password_code(user, code, new) when not_empty_str(code) and not_empty_str(new) do
     @repo.transact(fn ->
-      # User.Code.one(id: code.id) do
-      case get_code_locked(code, user) do
+      case get_code_locked(code, user) |> User.Code.one([:user]) do
         {:ok, %User.Code{user: %User{} = user, type: @reset_type, used: false} = fresh} ->
           if DateTime.after?(fresh.expires, DateTime.utc_now()) do
             with {:ok, _} <- Factor.Lib.set_password(user, new),
@@ -47,7 +44,7 @@ defmodule Rivet.Auth.Password do
     |> notify_pass_change()
   end
 
-  def change_password_code(_, _), do: {:error, :args}
+  def change_password_code(_, _, _), do: {:error, :args}
 
   ##############################################################################
   def change_password_matching(%User{} = user, current, new)
@@ -58,7 +55,7 @@ defmodule Rivet.Auth.Password do
 
       matching_password?(user, current) ->
         with {:ok, _} <- Factor.Lib.set_password(user, new),
-          do: notify_pass_change({:ok, user})
+             do: notify_pass_change({:ok, user})
 
       true ->
         {:error, "Password change failure: current password mis-match"}
@@ -69,12 +66,12 @@ defmodule Rivet.Auth.Password do
 
   ##############################################################################
 
-  defp notify_pass_change({:ok, %User{}} = pass) do
+  defp notify_pass_change({:ok, %User{} = user} = pass) do
     Ident.mailer_template(:password_changed).queue(user)
     pass
   end
 
-  defp notify_pass_change({:error, _} = pass, _), do: pass
+  defp notify_pass_change({:error, _} = pass), do: pass
 
   ##############################################################################
   ## used for direct user w/out %Auth.Domain{}

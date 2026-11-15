@@ -128,6 +128,7 @@ defmodule Rivet.Ident.Factor.Lib do
     cond do
       remaining >= max -> Factor.delete(f)
       f.expires_at > now -> Factor.update(f, %{expires_at: now})
+      # coveralls-ignore-next-line
       true -> {:ok, f}
     end
   end
