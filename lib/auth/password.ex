@@ -170,15 +170,3 @@ defmodule Rivet.Auth.Password do
   # # this is another factor type and not password
   # def strong_password(%Auth.Domain{}), do: :ok
 end
-
-
-
-
-
-
-
-
-
-coverage
-for
-Ident.Data

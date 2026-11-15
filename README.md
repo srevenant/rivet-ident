@@ -29,3 +29,5 @@ Add to your project's rivet migrations.exs:
 
 migrate notes for Cato
 - Role.type -> Role.domain (# and set domains)
+
+todo: coverage for Ident.Data
