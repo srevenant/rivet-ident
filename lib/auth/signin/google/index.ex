@@ -82,12 +82,24 @@ defmodule Rivet.Auth.Signin.Google do
   defp valid_claims(token) do
     case Rivet.Auth.Settings.getcfg(:federated, %{}) do
       %{google_client_id: google_aud, google: true} when not_empty_str(google_aud) ->
-        with %{"exp" => exp, "iss" => iss, "aud" => aud} when is_integer(exp) <- token,
-             true <- exp > System.system_time(:second) and iss in @good_iss and aud == google_aud do
-          :ok
-        else
+        case token do
+          %{"exp" => exp, "iss" => iss, "aud" => aud} when is_integer(exp) ->
+            cond do
+              iss not in @good_iss ->
+                {:error, "Invalid Google ISS"}
+
+              aud != google_aud ->
+                {:error, "Invalid Google ID token='#{aud}' is not '#{google_aud}'"}
+
+              exp <= System.system_time(:second) ->
+                {:error, "Expired token"}
+
+              true ->
+                :ok
+            end
+
           _ ->
-            {:error, "Invalid Google ID token=#{aud} is not #{@good_iss}"}
+            {:error, "Invalid token"}
         end
 
       # coveralls-ignore-next-line

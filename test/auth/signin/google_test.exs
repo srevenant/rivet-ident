@@ -62,13 +62,14 @@ defmodule Rivet.Ident.Test.Auth.GoogleTest do
     now = System.system_time(:second)
 
     [
-      %{"exp" => now - 60},
-      %{"iss" => "https://not-google.com"},
-      %{"aud" => "wrong-client-id"},
-      %{"exp" => nil}
+      {%{"iss" => "https://not-google.com"}, "Invalid Google ISS"},
+      {%{"aud" => "wrong-client-id"},
+       "Invalid Google ID token='wrong-client-id' is not 'test-google-client'"},
+      {%{"exp" => nil}, "Invalid token"},
+      {%{"exp" => now - 60}, "Expired token"}
     ]
-    |> Enum.each(fn claim ->
-      assert_authfail("test_wrapped_error: Invalid Google ID token", fn ->
+    |> Enum.each(fn {claim, expect} ->
+      assert_authfail("test_wrapped_error: #{expect}", fn ->
         check_google(google_payload(claim))
       end)
     end)

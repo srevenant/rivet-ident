@@ -8,7 +8,7 @@ defmodule Rivet.Ident.Application do
       Rivet.Auth.Cache,
       Rivet.Ident.Role.Cache,
       Rivet.Ident.User.Cache,
-      Rivet.Ident.Factor.Cache,
+      Rivet.Ident.Factor.Cache
     ]
 
     children =
