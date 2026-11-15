@@ -87,7 +87,7 @@ defmodule Rivet.Auth.Signin.Google do
           :ok
         else
           _ ->
-            {:error, "Invalid Google ID token"}
+            {:error, "Invalid Google ID token=#{aud} is not #{@good_iss}"}
         end
 
       # coveralls-ignore-next-line
