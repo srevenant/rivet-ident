@@ -67,7 +67,7 @@ defmodule Rivet.Auth.Password do
   ##############################################################################
 
   defp notify_pass_change({:ok, %User{} = user} = pass) do
-    Ident.mailer_template(:password_changed).queue(user)
+    Ident.mailer_template(:user_password_changed).queue(user)
     pass
   end
 
