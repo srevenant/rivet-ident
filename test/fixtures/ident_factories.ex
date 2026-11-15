@@ -52,10 +52,10 @@ defmodule Rivet.Ident.Test.Fixtures.IdentFactories do
         }
       end
 
-      def ident_user_extid_factory do
+      def ident_user_ext_id_factory do
         %Ident.User.ExtId{
           origin: Faker.Internet.domain_name(),
-          extid: sequence("user_extid"),
+          ext_id: sequence("user_ext_id"),
           user: build(:ident_user)
         }
       end

@@ -3,12 +3,12 @@ defmodule Rivet.Ident.User.ExtId do
   use Rivet.Ecto.Model, id_type: :none
   alias Rivet.Ident
 
-  typed_schema "user_extids" do
-    field(:extid, :string)
+  typed_schema "user_ext_ids" do
+    field(:ext_id, :string)
     field(:origin, :string)
     belongs_to(:user, Ident.User, type: :binary_id, foreign_key: :user_id)
     timestamps()
   end
 
-  use Rivet.Ecto.Collection, not_found: :atom, create: [], required: [:origin, :extid, :user_id]
+  use Rivet.Ecto.Collection, not_found: :atom, create: [], required: [:origin, :ext_id, :user_id]
 end

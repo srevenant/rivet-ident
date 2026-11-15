@@ -98,6 +98,6 @@ defmodule Rivet.Ident.Test.Ident.User.LibTest do
     assert {:error, :not_found} = Email.one(id: email.id)
     assert {:error, :not_found} = Ident.Phone.one(id: phone.id)
     assert {:error, :not_found} = Handle.one(handle: handle.handle)
-    assert {:error, :not_found} = User.ExtId.one(origin: "test", extid: ext_key)
+    assert {:error, :not_found} = User.ExtId.one(origin: "test", ext_id: ext_key)
   end
 end

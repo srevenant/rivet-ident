@@ -3,9 +3,9 @@ defmodule Rivet.Ident.Test.Ident.User.ExtIdTest do
   alias Rivet.Ident.User.ExtId
 
   test "model tests" do
-    assert %ExtId{extid} = insert(:ident_user_extid)
-    assert %ExtId{extid: ^extid} = ExtId.one!(extid: extid)
-    params = params_with_assocs(:ident_user_extid)
+    assert %ExtId{ext_id} = insert(:ident_user_ext_id)
+    assert %ExtId{ext_id: ^ext_id} = ExtId.one!(ext_id: ext_id)
+    params = params_with_assocs(:ident_user_ext_id)
     assert {:ok, %ExtId{}} = ExtId.create(params)
   end
 
@@ -22,7 +22,7 @@ defmodule Rivet.Ident.Test.Ident.User.ExtIdTest do
     assert {:error, "ExtId exists"} =
              ExtId.Lib.put(%{user | id: Ecto.UUID.generate()}, origin, ext_id)
 
-    assert {:ok, %{user_id: ^user_id, origin: ^origin, extid: ^ext_id}} =
+    assert {:ok, %{user_id: ^user_id, origin: ^origin, ext_id: ^ext_id}} =
              ExtId.Lib.get(origin, ext_id)
 
     # mis-matched
