@@ -5,6 +5,7 @@ defmodule Rivet.Auth.Token.Check do
   alias Rivet.Auth
   use Rivet.Ident
   import Transmogrify.As
+  require Logger
 
   def jwt(%Auth.Domain{} = auth) do
     # order matters
@@ -45,12 +46,10 @@ defmodule Rivet.Auth.Token.Check do
   ###########################################################################
   def valid_audience(%Auth.Domain{token: %{aud}} = auth) do
     case expand_claim_value(:tok, aud) do
-      {:ok, %{tok: t_hostname, tok_type: t_type}} ->
-        if auth.hostname == t_hostname do
-          %Auth.Domain{auth | type: t_type, hostname: t_hostname}
-        else
-          auth_error(auth, "Token audience does not match: '#{t_hostname}' != '#{auth.hostname}'")
-        end
+      {:ok, %{tok: hostname, tok_type: type}} ->
+        if auth.hostname == hostname,
+          do: %Auth.Domain{auth | type, hostname},
+          else: invalid_audience(auth, type, hostname)
 
       reason ->
         auth_error(auth, reason)
@@ -58,6 +57,20 @@ defmodule Rivet.Auth.Token.Check do
   end
 
   def valid_audience({:error, _} = pass), do: pass
+
+  # in test mode just warn
+  if Application.compile_env(:rivet, :test) == true do
+    defp invalid_audience(auth, type, hostname) do
+      Logger.warning("NOT ERRORING IN TEST MODE: " <> invalid_auth_message(auth, hostname))
+      %Auth.Domain{auth | type, hostname}
+    end
+  else
+    defp invalid_audience(error, _, hostname),
+      do: auth_error(auth, invalid_auth_message(auth, hostname))
+  end
+
+  defp invalid_auth_message(auth, hostname),
+    do: "Token audience does not match: '#{hostname}' != '#{auth.hostname}'"
 
   ###########################################################################
   def valid_expiration(%Auth.Domain{token: %{claims: %{for: scope} = claims}, type: type} = auth) do

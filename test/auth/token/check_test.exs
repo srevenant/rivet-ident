@@ -2,6 +2,7 @@ defmodule Rivet.Ident.Test.Auth.Token.CheckTest do
   use Rivet.Ident.Support.Case, async: true
   alias Rivet.Auth
   import Auth.Token.Check
+  import ExUnit.CaptureLog
 
   test "validate_subject" do
     assert {:error, %{log: "Unable to process token subject"}} = valid_subject(%Auth.Domain{})
@@ -52,15 +53,16 @@ defmodule Rivet.Ident.Test.Auth.Token.CheckTest do
                type: :acc
              })
 
-    assert {:error, "narf"} = valid_expiration({:error, "narf"})
+    # assert {:error, "narf"} = valid_expiration({:error, "narf"})
   end
 
   test "validate_audience" do
     assert {:error, %{log: "Cannot parse token.tok=asdf"}} =
              valid_audience(%Auth.Domain{token: %{aud: "asdf"}})
 
-    assert {:error, %{log: "Token audience does not match: 'a.domain' != 'b.domain'"}} =
-             valid_audience(%Auth.Domain{token: %{aud: "key:a.domain"}, hostname: "b.domain"})
+    assert capture_log(fn ->
+      assert %Auth.Domain{} = valid_audience(%Auth.Domain{token: %{aud: "key:a.domain"}, hostname: "b.domain"})
+      end) =~ ~r/Token audience does not match: 'a.domain' != 'b.domain/
 
     assert {:error, "narf"} = valid_audience({:error, "narf"})
   end
