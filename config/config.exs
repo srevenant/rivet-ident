@@ -45,6 +45,7 @@ config :rivet_ident,
     api: 15 * 60,
     password: 2 * 86400
   },
+  mode: :dev,
   #################
   defenums: [
     {Rivet.Ident.Access.Domains, global: 0},

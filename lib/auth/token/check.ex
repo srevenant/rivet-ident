@@ -59,13 +59,13 @@ defmodule Rivet.Auth.Token.Check do
   def valid_audience({:error, _} = pass), do: pass
 
   # in test mode just warn
-  if Application.compile_env(:rivet, :test) == true do
+  if Application.compile_env(:rivet_ident, :mode) in [:dev, :test] do
     defp invalid_audience(auth, type, hostname) do
       Logger.warning("NOT ERRORING IN TEST MODE: " <> invalid_auth_message(auth, hostname))
       %Auth.Domain{auth | type, hostname}
     end
   else
-    defp invalid_audience(error, _, hostname),
+    defp invalid_audience(auth, _, hostname),
       do: auth_error(auth, invalid_auth_message(auth, hostname))
   end
 
