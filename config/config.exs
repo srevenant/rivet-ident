@@ -46,6 +46,7 @@ config :rivet_ident,
     password: 2 * 86400
   },
   mode: :dev,
+  audience_match_required: false,
   #################
   defenums: [
     {Rivet.Ident.Access.Domains, global: 0},
