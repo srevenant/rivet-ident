@@ -47,11 +47,9 @@ defmodule Rivet.Auth.Token.Check do
   def valid_audience(%Auth.Domain{token: %{aud}} = auth) do
     case expand_claim_value(:tok, aud) do
       {:ok, %{tok: hostname, tok_type: type}} ->
-        %Auth.Domain{auth | type, hostname}
-
-      # if auth.hostname == hostname,
-      # do: %Auth.Domain{auth | type, hostname},
-      # else: invalid_audience(auth, type, hostname)
+        if auth.hostname == hostname,
+          do: %Auth.Domain{auth | type, hostname},
+          else: invalid_audience(auth, type, hostname)
 
       reason ->
         auth_error(auth, reason)
