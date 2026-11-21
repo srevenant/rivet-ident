@@ -47,9 +47,11 @@ defmodule Rivet.Auth.Token.Check do
   def valid_audience(%Auth.Domain{token: %{aud}} = auth) do
     case expand_claim_value(:tok, aud) do
       {:ok, %{tok: hostname, tok_type: type}} ->
-        if auth.hostname == hostname,
-          do: %Auth.Domain{auth | type, hostname},
-          else: invalid_audience(auth, type, hostname)
+        %Auth.Domain{auth | type, hostname}
+
+      # if auth.hostname == hostname,
+      # do: %Auth.Domain{auth | type, hostname},
+      # else: invalid_audience(auth, type, hostname)
 
       reason ->
         auth_error(auth, reason)
@@ -60,10 +62,11 @@ defmodule Rivet.Auth.Token.Check do
 
   # in test mode just warn
   # if Application.compile_env(:rivet_ident, :mode) in [:dev, :test] do
-    defp invalid_audience(auth, type, hostname) do
-      Logger.warning("NOT ERRORING IN TEST MODE: " <> invalid_auth_message(auth, hostname))
-      %Auth.Domain{auth | type, hostname}
-    end
+  defp invalid_audience(auth, type, hostname) do
+    Logger.warning("NOT ERRORING IN TEST MODE: " <> invalid_auth_message(auth, hostname))
+    %Auth.Domain{auth | type, hostname}
+  end
+
   # else
   #   defp invalid_audience(auth, _, hostname),
   #     do: auth_error(auth, invalid_auth_message(auth, hostname))
