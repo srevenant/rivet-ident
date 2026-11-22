@@ -67,13 +67,30 @@ defmodule Rivet.Ident.User.Signup do
   end
 
   #####
+  # do not muck with it if they gave it to us, take it literally
   def get_default_name(%{input: %{name}}) when not_empty_str(name), do: name
-  def get_default_name(%{input: %{handle}}) when not_empty_str(handle), do: handle
+
+  def get_default_name(%{input: %{handle}}) when not_empty_str(handle),
+    do: guess_human_name(handle)
 
   def get_default_name(%{input: %{email: %{address}}}) when not_empty_str(address),
-    do: String.split(address, "@") |> List.first()
+    do: String.split(address, "@") |> List.first() |> guess_human_name()
 
   def get_default_name(_), do: "no name"
+
+  defp guess_human_name(str) do
+    name =
+      str
+      |> String.replace(~r/[+_\.0-9-]+/, " ")
+      |> String.replace(~r/\s+/, " ")
+
+    if String.length(name) > 0 do
+      name
+    else
+      str
+    end
+    |> Rivet.Utils.English.titleize()
+  end
 
   ##############################################################################
   defp add_handle(%Auth.Domain{} = auth) do

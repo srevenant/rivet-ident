@@ -18,8 +18,8 @@ defmodule Rivet.Ident.Test.Ident.User.SignupTest do
 
     assert "narf" == Signup.get_default_name(%Auth.Domain{input: %{name: "narf"}})
 
-    assert "narf" ==
-             Signup.get_default_name(%Auth.Domain{input: %{email: %{address: "narf@narf"}}})
+    assert "Mr Narf Yoink" ==
+             Signup.get_default_name(%Auth.Domain{input: %{email: %{address: "mr.narf-yoink@narf"}}})
 
     assert "no name" == Signup.get_default_name(%Auth.Domain{})
 
