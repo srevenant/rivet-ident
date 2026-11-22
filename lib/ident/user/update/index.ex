@@ -126,7 +126,7 @@ defmodule Rivet.Ident.User.Update do
     end
   end
 
-  def update_email(:upsert, %{address}, %User{} = u, opts) when is_binary(address) do
+  def update_email(:upsert, %{email: address}, %User{} = u, opts) when is_binary(address) do
     with {:ok, %Email{} = e} <- User.Lib.add_email(u, address, opts) do
       User.Lib.send_verify_email(%{u | emails: [e]})
       refresh(u, :emails)
@@ -139,7 +139,7 @@ defmodule Rivet.Ident.User.Update do
          do: refresh(u, :emails)
   end
 
-  def update_email(_, _, _, _), do: bad_args("email")
+  def update_email(x, y, _, _), do: bad_args("email")
 
   ##############################################################################
   def update_data(:upsert, %{id, value}, %User{} = user, _) do
